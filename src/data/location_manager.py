@@ -6,10 +6,11 @@
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 import csv
 import re
 import unicodedata
+import warnings
 from pathlib import Path
 
 try:
@@ -53,14 +54,31 @@ class LocationManager:
     CSVファイルからの地点データ読み込み、検索、正規化機能を提供。
     """
     
-    def __init__(self, csv_path: str = "Chiten.csv"):
+    def __init__(self, csv_path: str = "Chiten.csv", warn_missing_deps: bool = True):
         """LocationManagerを初期化
         
         Args:
             csv_path: 地点データCSVファイルのパス
+            warn_missing_deps: オプショナル依存関係の警告を表示するか
         """
         self.csv_path = csv_path
         self._locations: List[Location] = []
+        
+        # オプショナルライブラリの警告
+        if warn_missing_deps:
+            if not JACONV_AVAILABLE:
+                warnings.warn(
+                    "jaconv not available. ひらがな・カタカナ正規化が無効です。"
+                    "pip install jaconv でインストールできます。",
+                    UserWarning
+                )
+            if not LEVENSHTEIN_AVAILABLE:
+                warnings.warn(
+                    "python-Levenshtein not available. 高度な類似度検索が無効です。"
+                    "pip install python-Levenshtein でインストールできます。",
+                    UserWarning
+                )
+        
         self._load_locations()
 
     def _normalize_text(self, text: str) -> str:
@@ -104,35 +122,35 @@ class LocationManager:
         
         try:
             with open(csv_file, 'r', encoding='utf-8') as file:
-                # CSVの最初の行をヘッダーとして読み取り
                 reader = csv.reader(file)
-                header = next(reader, None)
                 
-                if not header:
-                    raise ValueError("CSVファイルが空です")
-                
-                # ヘッダーを確認（期待: "稚内" などの地点名）
-                location_column = header[0] if header else "地点"
-                
-                # ファイルの先頭に戻る
-                file.seek(0)
-                
-                # DictReaderを使用してデータを読み込み
-                dict_reader = csv.DictReader(file)
-                
-                for row_num, row in enumerate(dict_reader, start=2):  # ヘッダー行をスキップして2行目から
-                    # 最初の列から地点名を取得
-                    location_name = list(row.values())[0] if row else ""
+                for row_num, row in enumerate(reader, start=1):
+                    # 空行やデータなしの行をスキップ
+                    if not row or not row[0] or not row[0].strip():
+                        continue
                     
-                    if location_name and location_name.strip():
-                        location_name = location_name.strip()
-                        normalized_name = self._normalize_text(location_name)
-                        
-                        location = Location(
-                            name=location_name,
-                            normalized_name=normalized_name
-                        )
-                        self._locations.append(location)
+                    location_name = row[0].strip()
+                    normalized_name = self._normalize_text(location_name)
+                    
+                    # 緯度経度データが含まれる場合の処理
+                    latitude = None
+                    longitude = None
+                    
+                    if len(row) >= 3:
+                        try:
+                            latitude = float(row[1]) if row[1] and row[1].strip() else None
+                            longitude = float(row[2]) if row[2] and row[2].strip() else None
+                        except (ValueError, IndexError):
+                            # 緯度経度の変換に失敗した場合はNoneのまま
+                            pass
+                    
+                    location = Location(
+                        name=location_name,
+                        normalized_name=normalized_name,
+                        latitude=latitude,
+                        longitude=longitude
+                    )
+                    self._locations.append(location)
                         
         except Exception as e:
             raise RuntimeError(f"地点データの読み込みに失敗しました: {str(e)}")
@@ -169,6 +187,31 @@ class LocationManager:
         results.sort(key=lambda x: x[1], reverse=True)
         
         return [location for location, _ in results]
+    
+    def search_location_with_scores(self, query: str) -> List[Tuple[Location, float]]:
+        """地点名で検索（スコア付き）
+        
+        Args:
+            query: 検索クエリ
+            
+        Returns:
+            (地点, スコア)のタプルのリスト（類似度順）
+        """
+        if not query or not query.strip():
+            return []
+        
+        normalized_query = self._normalize_text(query.strip())
+        results = []
+        
+        for location in self._locations:
+            score = self._calculate_similarity_score(normalized_query, location)
+            if score > 0:
+                results.append((location, score))
+        
+        # スコア順にソート（降順）
+        results.sort(key=lambda x: x[1], reverse=True)
+        
+        return results
     
     def find_exact_match(self, query: str) -> Optional[Location]:
         """完全一致で地点を検索
@@ -239,6 +282,21 @@ class LocationManager:
     def reload_locations(self) -> None:
         """地点データを再読み込み"""
         self._load_locations()
+    
+    def get_dependency_status(self) -> dict:
+        """オプショナル依存関係の状態を取得
+        
+        Returns:
+            依存関係の状態辞書
+        """
+        return {
+            "jaconv_available": JACONV_AVAILABLE,
+            "levenshtein_available": LEVENSHTEIN_AVAILABLE,
+            "features": {
+                "hiragana_katakana_normalization": JACONV_AVAILABLE,
+                "advanced_similarity_search": LEVENSHTEIN_AVAILABLE
+            }
+        }
 
 
 def load_locations_from_csv(csv_path: str = "Chiten.csv") -> List[Location]:
@@ -250,7 +308,7 @@ def load_locations_from_csv(csv_path: str = "Chiten.csv") -> List[Location]:
     Returns:
         地点データのリスト
     """
-    manager = LocationManager(csv_path)
+    manager = LocationManager(csv_path, warn_missing_deps=False)
     return manager.get_all_locations()
 
 
@@ -264,5 +322,5 @@ def search_location(query: str, csv_path: str = "Chiten.csv") -> List[Location]:
     Returns:
         マッチした地点のリスト
     """
-    manager = LocationManager(csv_path)
+    manager = LocationManager(csv_path, warn_missing_deps=False)
     return manager.search_location(query)
