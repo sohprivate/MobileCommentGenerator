@@ -12,6 +12,16 @@ mypy>=1.0.0
 black>=23.0.0
 flake8>=6.0.0
 
-# 文字列処理・類似度計算用（後で使用）
+# 文字列処理・類似度計算用（フューチャーフラグでクラスタリング対応）
 jaconv>=0.3.0
 Levenshtein>=0.21.0
+
+# AWS SDK（S3アクセス用）
+boto3>=1.28.0
+botocore>=1.31.0
+
+# JSON処理・データ解析
+jsonlines>=3.1.0
+
+# 日時処理
+python-dateutil>=2.8.0
