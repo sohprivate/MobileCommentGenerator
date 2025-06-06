@@ -6,7 +6,7 @@
 
 from typing import Dict, Any, Optional
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 from src.data.comment_generation_state import CommentGenerationState
