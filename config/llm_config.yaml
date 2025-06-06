@@ -1,0 +1,92 @@
+# LLM設定
+llm:
+  providers:
+    openai:
+      model: "gpt-4"
+      temperature: 0.7
+      max_tokens: 50
+      timeout: 30
+      api_key_env_var: "OPENAI_API_KEY"
+      additional_params:
+        top_p: 0.9
+        frequency_penalty: 0.0
+        presence_penalty: 0.0
+    
+    gemini:
+      model: "gemini-pro"
+      temperature: 0.7
+      max_tokens: 50
+      timeout: 30
+      api_key_env_var: "GEMINI_API_KEY"
+      additional_params:
+        candidate_count: 1
+        stop_sequences: []
+    
+    anthropic:
+      model: "claude-3-sonnet-20240229"
+      temperature: 0.7
+      max_tokens: 50
+      timeout: 30
+      api_key_env_var: "ANTHROPIC_API_KEY"
+      additional_params:
+        top_p: 0.9
+        top_k: 40
+
+# プロンプト設定
+prompts:
+  base_template: "prompt_templates/base_comment.txt"
+  weather_specific:
+    sunny: "prompt_templates/sunny_comment.txt"
+    rainy: "prompt_templates/rainy_comment.txt"
+    cloudy: "prompt_templates/cloudy_comment.txt"
+    snowy: "prompt_templates/snowy_comment.txt"
+  
+  # プロンプト調整パラメータ
+  adjustments:
+    max_past_comments: 3
+    include_seasonal_context: true
+    include_time_context: true
+    emphasis_weather_conditions: true
+
+# フォールバック設定
+fallback:
+  enabled: true
+  primary_provider: "openai"
+  secondary_provider: "anthropic"
+  max_retry_attempts: 3
+  
+  # デフォルトコメント設定
+  default_comments:
+    sunny: "爽やかな一日ですね"
+    cloudy: "過ごしやすい天気です"
+    rainy: "雨の日も素敵です"
+    snowy: "雪景色が美しいです"
+    unknown: "今日も良い一日を"
+
+# レート制限設定
+rate_limiting:
+  openai:
+    calls_per_minute: 60
+    calls_per_hour: 3600
+  gemini:
+    calls_per_minute: 60
+    calls_per_hour: 1500
+  anthropic:
+    calls_per_minute: 50
+    calls_per_hour: 1000
+
+# ログ設定
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_path: "logs/llm_generation.log"
+  max_file_size: "10MB"
+  backup_count: 5
+
+# パフォーマンス設定
+performance:
+  concurrent_requests: 5
+  request_timeout: 30
+  connection_pool_size: 10
+  max_retries: 3
+  backoff_factor: 0.3
