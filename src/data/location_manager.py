@@ -1,304 +1,616 @@
 """
 地点データ管理システム
 
-このモジュールは、Chiten.csvファイルから地点情報を読み込み、
-地点検索、データ正規化などの機能を提供します。
+Chiten.csvを活用した地点データの管理・検索機能を提供する
+Issue #2の実装: 地点データ管理システム
 """
 
-from dataclasses import dataclass
-from typing import List, Optional, Union, Tuple
 import csv
+import os
 import re
 import unicodedata
-import warnings
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple, Union
+import logging
 from pathlib import Path
 
-try:
-    import jaconv
-    JACONV_AVAILABLE = True
-except ImportError:
-    JACONV_AVAILABLE = False
-
-try:
-    import Levenshtein
-    LEVENSHTEIN_AVAILABLE = True
-except ImportError:
-    LEVENSHTEIN_AVAILABLE = False
+# ログ設定
+logger = logging.getLogger(__name__)
 
 
 @dataclass
 class Location:
-    """地点情報を表すデータクラス
+    """地点データクラス
     
     Attributes:
-        name: 元の地点名
-        normalized_name: 正規化済み地点名
-        latitude: 緯度（オプション）
-        longitude: 経度（オプション）
+        name: 地点名（元の名前）
+        normalized_name: 正規化された地点名
+        prefecture: 都道府県名（推定）
+        latitude: 緯度（度）
+        longitude: 経度（度）
+        region: 地方区分
+        location_type: 地点タイプ（市、区、町、村など）
+        population: 人口（推定）
+        metadata: その他のメタデータ
     """
     name: str
     normalized_name: str
+    prefecture: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
-
-    def __str__(self) -> str:
-        return f"Location(name='{self.name}', normalized='{self.normalized_name}')"
-
-    def __repr__(self) -> str:
-        return self.__str__()
+    region: Optional[str] = None
+    location_type: Optional[str] = None
+    population: Optional[int] = None
+    metadata: Dict[str, any] = field(default_factory=dict)
+    
+    def __post_init__(self):
+        """データクラス初期化後の処理"""
+        # 正規化名が設定されていない場合は自動生成
+        if not self.normalized_name:
+            self.normalized_name = self._normalize_name(self.name)
+        
+        # 都道府県名が設定されていない場合は推定
+        if not self.prefecture:
+            self.prefecture = self._infer_prefecture()
+        
+        # 地方区分が設定されていない場合は推定
+        if not self.region:
+            self.region = self._infer_region()
+    
+    def _normalize_name(self, name: str) -> str:
+        """地点名を正規化
+        
+        Args:
+            name: 元の地点名
+            
+        Returns:
+            正規化された地点名
+        """
+        if not name:
+            return ""
+        
+        # Unicode正規化（NFKCで全角・半角統一）
+        normalized = unicodedata.normalize('NFKC', name)
+        
+        # 前後の空白除去
+        normalized = normalized.strip()
+        
+        # ひらがなをカタカナに変換（オプション）
+        # normalized = self._hiragana_to_katakana(normalized)
+        
+        return normalized
+    
+    def _hiragana_to_katakana(self, text: str) -> str:
+        """ひらがなをカタカナに変換"""
+        katakana = ""
+        for char in text:
+            code = ord(char)
+            # ひらがな範囲（あ-ん: 0x3042-0x3093）
+            if 0x3042 <= code <= 0x3093:
+                katakana += chr(code + 0x60)  # カタカナに変換
+            else:
+                katakana += char
+        return katakana
+    
+    def _infer_prefecture(self) -> Optional[str]:
+        """地点名から都道府県名を推定
+        
+        Returns:
+            推定された都道府県名
+        """
+        # 都道府県庁所在地・主要都市マッピング
+        prefecture_mapping = {
+            # 北海道
+            "稚内": "北海道", "旭川": "北海道", "札幌": "北海道", "函館": "北海道",
+            "帯広": "北海道", "釧路": "北海道", "北見": "北海道", "室蘭": "北海道",
+            "苫小牧": "北海道", "根室": "北海道", "網走": "北海道", "留萌": "北海道",
+            "名寄": "北海道", "紋別": "北海道", "小樽": "北海道", "岩見沢": "北海道",
+            
+            # 東北
+            "青森": "青森県", "八戸": "青森県",
+            "秋田": "秋田県",
+            "盛岡": "岩手県",
+            "仙台": "宮城県",
+            "山形": "山形県",
+            "福島": "福島県",
+            
+            # 関東
+            "水戸": "茨城県",
+            "宇都宮": "栃木県",
+            "前橋": "群馬県",
+            "さいたま": "埼玉県",
+            "千葉": "千葉県",
+            "東京": "東京都",
+            "横浜": "神奈川県",
+            
+            # 中部
+            "新潟": "新潟県",
+            "富山": "富山県",
+            "金沢": "石川県",
+            "福井": "福井県",
+            "甲府": "山梨県",
+            "長野": "長野県",
+            "岐阜": "岐阜県",
+            "静岡": "静岡県",
+            "名古屋": "愛知県",
+            
+            # 近畿
+            "津": "三重県",
+            "大津": "滋賀県",
+            "京都": "京都府",
+            "大阪": "大阪府",
+            "神戸": "兵庫県",
+            "奈良": "奈良県",
+            "和歌山": "和歌山県",
+            
+            # 中国
+            "鳥取": "鳥取県",
+            "松江": "島根県",
+            "岡山": "岡山県",
+            "広島": "広島県",
+            "山口": "山口県",
+            
+            # 四国
+            "徳島": "徳島県",
+            "高松": "香川県",
+            "松山": "愛媛県",
+            "高知": "高知県",
+            
+            # 九州・沖縄
+            "福岡": "福岡県",
+            "佐賀": "佐賀県",
+            "長崎": "長崎県",
+            "熊本": "熊本県",
+            "大分": "大分県",
+            "宮崎": "宮崎県",
+            "鹿児島": "鹿児島県",
+            "那覇": "沖縄県"
+        }
+        
+        return prefecture_mapping.get(self.normalized_name)
+    
+    def _infer_region(self) -> Optional[str]:
+        """都道府県から地方区分を推定
+        
+        Returns:
+            推定された地方区分
+        """
+        if not self.prefecture:
+            return None
+        
+        region_mapping = {
+            "北海道": "北海道",
+            "青森県": "東北", "岩手県": "東北", "宮城県": "東北", "秋田県": "東北",
+            "山形県": "東北", "福島県": "東北",
+            "茨城県": "関東", "栃木県": "関東", "群馬県": "関東", "埼玉県": "関東",
+            "千葉県": "関東", "東京都": "関東", "神奈川県": "関東",
+            "新潟県": "中部", "富山県": "中部", "石川県": "中部", "福井県": "中部",
+            "山梨県": "中部", "長野県": "中部", "岐阜県": "中部", "静岡県": "中部",
+            "愛知県": "中部",
+            "三重県": "近畿", "滋賀県": "近畿", "京都府": "近畿", "大阪府": "近畿",
+            "兵庫県": "近畿", "奈良県": "近畿", "和歌山県": "近畿",
+            "鳥取県": "中国", "島根県": "中国", "岡山県": "中国", "広島県": "中国",
+            "山口県": "中国",
+            "徳島県": "四国", "香川県": "四国", "愛媛県": "四国", "高知県": "四国",
+            "福岡県": "九州", "佐賀県": "九州", "長崎県": "九州", "熊本県": "九州",
+            "大分県": "九州", "宮崎県": "九州", "鹿児島県": "九州", "沖縄県": "九州"
+        }
+        
+        return region_mapping.get(self.prefecture)
+    
+    def distance_to(self, other: 'Location') -> Optional[float]:
+        """他の地点との距離を計算（km）
+        
+        Args:
+            other: 比較対象の地点
+            
+        Returns:
+            距離（km）、座標情報がない場合はNone
+        """
+        if not all([self.latitude, self.longitude, other.latitude, other.longitude]):
+            return None
+        
+        import math
+        
+        # ハヴァーサイン式
+        lat1, lon1 = math.radians(self.latitude), math.radians(self.longitude)
+        lat2, lon2 = math.radians(other.latitude), math.radians(other.longitude)
+        
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        
+        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        c = 2 * math.asin(math.sqrt(a))
+        
+        # 地球の半径（km）
+        earth_radius = 6371.0
+        
+        return earth_radius * c
+    
+    def matches_query(self, query: str, fuzzy: bool = True) -> bool:
+        """検索クエリにマッチするかチェック
+        
+        Args:
+            query: 検索クエリ
+            fuzzy: あいまい検索を行うか
+            
+        Returns:
+            マッチする場合True
+        """
+        if not query:
+            return False
+        
+        query_normalized = self._normalize_name(query)
+        
+        # 完全一致
+        if self.normalized_name == query_normalized:
+            return True
+        
+        # 部分一致
+        if query_normalized in self.normalized_name or self.normalized_name in query_normalized:
+            return True
+        
+        # 都道府県名での一致
+        if self.prefecture and query_normalized in self.prefecture:
+            return True
+        
+        if not fuzzy:
+            return False
+        
+        # あいまい検索（レーベンシュタイン距離）
+        distance = self._levenshtein_distance(self.normalized_name, query_normalized)
+        max_length = max(len(self.normalized_name), len(query_normalized))
+        
+        # 類似度が70%以上の場合マッチとみなす
+        similarity = 1.0 - (distance / max_length) if max_length > 0 else 0.0
+        return similarity >= 0.7
+    
+    def _levenshtein_distance(self, s1: str, s2: str) -> int:
+        """レーベンシュタイン距離を計算
+        
+        Args:
+            s1: 文字列1
+            s2: 文字列2
+            
+        Returns:
+            レーベンシュタイン距離
+        """
+        if len(s1) < len(s2):
+            return self._levenshtein_distance(s2, s1)
+        
+        if len(s2) == 0:
+            return len(s1)
+        
+        previous_row = list(range(len(s2) + 1))
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+        
+        return previous_row[-1]
+    
+    def to_dict(self) -> Dict[str, any]:
+        """辞書形式に変換
+        
+        Returns:
+            地点データの辞書
+        """
+        return {
+            'name': self.name,
+            'normalized_name': self.normalized_name,
+            'prefecture': self.prefecture,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'region': self.region,
+            'location_type': self.location_type,
+            'population': self.population,
+            'metadata': self.metadata
+        }
 
 
 class LocationManager:
     """地点データ管理クラス
     
-    CSVファイルからの地点データ読み込み、検索、正規化機能を提供。
+    Chiten.csvからの地点データ読み込み・管理・検索機能を提供
     """
     
-    def __init__(self, csv_path: str = "Chiten.csv", warn_missing_deps: bool = True):
-        """LocationManagerを初期化
+    def __init__(self, csv_path: Optional[str] = None):
+        """地点管理システムを初期化
         
         Args:
-            csv_path: 地点データCSVファイルのパス
-            warn_missing_deps: オプショナル依存関係の警告を表示するか
+            csv_path: CSVファイルのパス（Noneの場合はデフォルトパス使用）
         """
-        self.csv_path = csv_path
-        self._locations: List[Location] = []
+        self.csv_path = csv_path or self._get_default_csv_path()
+        self.locations: List[Location] = []
+        self.location_index: Dict[str, List[Location]] = {}
+        self.loaded_at: Optional[datetime] = None
         
-        # オプショナルライブラリの警告
-        if warn_missing_deps:
-            if not JACONV_AVAILABLE:
-                warnings.warn(
-                    "jaconv not available. ひらがな・カタカナ正規化が無効です。"
-                    "pip install jaconv でインストールできます。",
-                    UserWarning
-                )
-            if not LEVENSHTEIN_AVAILABLE:
-                warnings.warn(
-                    "python-Levenshtein not available. 高度な類似度検索が無効です。"
-                    "pip install python-Levenshtein でインストールできます。",
-                    UserWarning
-                )
+        # 自動読み込み
+        if os.path.exists(self.csv_path):
+            self.load_locations()
+        else:
+            logger.warning(f"CSVファイルが見つかりません: {self.csv_path}")
+            self._load_default_locations()
+    
+    def _get_default_csv_path(self) -> str:
+        """デフォルトCSVパスを取得
         
-        self._load_locations()
-
-    def _normalize_text(self, text: str) -> str:
-        """テキストの正規化処理
-        
-        Args:
-            text: 正規化対象のテキスト
-            
         Returns:
-            正規化されたテキスト
+            デフォルトCSVファイルパス
         """
-        if not text:
-            return ""
+        # プロジェクトルートのChiten.csvを探す
+        current_dir = Path(__file__).parent
+        while current_dir.parent != current_dir:
+            csv_path = current_dir / "Chiten.csv"
+            if csv_path.exists():
+                return str(csv_path)
+            current_dir = current_dir.parent
         
-        # Unicode正規化（NFKC）
-        normalized = unicodedata.normalize('NFKC', text)
+        # 見つからない場合はプロジェクトルート想定
+        return "Chiten.csv"
+    
+    def load_locations(self) -> int:
+        """CSVファイルから地点データを読み込み
         
-        # 空白文字の除去
-        normalized = re.sub(r'\s+', '', normalized)
-        
-        # 全角英数字を半角に変換
-        normalized = normalized.translate(str.maketrans(
-            '０１２３４５６７８９ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ',
-            '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-        ))
-        
-        # ひらがな・カタカナの統一（カタカナに統一）
-        if JACONV_AVAILABLE:
-            normalized = jaconv.hira2kata(normalized)
-        
-        return normalized
-
-    def _load_locations(self) -> None:
-        """CSVファイルから地点データを読み込み"""
-        csv_file = Path(self.csv_path)
-        
-        if not csv_file.exists():
-            raise FileNotFoundError(f"地点データファイルが見つかりません: {self.csv_path}")
-        
-        self._locations = []
-        
+        Returns:
+            読み込んだ地点数
+        """
         try:
-            with open(csv_file, 'r', encoding='utf-8') as file:
-                reader = csv.reader(file)
+            self.locations.clear()
+            
+            with open(self.csv_path, 'r', encoding='utf-8') as file:
+                # CSVファイルが単純な改行区切りの場合
+                content = file.read().strip()
+                lines = content.split('\n')
                 
-                for row_num, row in enumerate(reader, start=1):
-                    # 空行やデータなしの行をスキップ
-                    if not row or not row[0] or not row[0].strip():
+                for line_num, line in enumerate(lines, 1):
+                    line = line.strip()
+                    if not line:
                         continue
                     
-                    location_name = row[0].strip()
-                    normalized_name = self._normalize_text(location_name)
+                    # 文字化けや異常データをスキップ
+                    if len(line) > 20 or any(ord(c) > 0x9FFF for c in line):
+                        logger.warning(f"異常データをスキップ: {line_num}行目 - {line}")
+                        continue
                     
-                    # 緯度経度データが含まれる場合の処理
-                    latitude = None
-                    longitude = None
-                    
-                    if len(row) >= 3:
-                        try:
-                            latitude = float(row[1]) if row[1] and row[1].strip() else None
-                            longitude = float(row[2]) if row[2] and row[2].strip() else None
-                        except (ValueError, IndexError):
-                            # 緯度経度の変換に失敗した場合はNoneのまま
-                            pass
-                    
-                    location = Location(
-                        name=location_name,
-                        normalized_name=normalized_name,
-                        latitude=latitude,
-                        longitude=longitude
-                    )
-                    self._locations.append(location)
-                        
+                    # 地点データを作成
+                    location = Location(name=line, normalized_name="")
+                    self.locations.append(location)
+            
+            self._build_index()
+            self.loaded_at = datetime.now()
+            
+            logger.info(f"地点データ読み込み完了: {len(self.locations)}件")
+            return len(self.locations)
+            
         except Exception as e:
-            raise RuntimeError(f"地点データの読み込みに失敗しました: {str(e)}")
+            logger.error(f"地点データ読み込みエラー: {str(e)}")
+            self._load_default_locations()
+            return len(self.locations)
     
-    def get_all_locations(self) -> List[Location]:
-        """すべての地点データを取得
+    def _load_default_locations(self):
+        """デフォルト地点データを読み込み"""
+        logger.info("デフォルト地点データを使用します")
         
-        Returns:
-            すべての地点のリスト
-        """
-        return self._locations.copy()
+        default_locations = [
+            "稚内", "旭川", "札幌", "函館", "帯広", "釧路", "北見", "室蘭", "苫小牧", "根室",
+            "青森", "八戸", "秋田", "盛岡", "仙台", "山形", "福島", "水戸", "宇都宮", "前橋",
+            "さいたま", "千葉", "東京", "横浜", "新潟", "富山", "金沢", "福井", "甲府", "長野",
+            "岐阜", "静岡", "名古屋", "津", "大津", "京都", "大阪", "神戸", "奈良", "和歌山",
+            "鳥取", "松江", "岡山", "広島", "山口", "徳島", "高松", "松山", "高知", "福岡",
+            "佐賀", "長崎", "熊本", "大分", "宮崎", "鹿児島", "那覇"
+        ]
+        
+        self.locations = [Location(name=name, normalized_name="") for name in default_locations]
+        self._build_index()
+        self.loaded_at = datetime.now()
     
-    def search_location(self, query: str) -> List[Location]:
-        """地点名で検索
+    def _build_index(self):
+        """検索用インデックスを構築"""
+        self.location_index.clear()
+        
+        for location in self.locations:
+            # 正規化名でインデックス
+            key = location.normalized_name.lower()
+            if key not in self.location_index:
+                self.location_index[key] = []
+            self.location_index[key].append(location)
+            
+            # 都道府県名でもインデックス
+            if location.prefecture:
+                pref_key = location.prefecture.lower()
+                if pref_key not in self.location_index:
+                    self.location_index[pref_key] = []
+                self.location_index[pref_key].append(location)
+    
+    def search_location(self, query: str, max_results: int = 10, fuzzy: bool = True) -> List[Location]:
+        """地点を検索
         
         Args:
             query: 検索クエリ
+            max_results: 最大結果数
+            fuzzy: あいまい検索を行うか
             
         Returns:
-            マッチした地点のリスト（類似度順）
+            検索結果の地点リスト
         """
-        if not query or not query.strip():
+        if not query or not self.locations:
             return []
         
-        normalized_query = self._normalize_text(query.strip())
         results = []
+        query_normalized = query.strip().lower()
         
-        for location in self._locations:
-            score = self._calculate_similarity_score(normalized_query, location)
-            if score > 0:
-                results.append((location, score))
+        # 1. 完全一致検索
+        if query_normalized in self.location_index:
+            results.extend(self.location_index[query_normalized])
         
-        # スコア順にソート（降順）
-        results.sort(key=lambda x: x[1], reverse=True)
+        # 2. 部分一致検索
+        for location in self.locations:
+            if location not in results and location.matches_query(query, fuzzy=False):
+                results.append(location)
         
-        return [location for location, _ in results]
+        # 3. あいまい検索（必要に応じて）
+        if fuzzy and len(results) < max_results:
+            for location in self.locations:
+                if location not in results and location.matches_query(query, fuzzy=True):
+                    results.append(location)
+        
+        return results[:max_results]
     
-    def search_location_with_scores(self, query: str) -> List[Tuple[Location, float]]:
-        """地点名で検索（スコア付き）
+    def get_location(self, name: str) -> Optional[Location]:
+        """地点名から地点を取得（完全一致）
         
         Args:
-            query: 検索クエリ
+            name: 地点名
             
         Returns:
-            (地点, スコア)のタプルのリスト（類似度順）
+            地点データ、見つからない場合はNone
         """
-        if not query or not query.strip():
-            return []
+        name_normalized = name.strip().lower()
         
-        normalized_query = self._normalize_text(query.strip())
-        results = []
+        # インデックス検索
+        if name_normalized in self.location_index:
+            candidates = self.location_index[name_normalized]
+            if candidates:
+                return candidates[0]
         
-        for location in self._locations:
-            score = self._calculate_similarity_score(normalized_query, location)
-            if score > 0:
-                results.append((location, score))
-        
-        # スコア順にソート（降順）
-        results.sort(key=lambda x: x[1], reverse=True)
-        
-        return results
-    
-    def find_exact_match(self, query: str) -> Optional[Location]:
-        """完全一致で地点を検索
-        
-        Args:
-            query: 検索クエリ
-            
-        Returns:
-            完全一致した地点（なければNone）
-        """
-        normalized_query = self._normalize_text(query.strip())
-        
-        for location in self._locations:
-            if (location.normalized_name == normalized_query or 
-                self._normalize_text(location.name) == normalized_query):
+        # 線形検索
+        for location in self.locations:
+            if location.normalized_name.lower() == name_normalized:
                 return location
         
         return None
     
-    def _calculate_similarity_score(self, query: str, location: Location) -> float:
-        """類似度スコアを計算
+    def get_locations_by_region(self, region: str) -> List[Location]:
+        """地方区分で地点を取得
         
         Args:
-            query: 検索クエリ（正規化済み）
-            location: 地点オブジェクト
+            region: 地方区分（北海道、東北、関東など）
             
         Returns:
-            類似度スコア（0.0-1.0）
+            該当地点のリスト
         """
-        target = location.normalized_name
-        original_target = self._normalize_text(location.name)
-        
-        # 完全一致
-        if query == target or query == original_target:
-            return 1.0
-        
-        # 前方一致
-        if target.startswith(query) or original_target.startswith(query):
-            return 0.9
-        
-        # 部分一致
-        if query in target or query in original_target:
-            return 0.8
-        
-        # レーベンシュタイン距離による類似度
-        if LEVENSHTEIN_AVAILABLE and len(query) >= 2:
-            # より長い文字列との距離を計算
-            longer_target = target if len(target) >= len(original_target) else original_target
-            
-            distance = Levenshtein.distance(query, longer_target)
-            max_len = max(len(query), len(longer_target))
-            
-            if max_len > 0:
-                similarity = 1.0 - (distance / max_len)
-                # 閾値以上の場合のみ返す
-                return similarity if similarity >= 0.6 else 0.0
-        
-        return 0.0
+        return [loc for loc in self.locations if loc.region == region]
     
-    def get_location_count(self) -> int:
-        """読み込まれた地点数を取得
+    def get_locations_by_prefecture(self, prefecture: str) -> List[Location]:
+        """都道府県で地点を取得
+        
+        Args:
+            prefecture: 都道府県名
+            
+        Returns:
+            該当地点のリスト
+        """
+        return [loc for loc in self.locations if loc.prefecture == prefecture]
+    
+    def get_nearby_locations(
+        self, 
+        target: Union[Location, Tuple[float, float]], 
+        radius_km: float = 100,
+        max_results: int = 10
+    ) -> List[Tuple[Location, float]]:
+        """近隣地点を取得
+        
+        Args:
+            target: 基準地点（LocationオブジェクトまたはLatLon座標）
+            radius_km: 検索半径（km）
+            max_results: 最大結果数
+            
+        Returns:
+            (地点, 距離)のタプルリスト（距離順）
+        """
+        if isinstance(target, tuple):
+            # 座標から仮想地点を作成
+            target_location = Location(
+                name="検索基準点",
+                normalized_name="検索基準点",
+                latitude=target[0],
+                longitude=target[1]
+            )
+        else:
+            target_location = target
+        
+        if not target_location.latitude or not target_location.longitude:
+            return []
+        
+        nearby = []
+        for location in self.locations:
+            if location == target_location:
+                continue
+            
+            distance = target_location.distance_to(location)
+            if distance is not None and distance <= radius_km:
+                nearby.append((location, distance))
+        
+        # 距離順でソート
+        nearby.sort(key=lambda x: x[1])
+        return nearby[:max_results]
+    
+    def get_all_locations(self) -> List[Location]:
+        """全地点データを取得
         
         Returns:
-            地点数
+            全地点のリスト
         """
-        return len(self._locations)
+        return self.locations.copy()
     
-    def reload_locations(self) -> None:
-        """地点データを再読み込み"""
-        self._load_locations()
-    
-    def get_dependency_status(self) -> dict:
-        """オプショナル依存関係の状態を取得
+    def get_statistics(self) -> Dict[str, any]:
+        """統計情報を取得
         
         Returns:
-            依存関係の状態辞書
+            統計情報の辞書
         """
+        if not self.locations:
+            return {}
+        
+        # 地方別集計
+        region_counts = {}
+        for location in self.locations:
+            region = location.region or "不明"
+            region_counts[region] = region_counts.get(region, 0) + 1
+        
+        # 都道府県別集計
+        prefecture_counts = {}
+        for location in self.locations:
+            prefecture = location.prefecture or "不明"
+            prefecture_counts[prefecture] = prefecture_counts.get(prefecture, 0) + 1
+        
         return {
-            "jaconv_available": JACONV_AVAILABLE,
-            "levenshtein_available": LEVENSHTEIN_AVAILABLE,
-            "features": {
-                "hiragana_katakana_normalization": JACONV_AVAILABLE,
-                "advanced_similarity_search": LEVENSHTEIN_AVAILABLE
-            }
+            'total_locations': len(self.locations),
+            'regions': dict(sorted(region_counts.items(), key=lambda x: x[1], reverse=True)),
+            'prefectures': dict(sorted(prefecture_counts.items(), key=lambda x: x[1], reverse=True)),
+            'loaded_at': self.loaded_at.isoformat() if self.loaded_at else None,
+            'csv_path': self.csv_path
         }
 
 
+# グローバルインスタンス
+_location_manager: Optional[LocationManager] = None
+
+
+def get_location_manager(csv_path: Optional[str] = None) -> LocationManager:
+    """LocationManagerのシングルトンインスタンスを取得
+    
+    Args:
+        csv_path: CSVファイルのパス（初回のみ有効）
+        
+    Returns:
+        LocationManagerインスタンス
+    """
+    global _location_manager
+    
+    if _location_manager is None:
+        _location_manager = LocationManager(csv_path)
+    
+    return _location_manager
+
+
+# 便利関数
 def load_locations_from_csv(csv_path: str = "Chiten.csv") -> List[Location]:
     """CSVファイルから地点データを読み込み
     
@@ -308,19 +620,66 @@ def load_locations_from_csv(csv_path: str = "Chiten.csv") -> List[Location]:
     Returns:
         地点データのリスト
     """
-    manager = LocationManager(csv_path, warn_missing_deps=False)
+    manager = LocationManager(csv_path)
     return manager.get_all_locations()
 
 
-def search_location(query: str, csv_path: str = "Chiten.csv") -> List[Location]:
-    """地点名で検索（関数インターフェース）
+def search_location(query: str, max_results: int = 10, fuzzy: bool = True) -> List[Location]:
+    """地点検索の便利関数
     
     Args:
         query: 検索クエリ
-        csv_path: CSVファイルのパス
+        max_results: 最大結果数
+        fuzzy: あいまい検索を行うか
         
     Returns:
-        マッチした地点のリスト
+        検索結果の地点リスト
     """
-    manager = LocationManager(csv_path, warn_missing_deps=False)
-    return manager.search_location(query)
+    manager = get_location_manager()
+    return manager.search_location(query, max_results, fuzzy)
+
+
+def get_location_by_name(name: str) -> Optional[Location]:
+    """地点名から地点を取得する便利関数
+    
+    Args:
+        name: 地点名
+        
+    Returns:
+        地点データ、見つからない場合はNone
+    """
+    manager = get_location_manager()
+    return manager.get_location(name)
+
+
+if __name__ == "__main__":
+    # テスト用コード
+    print("=== 地点データ管理システムテスト ===")
+    
+    # LocationManagerの初期化
+    manager = get_location_manager()
+    
+    # 統計情報の表示
+    stats = manager.get_statistics()
+    print(f"読み込み地点数: {stats['total_locations']}")
+    print(f"地方別分布: {stats['regions']}")
+    
+    # 検索テスト
+    print("\n=== 検索テスト ===")
+    
+    # 東京の検索
+    tokyo_results = manager.search_location("東京")
+    print(f"「東京」検索結果: {[loc.name for loc in tokyo_results]}")
+    
+    # あいまい検索テスト
+    fuzzy_results = manager.search_location("おおさか", fuzzy=True)
+    print(f"「おおさか」あいまい検索結果: {[loc.name for loc in fuzzy_results]}")
+    
+    # 地方別取得テスト
+    kanto_locations = manager.get_locations_by_region("関東")
+    print(f"関東地方の地点: {[loc.name for loc in kanto_locations]}")
+    
+    # 便利関数テスト
+    sapporo = get_location_by_name("札幌")
+    if sapporo:
+        print(f"札幌の情報: {sapporo.to_dict()}")
