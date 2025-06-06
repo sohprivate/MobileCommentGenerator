@@ -12,6 +12,20 @@ mypy>=1.0.0
 black>=23.0.0
 flake8>=6.0.0
 
-# 文字列処理・類似度計算用（後で使用）
+# 文字列処理・類似度計算用
 jaconv>=0.3.0
 Levenshtein>=0.21.0
+
+# HTTP クライアント（WxTech API用）
+requests>=2.31.0
+aiohttp>=3.8.0
+
+# LangGraph関連
+langgraph>=0.0.26
+langchain-core>=0.1.0
+
+# 非同期処理
+asyncio-mqtt>=0.16.0
+
+# データ処理・日時処理
+python-dateutil>=2.8.0
