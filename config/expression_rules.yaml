@@ -1,0 +1,159 @@
+# 表現ルール設定
+# 天気コメント生成における表現ルール・NGワード・バリデーション設定
+
+# NGワード設定
+ng_words:
+  # 災害・危険関連
+  disaster_related:
+    - "災害"
+    - "危険"
+    - "注意"
+    - "警告"
+    - "警報"
+    - "緊急"
+    - "避難"
+    - "被害"
+    
+  # 断定的表現
+  definitive:
+    - "絶対"
+    - "必ず"
+    - "間違いない"
+    - "確実に"
+    - "100%"
+    
+  # 不適切表現
+  inappropriate:
+    - "くそ"
+    - "やばい"
+    - "最悪"
+    - "ひどい"
+    - "つらい"
+    - "うざい"
+    - "きもい"
+    
+  # ネガティブ表現
+  negative:
+    - "憂鬱"
+    - "最低"
+    - "がっかり"
+    - "いやだ"
+    - "うんざり"
+
+# 文字数制限
+length_limits:
+  max_length: 15  # 最大文字数
+  min_length: 5   # 最小文字数
+  count_method: "characters"  # 文字数カウント方法
+
+# フォーマットルール
+format_rules:
+  # 絵文字・特殊文字
+  allow_emojis: false
+  allow_special_characters: false
+  allowed_punctuation:
+    - "。"
+    - "、"
+    - "！"
+    - "？"
+    - "・"
+  
+  # 文末表現
+  require_polite_form: true  # 丁寧語の使用
+  max_exclamation_marks: 1   # 感嘆符の最大数
+  
+  # 数字・英字
+  allow_numbers: true
+  allow_english: false
+
+# 内容妥当性ルール
+content_rules:
+  # 天気との整合性
+  weather_relevance:
+    required: true
+    check_keywords: true
+  
+  # 季節感
+  seasonal_appropriateness:
+    required: true
+    check_month: true
+  
+  # 地域特性
+  regional_characteristics:
+    consider_location: true
+    special_regions:
+      - name: "沖縄"
+        avoid_keywords: ["雪", "寒い"]
+      - name: "北海道"
+        summer_keywords: ["涼しい", "爽やか"]
+
+# 表現の温度感
+tone_rules:
+  # ポジティブ度
+  positivity_level: "moderate"  # low/moderate/high
+  
+  # カジュアル度
+  casualness_level: "moderate"  # formal/moderate/casual
+  
+  # 親しみやすさ
+  friendliness: "high"
+
+# 代替表現マッピング
+alternative_expressions:
+  "危険": ["気をつけて", "注意して"]
+  "最悪": ["あいにくの", "すっきりしない"]
+  "やばい": ["すごい", "びっくり"]
+  "絶対": ["きっと", "おそらく"]
+
+# バリデーション優先順位
+validation_priority:
+  1: "length_check"      # 文字数チェック
+  2: "ng_word_check"     # NGワードチェック
+  3: "format_check"      # フォーマットチェック
+  4: "content_check"     # 内容妥当性チェック
+  5: "tone_check"        # トーンチェック
+
+# リトライ戦略
+retry_strategy:
+  max_retries: 5
+  retry_delays: [0, 1, 2, 3, 5]  # 秒
+  
+  # エラータイプ別戦略
+  strategies:
+    length_error:
+      action: "regenerate_shorter"
+      priority: 1
+    
+    ng_word_error:
+      action: "replace_with_alternative"
+      priority: 2
+    
+    format_error:
+      action: "reformat"
+      priority: 3
+    
+    content_error:
+      action: "select_different_pair"
+      priority: 4
+
+# デフォルトコメント（フォールバック用）
+default_comments:
+  sunny:
+    - "いい天気ですね"
+    - "気持ちいい朝です"
+    - "お出かけ日和です"
+  
+  rainy:
+    - "傘をお忘れなく"
+    - "雨の一日です"
+    - "足元にご注意を"
+  
+  cloudy:
+    - "曇り空ですね"
+    - "過ごしやすい天気"
+    - "穏やかな一日です"
+  
+  snowy:
+    - "雪景色ですね"
+    - "暖かくしてお出かけを"
+    - "路面にご注意を"
