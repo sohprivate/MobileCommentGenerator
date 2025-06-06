@@ -14,7 +14,7 @@ from langgraph.graph import StateGraph, START, END
 
 from src.apis.wxtech_client import WxTechAPIClient, WxTechAPIError
 from src.data.weather_data import WeatherForecast, WeatherForecastCollection
-from src.data.location_manager import get_location_manager, Location
+from src.data.location_manager import LocationManager, Location
 
 
 # ログ設定
@@ -34,7 +34,7 @@ class WeatherForecastNode:
             api_key: WxTech API キー
         """
         self.api_key = api_key
-        self.location_manager = get_location_manager()
+        self.location_manager = LocationManager()
         
     async def get_weather_forecast(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """天気予報データを取得するノード
@@ -110,10 +110,10 @@ class WeatherForecastNode:
             with WxTechAPIClient(self.api_key) as client:
                 if isinstance(location, str):
                     # 地点名から座標を取得
-                    location_obj = self.location_manager.get_location(location)
-                    if not location_obj or not location_obj.has_coordinates():
+                    location_obj = self.location_manager.find_exact_match(location)
+                    if not location_obj or location_obj.latitude is None or location_obj.longitude is None:
                         # 地点検索を試行
-                        search_results = self.location_manager.search_locations(location)
+                        search_results = self.location_manager.search_location(location)
                         if search_results:
                             location_obj = search_results[0]
                         else:

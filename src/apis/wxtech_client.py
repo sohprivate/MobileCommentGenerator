@@ -1,143 +1,432 @@
 """
 WxTech API クライアント
 
-Weathernews WxTech APIとの連携を行うクライアントクラス
-既存の get_japan_1km_mesh_weather_forecast.py をベースに、
-より堅牢で拡張可能な実装を提供
+Weathernews WxTech API との通信を行うクライアントクラス
 """
 
-import asyncio
+from typing import Dict, Any, List, Optional, Tuple
+import requests
 import json
 import time
-from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Union
 import warnings
-
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
 
 from src.data.weather_data import (
     WeatherForecast, 
-    WeatherForecastCollection, 
-    WeatherCondition, 
+    WeatherForecastCollection,
+    WeatherCondition,
     WindDirection
 )
 from src.data.location_manager import Location
 
 
 class WxTechAPIError(Exception):
-    """WxTech API関連のエラー"""
+    """WxTech API エラー"""
     pass
 
 
 class WxTechAPIClient:
     """WxTech API クライアント
     
-    Weathernews WxTech APIからの天気予報データ取得を行うクライアント
+    天気予報データの取得・処理を行う
     """
     
-    def __init__(
-        self, 
-        api_key: str,
-        base_url: str = "https://wxtech.weathernews.com/api/v1",
-        timeout: int = 30,
-        max_retries: int = 3,
-        rate_limit_delay: float = 0.1
-    ):
-        """WxTech APIクライアントを初期化
+    # API設定
+    BASE_URL = "https://wxtech.weathernews.com/openapi/v1"
+    DEFAULT_TIMEOUT = 30
+    
+    def __init__(self, api_key: str, timeout: int = DEFAULT_TIMEOUT):
+        """クライアントを初期化
         
         Args:
             api_key: WxTech API キー
-            base_url: API のベースURL
-            timeout: リクエストタイムアウト（秒）
-            max_retries: 最大リトライ回数
-            rate_limit_delay: レート制限回避のための遅延（秒）
+            timeout: タイムアウト秒数（デフォルト: 30秒）
         """
         self.api_key = api_key
-        self.base_url = base_url.rstrip('/')
         self.timeout = timeout
-        self.rate_limit_delay = rate_limit_delay
-        
-        # セッションの設定（接続プーリング・リトライ戦略）
         self.session = requests.Session()
         
-        # リトライ戦略の設定
-        retry_strategy = Retry(
-            total=max_retries,
-            status_forcelist=[429, 500, 502, 503, 504],
-            method_whitelist=["HEAD", "GET", "OPTIONS"],
-            backoff_factor=1
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        self.session.mount("http://", adapter)
-        self.session.mount("https://", adapter)
-        
-        # 共通ヘッダー
+        # ヘッダー設定
         self.session.headers.update({
-            "X-API-Key": self.api_key,
-            "User-Agent": "MobileCommentGenerator/1.0"
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "WxTechAPIClient/1.0"
         })
         
-        # レート制限管理
-        self.last_request_time = 0.0
+        # レート制限対策（秒間10リクエストまで）
+        self._last_request_time = 0
+        self._min_request_interval = 0.1  # 100ms
     
-    def _wait_for_rate_limit(self) -> None:
-        """レート制限を考慮した待機処理"""
-        if self.rate_limit_delay > 0:
-            elapsed = time.time() - self.last_request_time
-            if elapsed < self.rate_limit_delay:
-                time.sleep(self.rate_limit_delay - elapsed)
-        self.last_request_time = time.time()
+    def _rate_limit(self):
+        """レート制限を適用"""
+        current_time = time.time()
+        elapsed = current_time - self._last_request_time
+        
+        if elapsed < self._min_request_interval:
+            sleep_time = self._min_request_interval - elapsed
+            time.sleep(sleep_time)
+        
+        self._last_request_time = time.time()
     
     def _make_request(self, endpoint: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """API リクエストを実行
         
         Args:
-            endpoint: API エンドポイント
+            endpoint: エンドポイント名
             params: リクエストパラメータ
             
         Returns:
-            API レスポンスデータ
+            レスポンスデータ
             
         Raises:
-            WxTechAPIError: API エラーが発生した場合
+            WxTechAPIError: API エラー
         """
-        self._wait_for_rate_limit()
+        # レート制限
+        self._rate_limit()
         
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        # API キーをパラメータに追加
+        params["apikey"] = self.api_key
+        
+        # URL 構築
+        url = f"{self.BASE_URL}/{endpoint}"
         
         try:
+            # リクエスト実行
             response = self.session.get(
                 url,
                 params=params,
                 timeout=self.timeout
             )
             
-            # HTTPステータスコードチェック
+            # ステータスコードチェック
             if response.status_code == 401:
-                raise WxTechAPIError("認証エラー: APIキーが無効です")
+                raise WxTechAPIError("APIキーが無効です")
             elif response.status_code == 403:
-                raise WxTechAPIError("アクセス拒否: APIキーに必要な権限がありません")
+                raise WxTechAPIError("APIアクセスが拒否されました")
+            elif response.status_code == 404:
+                raise WxTechAPIError("指定された地点データが見つかりません")
             elif response.status_code == 429:
                 raise WxTechAPIError("レート制限に達しました")
-            elif response.status_code == 404:
-                raise WxTechAPIError("指定された地点の天気データが見つかりません")
-            elif not response.ok:
-                raise WxTechAPIError(f"API エラー: HTTP {response.status_code}")
+            elif response.status_code == 500:
+                raise WxTechAPIError("APIサーバーエラーが発生しました")
+            elif response.status_code != 200:
+                raise WxTechAPIError(
+                    f"APIエラー: ステータスコード {response.status_code}"
+                )
             
-            # JSON レスポンスの解析
+            # JSON パース
             try:
                 data = response.json()
-            except json.JSONDecodeError as e:
-                raise WxTechAPIError(f"レスポンスのJSON解析に失敗: {str(e)}")
+            except json.JSONDecodeError:
+                raise WxTechAPIError("レスポンスのJSONパースに失敗しました")
             
-            # API固有のエラーチェック
-            if not data.get("wxdata"):
+            # エラーレスポンスチェック
+            if "error" in data:
+                error_msg = data.get("message", "不明なエラー")
+                raise WxTechAPIError(f"APIエラー: {error_msg}")
+            
+            # 成功レスポンス検証
+            if "wxdata" not in data or not data["wxdata"]:
                 raise WxTechAPIError("天気データが含まれていません")
             
             return data
             
         except requests.exceptions.Timeout:
-            raise WxTechAPIError(f"リクエストがタイムアウトしました（{self.timeout}秒）")\n        except requests.exceptions.ConnectionError:\n            raise WxTechAPIError(\"API サーバーに接続できません\")\n        except requests.exceptions.RequestException as e:\n            raise WxTechAPIError(f\"リクエスト実行エラー: {str(e)}\")\n    \n    def get_forecast(self, lat: float, lon: float) -> WeatherForecastCollection:\n        \"\"\"指定座標の天気予報を取得\n        \n        Args:\n            lat: 緯度\n            lon: 経度\n            \n        Returns:\n            天気予報コレクション\n            \n        Raises:\n            WxTechAPIError: API エラーが発生した場合\n        \"\"\"\n        # パラメータ検証\n        if not (-90 <= lat <= 90):\n            raise ValueError(f\"緯度が範囲外です: {lat} （-90～90の範囲で指定してください）\")\n        if not (-180 <= lon <= 180):\n            raise ValueError(f\"経度が範囲外です: {lon} （-180～180の範囲で指定してください）\")\n        \n        # API リクエスト実行\n        params = {\n            \"lat\": lat,\n            \"lon\": lon\n        }\n        \n        raw_data = self._make_request(\"ss1wx\", params)\n        \n        # レスポンスデータの変換\n        return self._parse_forecast_response(raw_data, f\"lat:{lat},lon:{lon}\")\n    \n    def get_forecast_by_location(self, location: Location) -> WeatherForecastCollection:\n        \"\"\"Location オブジェクトから天気予報を取得\n        \n        Args:\n            location: 地点情報\n            \n        Returns:\n            天気予報コレクション\n            \n        Raises:\n            ValueError: 地点に緯度経度情報がない場合\n            WxTechAPIError: API エラーが発生した場合\n        \"\"\"\n        if location.latitude is None or location.longitude is None:\n            raise ValueError(f\"地点 '{location.name}' に緯度経度情報がありません\")\n        \n        forecast_collection = self.get_forecast(location.latitude, location.longitude)\n        \n        # 地点名を正しく設定\n        forecast_collection.location = location.name\n        for forecast in forecast_collection.forecasts:\n            forecast.location = location.name\n        \n        return forecast_collection\n    \n    async def get_forecast_async(self, lat: float, lon: float) -> WeatherForecastCollection:\n        \"\"\"非同期で天気予報を取得\n        \n        Args:\n            lat: 緯度\n            lon: 経度\n            \n        Returns:\n            天気予報コレクション\n        \"\"\"\n        loop = asyncio.get_running_loop()\n        with ThreadPoolExecutor() as pool:\n            return await loop.run_in_executor(\n                pool, \n                self.get_forecast, \n                lat, \n                lon\n            )\n    \n    def _parse_forecast_response(\n        self, \n        raw_data: Dict[str, Any], \n        location_name: str\n    ) -> WeatherForecastCollection:\n        \"\"\"API レスポンスを WeatherForecastCollection に変換\n        \n        Args:\n            raw_data: API からの生データ\n            location_name: 地点名\n            \n        Returns:\n            天気予報コレクション\n        \"\"\"\n        wxdata = raw_data[\"wxdata\"][0]\n        forecasts = []\n        \n        # 短期予報（時間別）の処理\n        if \"srf\" in wxdata:\n            for forecast_data in wxdata[\"srf\"]:\n                try:\n                    forecast = self._parse_single_forecast(\n                        forecast_data, \n                        location_name, \n                        is_hourly=True\n                    )\n                    forecasts.append(forecast)\n                except Exception as e:\n                    warnings.warn(f\"時間別予報の解析に失敗: {str(e)}\")\n                    continue\n        \n        # 中期予報（日別）の処理\n        if \"mrf\" in wxdata:\n            for forecast_data in wxdata[\"mrf\"]:\n                try:\n                    forecast = self._parse_single_forecast(\n                        forecast_data, \n                        location_name, \n                        is_hourly=False\n                    )\n                    forecasts.append(forecast)\n                except Exception as e:\n                    warnings.warn(f\"日別予報の解析に失敗: {str(e)}\")\n                    continue\n        \n        return WeatherForecastCollection(\n            location=location_name,\n            forecasts=forecasts\n        )\n    \n    def _parse_single_forecast(\n        self, \n        data: Dict[str, Any], \n        location_name: str, \n        is_hourly: bool = True\n    ) -> WeatherForecast:\n        \"\"\"単一の予報データを WeatherForecast に変換\n        \n        Args:\n            data: 予報データ\n            location_name: 地点名\n            is_hourly: 時間別予報かどうか\n            \n        Returns:\n            天気予報オブジェクト\n        \"\"\"\n        # 日時の解析\n        date_str = data[\"date\"]\n        forecast_datetime = datetime.fromisoformat(date_str.replace('Z', '+00:00'))\n        \n        # 天気コードの変換\n        weather_code = str(data[\"wx\"])\n        weather_condition = self._convert_weather_code(weather_code)\n        weather_description = self._get_weather_description(weather_code)\n        \n        # 風向きの変換\n        wind_dir_index = data.get(\"wnddir\", 0)\n        wind_direction, wind_degrees = self._convert_wind_direction(wind_dir_index)\n        \n        # 気温の取得（時間別と日別で異なるフィールド）\n        if is_hourly:\n            temperature = float(data[\"temp\"])\n        else:\n            # 日別予報の場合は最高気温を使用\n            temperature = float(data.get(\"maxtemp\", data.get(\"temp\", 0)))\n        \n        return WeatherForecast(\n            location=location_name,\n            datetime=forecast_datetime,\n            temperature=temperature,\n            weather_code=weather_code,\n            weather_condition=weather_condition,\n            weather_description=weather_description,\n            precipitation=float(data.get(\"prec\", 0)),\n            humidity=float(data.get(\"rhum\", 0)),\n            wind_speed=float(data.get(\"wndspd\", 0)),\n            wind_direction=wind_direction,\n            wind_direction_degrees=wind_degrees,\n            raw_data=data\n        )\n    \n    def _convert_weather_code(self, weather_code: str) -> WeatherCondition:\n        \"\"\"WxTech天気コードを標準的な天気状況に変換\n        \n        Args:\n            weather_code: WxTech API の天気コード\n            \n        Returns:\n            標準化された天気状況\n        \"\"\"\n        # WxTech APIの天気コードマッピング（例）\n        # 実際のマッピングは既存の translate_weather_code.py を参照\n        code_mapping = {\n            \"100\": WeatherCondition.CLEAR,\n            \"101\": WeatherCondition.CLEAR,\n            \"110\": WeatherCondition.PARTLY_CLOUDY,\n            \"111\": WeatherCondition.PARTLY_CLOUDY,\n            \"200\": WeatherCondition.CLOUDY,\n            \"201\": WeatherCondition.CLOUDY,\n            \"300\": WeatherCondition.RAIN,\n            \"301\": WeatherCondition.RAIN,\n            \"302\": WeatherCondition.HEAVY_RAIN,\n            \"400\": WeatherCondition.SNOW,\n            \"401\": WeatherCondition.SNOW,\n            \"402\": WeatherCondition.HEAVY_SNOW,\n            \"500\": WeatherCondition.STORM,\n        }\n        \n        return code_mapping.get(weather_code, WeatherCondition.UNKNOWN)\n    \n    def _get_weather_description(self, weather_code: str) -> str:\n        \"\"\"天気コードから日本語説明を取得\n        \n        Args:\n            weather_code: WxTech API の天気コード\n            \n        Returns:\n            日本語の天気説明\n        \"\"\"\n        # 実際の実装では既存の translate_weather_code.py を使用\n        descriptions = {\n            \"100\": \"晴れ\",\n            \"101\": \"快晴\",\n            \"110\": \"晴れ時々曇り\",\n            \"111\": \"晴れのち曇り\",\n            \"200\": \"曇り\",\n            \"201\": \"薄曇り\",\n            \"300\": \"雨\",\n            \"301\": \"小雨\",\n            \"302\": \"大雨\",\n            \"400\": \"雪\",\n            \"401\": \"小雪\",\n            \"402\": \"大雪\",\n            \"500\": \"嵐\",\n        }\n        \n        return descriptions.get(weather_code, \"不明\")\n    \n    def _convert_wind_direction(self, wind_dir_index: int) -> tuple[WindDirection, int]:\n        \"\"\"風向きインデックスを風向きと度数に変換\n        \n        Args:\n            wind_dir_index: WxTech API の風向きインデックス\n            \n        Returns:\n            (風向き, 度数) のタプル\n        \"\"\"\n        # 実際の実装では既存の translate_wind_direction2degrees.py を使用\n        direction_mapping = {\n            0: (WindDirection.CALM, 0),\n            1: (WindDirection.N, 0),\n            2: (WindDirection.NE, 45),\n            3: (WindDirection.E, 90),\n            4: (WindDirection.SE, 135),\n            5: (WindDirection.S, 180),\n            6: (WindDirection.SW, 225),\n            7: (WindDirection.W, 270),\n            8: (WindDirection.NW, 315),\n        }\n        \n        return direction_mapping.get(wind_dir_index, (WindDirection.UNKNOWN, 0))\n    \n    def close(self):\n        \"\"\"セッションを閉じる\"\"\"\n        if hasattr(self, 'session'):\n            self.session.close()\n    \n    def __enter__(self):\n        return self\n    \n    def __exit__(self, exc_type, exc_val, exc_tb):\n        self.close()\n\n\n# 既存の関数との互換性を保つためのラッパー関数\nasync def get_japan_1km_mesh_weather_forecast(\n    lat: float, \n    lon: float, \n    api_key: str\n) -> Dict[str, Any]:\n    \"\"\"既存の get_japan_1km_mesh_weather_forecast 関数の互換ラッパー\n    \n    Args:\n        lat: 緯度\n        lon: 経度\n        api_key: WxTech API キー\n        \n    Returns:\n        天気予報データの辞書\n    \"\"\"\n    client = WxTechAPIClient(api_key)\n    try:\n        forecast_collection = await client.get_forecast_async(lat, lon)\n        return forecast_collection.to_dict()\n    finally:\n        client.close()\n"
+            raise WxTechAPIError(f"リクエストがタイムアウトしました（{self.timeout}秒）")
+        except requests.exceptions.ConnectionError:
+            raise WxTechAPIError("API サーバーに接続できません")
+        except requests.exceptions.RequestException as e:
+            raise WxTechAPIError(f"リクエスト実行エラー: {str(e)}")
+    
+    def get_forecast(self, lat: float, lon: float) -> WeatherForecastCollection:
+        """指定座標の天気予報を取得
+        
+        Args:
+            lat: 緯度
+            lon: 経度
+            
+        Returns:
+            天気予報コレクション
+            
+        Raises:
+            WxTechAPIError: API エラーが発生した場合
+        """
+        # パラメータ検証
+        if not (-90 <= lat <= 90):
+            raise ValueError(f"緯度が範囲外です: {lat} （-90～90の範囲で指定してください）")
+        if not (-180 <= lon <= 180):
+            raise ValueError(f"経度が範囲外です: {lon} （-180～180の範囲で指定してください）")
+        
+        # API リクエスト実行
+        params = {
+            "lat": lat,
+            "lon": lon
+        }
+        
+        raw_data = self._make_request("ss1wx", params)
+        
+        # レスポンスデータの変換
+        return self._parse_forecast_response(raw_data, f"lat:{lat},lon:{lon}")
+    
+    def get_forecast_by_location(self, location: Location) -> WeatherForecastCollection:
+        """Location オブジェクトから天気予報を取得
+        
+        Args:
+            location: 地点情報
+            
+        Returns:
+            天気予報コレクション
+            
+        Raises:
+            ValueError: 地点に緯度経度情報がない場合
+            WxTechAPIError: API エラーが発生した場合
+        """
+        if location.latitude is None or location.longitude is None:
+            raise ValueError(f"地点 '{location.name}' に緯度経度情報がありません")
+        
+        forecast_collection = self.get_forecast(location.latitude, location.longitude)
+        
+        # 地点名を正しく設定
+        forecast_collection.location = location.name
+        for forecast in forecast_collection.forecasts:
+            forecast.location = location.name
+        
+        return forecast_collection
+    
+    async def get_forecast_async(self, lat: float, lon: float) -> WeatherForecastCollection:
+        """非同期で天気予報を取得
+        
+        Args:
+            lat: 緯度
+            lon: 経度
+            
+        Returns:
+            天気予報コレクション
+        """
+        loop = asyncio.get_running_loop()
+        with ThreadPoolExecutor() as pool:
+            return await loop.run_in_executor(
+                pool, 
+                self.get_forecast, 
+                lat, 
+                lon
+            )
+    
+    def _parse_forecast_response(
+        self, 
+        raw_data: Dict[str, Any], 
+        location_name: str
+    ) -> WeatherForecastCollection:
+        """API レスポンスを WeatherForecastCollection に変換
+        
+        Args:
+            raw_data: API からの生データ
+            location_name: 地点名
+            
+        Returns:
+            天気予報コレクション
+        """
+        wxdata = raw_data["wxdata"][0]
+        forecasts = []
+        
+        # 短期予報（時間別）の処理
+        if "srf" in wxdata:
+            for forecast_data in wxdata["srf"]:
+                try:
+                    forecast = self._parse_single_forecast(
+                        forecast_data, 
+                        location_name, 
+                        is_hourly=True
+                    )
+                    forecasts.append(forecast)
+                except Exception as e:
+                    warnings.warn(f"時間別予報の解析に失敗: {str(e)}")
+                    continue
+        
+        # 中期予報（日別）の処理
+        if "mrf" in wxdata:
+            for forecast_data in wxdata["mrf"]:
+                try:
+                    forecast = self._parse_single_forecast(
+                        forecast_data, 
+                        location_name, 
+                        is_hourly=False
+                    )
+                    forecasts.append(forecast)
+                except Exception as e:
+                    warnings.warn(f"日別予報の解析に失敗: {str(e)}")
+                    continue
+        
+        return WeatherForecastCollection(
+            location=location_name,
+            forecasts=forecasts
+        )
+    
+    def _parse_single_forecast(
+        self, 
+        data: Dict[str, Any], 
+        location_name: str, 
+        is_hourly: bool = True
+    ) -> WeatherForecast:
+        """単一の予報データを WeatherForecast に変換
+        
+        Args:
+            data: 予報データ
+            location_name: 地点名
+            is_hourly: 時間別予報かどうか
+            
+        Returns:
+            天気予報オブジェクト
+        """
+        # 日時の解析
+        date_str = data["date"]
+        forecast_datetime = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        
+        # 天気コードの変換
+        weather_code = str(data["wx"])
+        weather_condition = self._convert_weather_code(weather_code)
+        weather_description = self._get_weather_description(weather_code)
+        
+        # 風向きの変換
+        wind_dir_index = data.get("wnddir", 0)
+        wind_direction, wind_degrees = self._convert_wind_direction(wind_dir_index)
+        
+        # 気温の取得（時間別と日別で異なるフィールド）
+        if is_hourly:
+            temperature = float(data["temp"])
+        else:
+            # 日別予報の場合は最高気温を使用
+            temperature = float(data.get("maxtemp", data.get("temp", 0)))
+        
+        return WeatherForecast(
+            location=location_name,
+            datetime=forecast_datetime,
+            temperature=temperature,
+            weather_code=weather_code,
+            weather_condition=weather_condition,
+            weather_description=weather_description,
+            precipitation=float(data.get("prec", 0)),
+            humidity=float(data.get("rhum", 0)),
+            wind_speed=float(data.get("wndspd", 0)),
+            wind_direction=wind_direction,
+            wind_direction_degrees=wind_degrees,
+            raw_data=data
+        )
+    
+    def _convert_weather_code(self, weather_code: str) -> WeatherCondition:
+        """WxTech天気コードを標準的な天気状況に変換
+        
+        Args:
+            weather_code: WxTech API の天気コード
+            
+        Returns:
+            標準化された天気状況
+        """
+        # WxTech APIの天気コードマッピング（例）
+        # 実際のマッピングは既存の translate_weather_code.py を参照
+        code_mapping = {
+            "100": WeatherCondition.CLEAR,
+            "101": WeatherCondition.CLEAR,
+            "110": WeatherCondition.PARTLY_CLOUDY,
+            "111": WeatherCondition.PARTLY_CLOUDY,
+            "200": WeatherCondition.CLOUDY,
+            "201": WeatherCondition.CLOUDY,
+            "300": WeatherCondition.RAIN,
+            "301": WeatherCondition.RAIN,
+            "302": WeatherCondition.HEAVY_RAIN,
+            "400": WeatherCondition.SNOW,
+            "401": WeatherCondition.SNOW,
+            "402": WeatherCondition.HEAVY_SNOW,
+            "500": WeatherCondition.STORM,
+        }
+        
+        return code_mapping.get(weather_code, WeatherCondition.UNKNOWN)
+    
+    def _get_weather_description(self, weather_code: str) -> str:
+        """天気コードから日本語説明を取得
+        
+        Args:
+            weather_code: WxTech API の天気コード
+            
+        Returns:
+            日本語の天気説明
+        """
+        # 実際の実装では既存の translate_weather_code.py を使用
+        descriptions = {
+            "100": "晴れ",
+            "101": "快晴",
+            "110": "晴れ時々曇り",
+            "111": "晴れのち曇り",
+            "200": "曇り",
+            "201": "薄曇り",
+            "300": "雨",
+            "301": "小雨",
+            "302": "大雨",
+            "400": "雪",
+            "401": "小雪",
+            "402": "大雪",
+            "500": "嵐",
+        }
+        
+        return descriptions.get(weather_code, "不明")
+    
+    def _convert_wind_direction(self, wind_dir_index: int) -> tuple[WindDirection, int]:
+        """風向きインデックスを風向きと度数に変換
+        
+        Args:
+            wind_dir_index: WxTech API の風向きインデックス
+            
+        Returns:
+            (風向き, 度数) のタプル
+        """
+        # 実際の実装では既存の translate_wind_direction2degrees.py を使用
+        direction_mapping = {
+            0: (WindDirection.CALM, 0),
+            1: (WindDirection.N, 0),
+            2: (WindDirection.NE, 45),
+            3: (WindDirection.E, 90),
+            4: (WindDirection.SE, 135),
+            5: (WindDirection.S, 180),
+            6: (WindDirection.SW, 225),
+            7: (WindDirection.W, 270),
+            8: (WindDirection.NW, 315),
+        }
+        
+        return direction_mapping.get(wind_dir_index, (WindDirection.UNKNOWN, 0))
+    
+    def close(self):
+        """セッションを閉じる"""
+        if hasattr(self, 'session'):
+            self.session.close()
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+
+# 既存の関数との互換性を保つためのラッパー関数
+async def get_japan_1km_mesh_weather_forecast(
+    lat: float, 
+    lon: float, 
+    api_key: str
+) -> Dict[str, Any]:
+    """既存の get_japan_1km_mesh_weather_forecast 関数の互換ラッパー
+    
+    Args:
+        lat: 緯度
+        lon: 経度
+        api_key: WxTech API キー
+        
+    Returns:
+        天気予報データの辞書
+    """
+    client = WxTechAPIClient(api_key)
+    try:
+        forecast_collection = await client.get_forecast_async(lat, lon)
+        return forecast_collection.to_dict()
+    finally:
+        client.close()

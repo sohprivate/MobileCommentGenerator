@@ -9,9 +9,6 @@ from dataclasses import dataclass, field
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
 
-# 環境変数をロード
-load_dotenv()
-
 
 @dataclass
 class WeatherConfig:
@@ -133,6 +130,7 @@ class AppConfig:
 
 # グローバル設定インスタンス
 _config = None
+_env_loaded = False
 
 
 def get_config() -> AppConfig:
@@ -141,7 +139,10 @@ def get_config() -> AppConfig:
     Returns:
         アプリケーション設定
     """
-    global _config
+    global _config, _env_loaded
+    if not _env_loaded:
+        load_dotenv()
+        _env_loaded = True
     if _config is None:
         _config = AppConfig()
     return _config
@@ -153,8 +154,9 @@ def reload_config() -> AppConfig:
     Returns:
         新しいアプリケーション設定
     """
-    global _config
+    global _config, _env_loaded
     load_dotenv(override=True)  # 環境変数を強制再読み込み
+    _env_loaded = True
     _config = AppConfig()
     return _config
 

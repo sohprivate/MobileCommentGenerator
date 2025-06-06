@@ -20,7 +20,7 @@ class TestWxTechAPIClient:
         client = WxTechAPIClient("test_api_key")
         
         assert client.api_key == "test_api_key"
-        assert client.base_url == "https://wxtech.weathernews.com/api/v1"
+        assert WxTechAPIClient.BASE_URL == "https://wxtech.weathernews.com/openapi/v1"
         assert client.timeout == 30
         assert client.session is not None
     
@@ -28,15 +28,12 @@ class TestWxTechAPIClient:
         """カスタムパラメータでの初期化テスト"""
         client = WxTechAPIClient(
             api_key="test_key",
-            base_url="https://custom.api.com",
-            timeout=60,
-            max_retries=5,
-            rate_limit_delay=0.5
+            timeout=60
         )
         
-        assert client.base_url == "https://custom.api.com"
+        assert client.api_key == "test_key"
         assert client.timeout == 60
-        assert client.rate_limit_delay == 0.5
+        assert client._min_request_interval == 0.1
     
     @patch('requests.Session.get')
     def test_successful_api_request(self, mock_get):
@@ -158,7 +155,7 @@ class TestWxTechAPIClient:
         # Location オブジェクトを作成
         tokyo = Location(
             name="東京",
-            prefecture="東京都",
+            normalized_name="東京",
             latitude=35.6762,
             longitude=139.6503
         )
@@ -175,7 +172,7 @@ class TestWxTechAPIClient:
         # 座標なしのLocation
         location_without_coords = Location(
             name="未知の地点",
-            prefecture="未知県"
+            normalized_name="未知の地点"
         )
         
         with pytest.raises(ValueError, match="緯度経度情報がありません"):
