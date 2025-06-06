@@ -5,203 +5,247 @@
     </div>
     
     <div class="selection-content">
-      <!-- Region Selection -->
-      <div class="region-selection">
-        <label for="region-select">地方選択:</label>
-        <div class="custom-dropdown">
-          <select 
-            id="region-select"
-            v-model="selectedRegion"
-            @change="handleRegionChange"
-            class="region-select"
-          >
-            <option value="">すべての地方</option>
-            <option value="北海道地方">北海道地方</option>
-            <option value="東北地方">東北地方</option>
-            <option value="関東地方">関東地方</option>
-            <option value="中部地方">中部地方</option>
-            <option value="近畿地方">近畿地方</option>
-            <option value="中国地方">中国地方</option>
-            <option value="四国地方">四国地方</option>
-            <option value="九州地方">九州地方</option>
-            <option value="沖縄地方">沖縄地方</option>
-          </select>
-          <div class="dropdown-arrow">▼</div>
-        </div>
+      <!-- Loading state -->
+      <div v-if="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>地点データを読み込み中...</p>
       </div>
 
-      <!-- Select All Controls -->
-      <div class="select-all-section">
-        <div class="select-all-controls">
-          <button 
-            @click="selectAllLocations" 
-            class="control-btn select-all-btn"
-            :disabled="filteredLocations.length === 0"
-          >
-            すべて選択
-          </button>
-          <button 
-            @click="clearAllSelections" 
-            class="control-btn clear-all-btn"
-            :disabled="selectedLocations.length === 0"
-          >
-            すべてクリア
-          </button>
-          <button 
-            @click="selectRegionLocations" 
-            class="control-btn region-btn"
-            :disabled="!selectedRegion || getRegionLocations().length === 0"
-          >
-            {{ selectedRegion || '地方' }}を選択
-          </button>
-        </div>
-        <div class="selection-info">
-          <span class="selection-count">{{ selectedLocations.length }}地点選択中</span>
-          <span class="total-count">/ {{ filteredLocations.length }}地点</span>
-        </div>
+      <!-- Error state -->
+      <div v-else-if="error" class="error-state">
+        <p class="error-message">{{ error }}</p>
+        <button @click="loadLocations" class="retry-btn">再読み込み</button>
       </div>
 
-      <!-- Location Grid -->
-      <div class="location-grid">
-        <div 
-          v-for="location in filteredLocations" 
-          :key="location"
-          class="location-item"
-          :class="{ selected: selectedLocations.includes(location) }"
-          @click="toggleLocation(location)"
-        >
-          <div class="location-checkbox">
-            <input 
-              type="checkbox" 
-              :checked="selectedLocations.includes(location)"
-              @click.stop
-              readonly
-            />
-          </div>
-          <div class="location-details">
-            <span class="location-name">{{ location }}</span>
-            <span class="location-region">{{ getAreaName(location) }}</span>
+      <!-- Main content -->
+      <template v-else>
+        <!-- Region Selection -->
+        <div class="region-selection">
+          <label for="region-select">地方選択:</label>
+          <div class="custom-dropdown">
+            <select 
+              id="region-select"
+              v-model="selectedRegion"
+              @change="handleRegionChange"
+              class="region-select"
+            >
+              <option value="">すべての地方</option>
+              <option v-for="region in regions" :key="region" :value="region">
+                {{ region }}
+              </option>
+            </select>
+            <div class="dropdown-arrow">▼</div>
           </div>
         </div>
-      </div>
 
-      <!-- Selected Locations Summary -->
-      <div class="selected-summary" v-if="selectedLocations.length > 0">
-        <h4>選択済み地点 ({{ selectedLocations.length }})</h4>
-        <div class="selected-tags">
-          <span 
-            v-for="location in selectedLocations.slice(0, 10)" 
-            :key="location"
-            class="location-tag"
-            @click="toggleLocation(location)"
-          >
-            {{ location }}
-            <span class="remove-tag">×</span>
-          </span>
-          <span v-if="selectedLocations.length > 10" class="more-tags">
-            他{{ selectedLocations.length - 10 }}地点...
-          </span>
+        <!-- Select All Controls -->
+        <div class="select-all-section">
+          <div class="select-all-controls">
+            <button 
+              @click="selectAllLocations" 
+              class="control-btn select-all-btn"
+              :disabled="filteredLocations.length === 0"
+            >
+              すべて選択
+            </button>
+            <button 
+              @click="clearAllSelections" 
+              class="control-btn clear-all-btn"
+              :disabled="selectedLocations.length === 0"
+            >
+              すべてクリア
+            </button>
+            <button 
+              @click="selectRegionLocations" 
+              class="control-btn region-btn"
+              :disabled="!selectedRegion || getRegionLocations().length === 0"
+            >
+              {{ selectedRegion || '地方' }}を選択
+            </button>
+          </div>
+          <div class="selection-info">
+            <span class="selection-count">{{ selectedLocations.length }}地点選択中</span>
+            <span class="total-count">/ {{ filteredLocations.length }}地点</span>
+          </div>
         </div>
-      </div>
+
+        <!-- Location Grid -->
+        <div class="location-grid">
+          <div 
+            v-for="location in filteredLocations" 
+            :key="location.name"
+            class="location-item"
+            :class="{ selected: selectedLocations.includes(location.name) }"
+            @click="toggleLocation(location.name)"
+          >
+            <div class="location-checkbox">
+              <input 
+                type="checkbox" 
+                :checked="selectedLocations.includes(location.name)"
+                @click.stop
+                readonly
+              />
+            </div>
+            <div class="location-details">
+              <span class="location-name">{{ location.name }}</span>
+              <span class="location-region">{{ location.area || getAreaName(location.name) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Locations Summary -->
+        <div class="selected-summary" v-if="selectedLocations.length > 0">
+          <h4>選択済み地点 ({{ selectedLocations.length }})</h4>
+          <div class="selected-tags">
+            <span 
+              v-for="location in selectedLocations.slice(0, 10)" 
+              :key="location"
+              class="location-tag"
+              @click="toggleLocation(location)"
+            >
+              {{ location }}
+              <span class="remove-tag">×</span>
+            </span>
+            <span v-if="selectedLocations.length > 10" class="more-locations">
+              他{{ selectedLocations.length - 10 }}地点...
+            </span>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
-<script setup>
-const props = defineProps({
-  selectedLocation: {
-    type: String,
-    default: '東京'
-  }
+<script setup lang="ts">
+import { ref, computed, onMounted, defineProps, defineEmits } from 'vue'
+import { useApi } from '~/composables/useApi'
+import { getAreaName, REGIONS } from '~/constants/locations'
+import type { Location } from '~/types'
+
+// Props
+interface Props {
+  selectedLocation?: string
+}
+
+const props = defineProps<Props>()
+
+// Emits
+interface Emits {
+  (e: 'location-changed', location: string): void
+  (e: 'locations-changed', locations: string[]): void
+}
+
+const emit = defineEmits<Emits>()
+
+// API composable
+const api = useApi()
+
+// State
+const selectedRegion = ref<string>('')
+const selectedLocations = ref<string[]>([])
+const allLocations = ref<Location[]>([])
+const isLoading = ref(false)
+const error = ref<string | null>(null)
+const regions = ref(REGIONS)
+
+// Computed
+const locations = computed(() => {
+  return allLocations.value.map(loc => loc.name)
 })
 
-const emit = defineEmits(['location-changed', 'locations-changed'])
-
-const selectedRegion = ref('')
-const selectedLocations = ref([props.selectedLocation])
-const locations = ref([])
-
-// Computed property for filtered locations based on selected region
 const filteredLocations = computed(() => {
   if (!selectedRegion.value) {
-    return locations.value
+    return allLocations.value
   }
-  return locations.value.filter(location => getAreaName(location) === selectedRegion.value)
+  return allLocations.value.filter(location => {
+    const area = location.area || getAreaName(location.name)
+    return area === selectedRegion.value
+  })
 })
 
+// Methods
+const loadLocations = async () => {
+  isLoading.value = true
+  error.value = null
+  
+  try {
+    const response = await api.fetchLocations()
+    if (response.success && response.data) {
+      allLocations.value = response.data
+      
+      // 初期選択がある場合は設定
+      if (props.selectedLocation) {
+        selectedLocations.value = [props.selectedLocation]
+      }
+    } else {
+      // APIが利用できない場合は、CSVファイルから読み込む
+      await loadLocationsFromCSV()
+    }
+  } catch (err) {
+    console.error('Failed to load locations:', err)
+    // フォールバック: CSVファイルから読み込む
+    await loadLocationsFromCSV()
+  } finally {
+    isLoading.value = false
+  }
+}
 
+// CSVファイルから地点データを読み込む（フォールバック）
 const loadLocationsFromCSV = async () => {
   try {
     const response = await fetch('/地点名.csv')
-    const data = await response.text()
+    const text = await response.text()
+    const lines = text.split('\n').filter(line => line.trim())
     
-  
-    const parsedLocations = data.split('\n')
-      .map(line => line.trim())
-      .filter(line => line && !line.startsWith('//')) 
-    
-   
-    locations.value = parsedLocations
-    
-    console.log(`Loaded ${locations.value.length} locations from CSV`)
-  } catch (error) {
-    console.error('Error loading locations from CSV:', error)
-    // Fallback to default locations if CSV loading fails
-    locations.value = ['東京', '大阪', '名古屋', '福岡', '札幌']
+    allLocations.value = lines.slice(1).map(line => {
+      const [name] = line.split(',')
+      return {
+        name: name.trim(),
+        latitude: 0,
+        longitude: 0,
+        area: getAreaName(name.trim())
+      }
+    })
+  } catch (err) {
+    error.value = '地点データの読み込みに失敗しました'
+    console.error('Failed to load CSV:', err)
   }
 }
 
-
-onMounted(() => {
-  loadLocationsFromCSV()
-})
-
-const handleRegionChange = () => {
-  
-}
-const toggleLocation = (location) => {
+const toggleLocation = (location: string) => {
   const index = selectedLocations.value.indexOf(location)
-  if (index === -1) {
-    selectedLocations.value.push(location)
-  } else {
+  if (index > -1) {
     selectedLocations.value.splice(index, 1)
+  } else {
+    selectedLocations.value.push(location)
   }
   emitLocationChanges()
 }
-
 
 const selectAllLocations = () => {
-  filteredLocations.value.forEach(location => {
-    if (!selectedLocations.value.includes(location)) {
-      selectedLocations.value.push(location)
-    }
-  })
+  selectedLocations.value = filteredLocations.value.map(loc => loc.name)
   emitLocationChanges()
 }
-
 
 const clearAllSelections = () => {
   selectedLocations.value = []
   emitLocationChanges()
 }
 
-
 const selectRegionLocations = () => {
   const regionLocations = getRegionLocations()
-  regionLocations.forEach(location => {
-    if (!selectedLocations.value.includes(location)) {
-      selectedLocations.value.push(location)
-    }
-  })
+  selectedLocations.value = [...new Set([...selectedLocations.value, ...regionLocations])]
   emitLocationChanges()
 }
 
+const handleRegionChange = () => {
+  // 地方選択が変更されたときの処理
+}
 
 const getRegionLocations = () => {
   if (!selectedRegion.value) return []
-  return locations.value.filter(location => getAreaName(location) === selectedRegion.value)
+  return filteredLocations.value.map(loc => loc.name)
 }
-
 
 const emitLocationChanges = () => {
   emit('locations-changed', selectedLocations.value)
@@ -211,184 +255,10 @@ const emitLocationChanges = () => {
   }
 }
 
-const getAreaName = (location) => {
-  
-  const areaMapping = {
-    // 北海道地方
-    '稚内': '北海道地方',
-    '旭川': '北海道地方',
-    '留萌': '北海道地方',
-    '札幌': '北海道地方',
-    '岩見沢': '北海道地方',
-    '倶知安': '北海道地方',
-    '網走': '北海道地方',
-    '北見': '北海道地方',
-    '紋別': '北海道地方',
-    '根室': '北海道地方',
-    '釧路': '北海道地方',
-    '帯広': '北海道地方',
-    '室蘭': '北海道地方',
-    '浦河': '北海道地方',
-    '函館': '北海道地方',
-    '江差': '北海道地方',
-    
-    // 東北地方
-    '青森': '東北地方',
-    'むつ': '東北地方',
-    '八戸': '東北地方',
-    '盛岡': '東北地方',
-    '宮古': '東北地方',
-    '大船渡': '東北地方',
-    '秋田': '東北地方',
-    '横手': '東北地方',
-    '仙台': '東北地方',
-    '白石': '東北地方',
-    '山形': '東北地方',
-    '米沢': '東北地方',
-    '酒田': '東北地方',
-    '新庄': '東北地方',
-    '福島': '東北地方',
-    '小名浜': '東北地方',
-    '若松': '東北地方',
-    
-    // 関東地方
-    '東京': '関東地方',
-    '大島': '関東地方',
-    '八丈島': '関東地方',
-    '父島': '関東地方',
-    '横浜': '関東地方',
-    '小田原': '関東地方',
-    'さいたま': '関東地方',
-    '熊谷': '関東地方',
-    '秩父': '関東地方',
-    '千葉': '関東地方',
-    '銚子': '関東地方',
-    '館山': '関東地方',
-    '水戸': '関東地方',
-    '土浦': '関東地方',
-    '前橋': '関東地方',
-    'みなかみ': '関東地方',
-    '宇都宮': '関東地方',
-    '大田原': '関東地方',
-    
-    // 中部地方
-    '新潟': '中部地方',
-    '長岡': '中部地方',
-    '高田': '中部地方',
-    '相川': '中部地方',
-    '金沢': '中部地方',
-    '輪島': '中部地方',
-    '富山': '中部地方',
-    '伏木': '中部地方',
-    '福井': '中部地方',
-    '敦賀': '中部地方',
-    '長野': '中部地方',
-    '松本': '中部地方',
-    '飯田': '中部地方',
-    '甲府': '中部地方',
-    '河口湖': '中部地方',
-    '名古屋': '中部地方',
-    '豊橋': '中部地方',
-    '静岡': '中部地方',
-    '網代': '中部地方',
-    '三島': '中部地方',
-    '浜松': '中部地方',
-    '岐阜': '中部地方',
-    '高山': '中部地方',
-    
-    // 近畿地方
-    '津': '近畿地方',
-    '尾鷲': '近畿地方',
-    '大阪': '近畿地方',
-    '神戸': '近畿地方',
-    '豊岡': '近畿地方',
-    '京都': '近畿地方',
-    '舞鶴': '近畿地方',
-    '奈良': '近畿地方',
-    '風屋': '近畿地方',
-    '大津': '近畿地方',
-    '彦根': '近畿地方',
-    '和歌山': '近畿地方',
-    '潮岬': '近畿地方',
-    
-    // 中国地方
-    '広島': '中国地方',
-    '庄原': '中国地方',
-    '岡山': '中国地方',
-    '津山': '中国地方',
-    '下関': '中国地方',
-    '山口': '中国地方',
-    '柳井': '中国地方',
-    '萩': '中国地方',
-    '松江': '中国地方',
-    '浜田': '中国地方',
-    '西郷': '中国地方',
-    '鳥取': '中国地方',
-    '米子': '中国地方',
-    
-    // 四国地方
-    '徳島': '四国地方',
-    '日和佐': '四国地方',
-    '高松': '四国地方',
-    '松山': '四国地方',
-    '宇和島': '四国地方',
-    '高知': '四国地方',
-    '室戸岬': '四国地方',
-    '清水': '四国地方',
-    
-    // 九州・沖縄地方
-    '福岡': '九州地方',
-    '八幡': '九州地方',
-    '飯塚': '九州地方',
-    '久留米': '九州地方',
-    '大分': '九州地方',
-    '中津': '九州地方',
-    '日田': '九州地方',
-    '佐伯': '九州地方',
-    '長崎': '九州地方',
-    '佐世保': '九州地方',
-    '厳原': '九州地方',
-    '福江': '九州地方',
-    '佐賀': '九州地方',
-    '伊万里': '九州地方',
-    '熊本': '九州地方',
-    '阿蘇乙姫': '九州地方',
-    '牛深': '九州地方',
-    '人吉': '九州地方',
-    '宮崎': '九州地方',
-    '延岡': '九州地方',
-    '都城': '九州地方',
-    '高千穂': '九州地方',
-    '鹿児島': '九州地方',
-    '鹿屋': '九州地方',
-    '種子島': '九州地方',
-    '名瀬': '九州地方',
-    '那覇': '沖縄地方',
-    '名護': '沖縄地方',
-    '久米島': '沖縄地方',
-    '宮古島': '沖縄地方',
-    '石垣島': '沖縄地方',
-    '与那国島': '沖縄地方'
-  }
-  
-  // マッピングに存在しない場合は、地点名から地域を推測
-  if (areaMapping[location]) {
-    return areaMapping[location]
-  } else {
-    // 地名の特徴から地方を推測する
-    if (location.includes('北海道')) return '北海道地方'
-    if (location.match(/青森|岩手|宮城|秋田|山形|福島/)) return '東北地方'
-    if (location.match(/東京|神奈川|埼玉|千葉|茨城|栃木|群馬/)) return '関東地方'
-    if (location.match(/新潟|富山|石川|福井|山梨|長野|岐阜|静岡|愛知/)) return '中部地方'
-    if (location.match(/三重|滋賀|京都|大阪|兵庫|奈良|和歌山/)) return '近畿地方'
-    if (location.match(/鳥取|島根|岡山|広島|山口/)) return '中国地方'
-    if (location.match(/徳島|香川|愛媛|高知/)) return '四国地方'
-    if (location.match(/福岡|佐賀|長崎|熊本|大分|宮崎|鹿児島/)) return '九州地方'
-    if (location.match(/沖縄/)) return '沖縄地方'
-    
-    return '不明'
-  }
-}
+// Lifecycle
+onMounted(() => {
+  loadLocations()
+})
 </script>
 
 <style scoped>
@@ -397,174 +267,267 @@ const getAreaName = (location) => {
   border-radius: 16px;
   padding: 0;
   box-shadow: 0 4px 12px rgba(12, 65, 154, 0.1);
-  margin-bottom: 24px;
+  overflow: hidden;
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 600px;
+}
+
+/* Loading and Error states */
+.loading-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  min-height: 400px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #E8F0FE;
+  border-top-color: #0C419A;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  color: #dc3545;
+  margin-bottom: 1rem;
+}
+
+.retry-btn {
+  background: #0C419A;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.retry-btn:hover {
+  background: #1a52b3;
 }
 
 .component-header {
-  margin-bottom: 0;
-  padding: 20px 24px;
-  border-bottom: 2px solid #0C419A;
   background: linear-gradient(135deg, #0C419A 0%, #6BA2FC 100%);
   color: white;
-  border-radius: 16px 16px 0 0;
-  flex-shrink: 0;
-  min-height: 60px;
-  display: flex;
-  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 3px solid #6BA2FC;
 }
 
 .component-header h3 {
-  color: white;
   font-size: 1.4rem;
   font-weight: 700;
   margin: 0;
-  font-family: 'Montserrat', sans-serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .selection-content {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 24px;
-  flex: 1;
-  overflow-y: auto;
 }
 
-/* Region Selection */
 .region-selection {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 2rem;
 }
 
 .region-selection label {
+  display: block;
   font-weight: 600;
   color: #0C419A;
+  margin-bottom: 0.5rem;
   font-size: 0.95rem;
 }
 
-/* Select All Section */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.region-select {
+  width: 100%;
+  padding: 16px 20px;
+  padding-right: 40px;
+  font-size: 1rem;
+  border: 2px solid #E8F0FE;
+  border-radius: 12px;
+  background: white;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(12, 65, 154, 0.05);
+}
+
+.region-select:hover {
+  border-color: #6BA2FC;
+  box-shadow: 0 4px 12px rgba(107, 162, 252, 0.2);
+}
+
+.region-select:focus {
+  outline: none;
+  border-color: #0C419A;
+  box-shadow: 0 0 0 3px rgba(12, 65, 154, 0.1);
+}
+
+.dropdown-arrow {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6BA2FC;
+  font-size: 0.8rem;
+}
+
 .select-all-section {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  border: 1px solid rgba(107, 162, 252, 0.3);
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .select-all-controls {
   display: flex;
-  gap: 12px;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .control-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border: 2px solid transparent;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex: 1;
-  min-width: 120px;
+  white-space: nowrap;
 }
 
 .select-all-btn {
-  background: linear-gradient(135deg, #28a745 0%, #20a640 100%);
-  color: white;
+  background: #E8F0FE;
+  color: #0C419A;
+  border-color: #6BA2FC;
 }
 
 .select-all-btn:hover:not(:disabled) {
+  background: #6BA2FC;
+  color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  box-shadow: 0 4px 8px rgba(107, 162, 252, 0.3);
 }
 
 .clear-all-btn {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-  color: white;
+  background: #FFF0F0;
+  color: #dc3545;
+  border-color: #ffcccc;
 }
 
 .clear-all-btn:hover:not(:disabled) {
+  background: #dc3545;
+  color: white;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
 .region-btn {
-  background: linear-gradient(135deg, #6BA2FC 0%, #0C419A 100%);
-  color: white;
+  background: #F0F8FF;
+  color: #1a52b3;
+  border-color: #B8D4FF;
 }
 
 .region-btn:hover:not(:disabled) {
+  background: #1a52b3;
+  color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(12, 65, 154, 0.3);
+  box-shadow: 0 4px 8px rgba(26, 82, 179, 0.3);
 }
 
 .control-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
 .selection-info {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
-  color: #0C419A;
-  font-weight: 500;
+  gap: 0.5rem;
+  font-size: 0.95rem;
 }
 
 .selection-count {
   font-weight: 700;
-  color: #28a745;
+  color: #0C419A;
 }
 
-/* Location Grid */
+.total-count {
+  color: #6B7280;
+}
+
 .location-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
   max-height: 400px;
   overflow-y: auto;
-  padding: 8px;
-  border: 1px solid rgba(107, 162, 252, 0.3);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.5);
+  padding: 0.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .location-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: white;
-  border-radius: 8px;
-  border: 2px solid transparent;
+  padding: 14px 16px;
+  background: #F9FAFB;
+  border: 2px solid #E5E7EB;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  user-select: none;
 }
 
 .location-item:hover {
+  background: #E8F0FE;
   border-color: #6BA2FC;
+  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(107, 162, 252, 0.2);
 }
 
 .location-item.selected {
+  background: linear-gradient(135deg, #0C419A 0%, #1a52b3 100%);
   border-color: #0C419A;
-  background: linear-gradient(135deg, #F8FBFF 0%, #E8F0FE 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(12, 65, 154, 0.3);
 }
 
-.location-checkbox input {
-  width: 16px;
-  height: 16px;
+.location-item.selected .location-region {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.location-checkbox {
+  margin-right: 12px;
+}
+
+.location-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
   accent-color: #0C419A;
+  cursor: pointer;
 }
 
 .location-details {
@@ -576,216 +539,86 @@ const getAreaName = (location) => {
 
 .location-name {
   font-weight: 600;
-  color: #0C419A;
   font-size: 0.95rem;
 }
 
 .location-region {
   font-size: 0.8rem;
-  color: #6BA2FC;
-  font-weight: 500;
+  color: #6B7280;
 }
 
-/* Selected Summary */
 .selected-summary {
-  margin-top: 8px;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #E8F0FE;
 }
 
 .selected-summary h4 {
   color: #0C419A;
+  margin-bottom: 1rem;
   font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 0 12px 0;
 }
 
 .selected-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0.75rem;
 }
 
 .location-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #6BA2FC 0%, #0C419A 100%);
-  color: white;
-  border-radius: 16px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  background: linear-gradient(135deg, #E8F0FE 0%, #F3F8FF 100%);
+  color: #0C419A;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  border: 2px solid #6BA2FC;
 }
 
 .location-tag:hover {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(12, 65, 154, 0.3);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
 .remove-tag {
-  font-weight: bold;
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.more-tags {
-  padding: 6px 12px;
-  background: rgba(107, 162, 252, 0.2);
-  color: #0C419A;
-  border-radius: 16px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.custom-dropdown {
-  position: relative;
-  display: inline-block;
-  width: 100%;
-}
-
-.region-select,
-.source-select {
-  width: 100%;
-  padding: 12px 40px 12px 16px;
-  border: 2px solid #6BA2FC;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #FFFFFF 0%, #F8FBFF 100%);
-  color: #0C419A;
-  font-size: 1rem;
-  font-weight: 600;
-  appearance: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.region-select:hover,
-.source-select:hover {
-  border-color: #0C419A;
-  box-shadow: 0 2px 8px rgba(12, 65, 154, 0.15);
-}
-
-.region-select:focus,
-.source-select:focus {
-  outline: none;
-  border-color: #0C419A;
-  box-shadow: 0 0 0 3px rgba(107, 162, 252, 0.3);
-}
-
-.dropdown-arrow {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6BA2FC;
-  font-size: 0.8rem;
-  pointer-events: none;
-  transition: transform 0.3s ease;
-}
-
-.custom-dropdown:hover .dropdown-arrow {
-  color: #0C419A;
-}
-
-.data-source-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.source-dropdown {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.source-dropdown label {
-  font-weight: 600;
-  color: #0C419A;
-  font-size: 0.95rem;
-}
-
-.data-sources {
-  margin-top: 8px;
-}
-
-.data-sources h4 {
-  color: #0C419A;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-}
-
-.source-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.source-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 8px;
-  border: 1px solid rgba(107, 162, 252, 0.3);
-}
-
-.source-icon {
+  margin-left: 8px;
   font-size: 1.2rem;
+  font-weight: bold;
+  opacity: 0.7;
 }
 
-.source-name {
-  flex: 1;
-  color: #0C419A;
-  font-weight: 500;
+.more-locations {
+  display: inline-flex;
+  align-items: center;
+  color: #6B7280;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-style: italic;
 }
 
-.source-status {
-  font-size: 0.85rem;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-weight: 500;
+/* スクロールバーのスタイル */
+.location-grid::-webkit-scrollbar {
+  width: 8px;
 }
 
-.source-status.active {
-  background: #28a745;
-  color: white;
+.location-grid::-webkit-scrollbar-track {
+  background: #F3F4F6;
+  border-radius: 4px;
 }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .location-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .select-all-controls {
-    flex-direction: column;
-  }
-  
-  .control-btn {
-    min-width: auto;
-  }
+.location-grid::-webkit-scrollbar-thumb {
+  background: #9CA3AF;
+  border-radius: 4px;
 }
 
-@media (max-width: 480px) {
-  .location-selection {
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  
-  .component-header h3 {
-    font-size: 1.2rem;
-  }
-  
-  .selected-tags {
-    gap: 6px;
-  }
-  
-  .location-tag {
-    font-size: 0.8rem;
-    padding: 4px 8px;
-  }
+.location-grid::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
 }
 </style>

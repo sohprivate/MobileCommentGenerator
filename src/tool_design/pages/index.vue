@@ -11,14 +11,19 @@
       <div class="content-grid">
         <!-- Location Selection Section -->
         <LocationSelection 
+          :selected-location="selectedLocation"
+          @location-changed="handleLocationChange"
           @locations-changed="handleLocationsChange"
         />
 
         <WeatherData 
           :coordinates="coordinates"
-          :weatherDataSource="weatherDataSource"
+          :weather-data-source="weatherDataSource"
+          :loading="isLoadingWeather"
+          :weather-data="currentWeatherData"
           @coordinates-changed="handleCoordinatesChange"
           @data-source-changed="handleWeatherDataSourceChange"
+          @fetch-weather="handleFetchWeather"
         />
 
         <!-- Generate Settings -->
@@ -30,7 +35,8 @@
 
         <GeneratedComment 
           :comments="generatedComments"
-          :isLoading="isGenerating"
+          :is-loading="isGenerating"
+          :error="error"
           @regenerate="handleGenerate"
           @clear="handleClear"
         />
@@ -39,137 +45,127 @@
   </div>
 </template>
 
-<script setup>
-const weatherDataSource = ref('手動入力')
-const coordinates = ref({
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useApi } from '~/composables/useApi'
+import type { 
+  Location, 
+  Coordinates, 
+  GenerateSettings, 
+  GeneratedComment,
+  WeatherData 
+} from '~/types'
+
+// API composable
+const api = useApi()
+
+// State management
+const weatherDataSource = ref<'manual' | 'api'>('manual')
+const coordinates = ref<Coordinates>({
   latitude: 35.6762,
   longitude: 139.6503
 })
-const generateSettings = ref({
+const generateSettings = ref<GenerateSettings>({
   method: '実例ベース',
   count: 5,
   includeEmoji: true,
   includeAdvice: false,
-  politeForm: true
+  politeForm: true,
+  targetTime: '12h'
 })
-const generatedComments = ref([])
+const generatedComments = ref<GeneratedComment[]>([])
 const isGenerating = ref(false)
-const selectedLocations = ref([])
+const isLoadingWeather = ref(false)
+const selectedLocations = ref<string[]>([])
+const selectedLocation = ref<string>('')
+const currentWeatherData = ref<WeatherData | null>(null)
+const error = ref<string | null>(null)
 
-// Prefecture coordinates mapping for location selection　（not sure if this is needed...)
-const prefectureCoordinates = {
-  '北海道': { latitude: 43.0642, longitude: 141.3469 },
-  '青森県': { latitude: 40.8244, longitude: 140.7400 },
-  '岩手県': { latitude: 39.7036, longitude: 141.1527 },
-  '宮城県': { latitude: 38.2682, longitude: 140.8721 },
-  '秋田県': { latitude: 39.7186, longitude: 140.1024 },
-  '山形県': { latitude: 38.2404, longitude: 140.3633 },
-  '福島県': { latitude: 37.7503, longitude: 140.4676 },
-  '茨城県': { latitude: 36.3418, longitude: 140.4468 },
-  '栃木県': { latitude: 36.5657, longitude: 139.8836 },
-  '群馬県': { latitude: 36.3911, longitude: 139.0608 },
-  '埼玉県': { latitude: 35.8569, longitude: 139.6489 },
-  '千葉県': { latitude: 35.6074, longitude: 140.1065 },
-  '東京都': { latitude: 35.6762, longitude: 139.6503 },
-  '神奈川県': { latitude: 35.4478, longitude: 139.6425 },
-  '新潟県': { latitude: 37.9026, longitude: 139.0232 },
-  '富山県': { latitude: 36.6953, longitude: 137.2113 },
-  '石川県': { latitude: 36.5946, longitude: 136.6256 },
-  '福井県': { latitude: 36.0652, longitude: 136.2216 },
-  '山梨県': { latitude: 35.6642, longitude: 138.5684 },
-  '長野県': { latitude: 36.6513, longitude: 138.1810 },
-  '岐阜県': { latitude: 35.3912, longitude: 136.7223 },
-  '静岡県': { latitude: 34.9769, longitude: 138.3831 },
-  '愛知県': { latitude: 35.1815, longitude: 136.9066 },
-  '三重県': { latitude: 34.7303, longitude: 136.5086 },
-  '滋賀県': { latitude: 35.0045, longitude: 135.8686 },
-  '京都府': { latitude: 35.0211, longitude: 135.7556 },
-  '大阪府': { latitude: 34.6937, longitude: 135.5023 },
-  '兵庫県': { latitude: 34.6913, longitude: 135.1830 },
-  '奈良県': { latitude: 34.6851, longitude: 135.8325 },
-  '和歌山県': { latitude: 34.2261, longitude: 135.1675 },
-  '鳥取県': { latitude: 35.5038, longitude: 134.2384 },
-  '島根県': { latitude: 35.4723, longitude: 133.0505 },
-  '岡山県': { latitude: 34.6618, longitude: 133.9349 },
-  '広島県': { latitude: 34.3963, longitude: 132.4596 },
-  '山口県': { latitude: 34.1860, longitude: 131.4706 },
-  '徳島県': { latitude: 34.0658, longitude: 134.5594 },
-  '香川県': { latitude: 34.3401, longitude: 134.0434 },
-  '愛媛県': { latitude: 33.8416, longitude: 132.7657 },
-  '高知県': { latitude: 33.5597, longitude: 133.5311 },
-  '福岡県': { latitude: 33.5904, longitude: 130.4017 },
-  '佐賀県': { latitude: 33.2494, longitude: 130.2989 },
-  '長崎県': { latitude: 32.7503, longitude: 129.8777 },
-  '熊本県': { latitude: 32.7898, longitude: 130.7417 },
-  '大分県': { latitude: 33.2382, longitude: 131.6126 },
-  '宮崎県': { latitude: 31.9077, longitude: 131.4202 },
-  '鹿児島県': { latitude: 31.5602, longitude: 130.5581 },
-  '沖縄県': { latitude: 26.2124, longitude: 127.6792 }
+// API health check on mount
+onMounted(async () => {
+  const isHealthy = await api.checkHealth()
+  if (!isHealthy) {
+    console.warn('Backend API is not available. Some features may not work.')
+  }
+})
+
+// Handler for single location selection change
+const handleLocationChange = (location: string) => {
+  selectedLocation.value = location
+  selectedLocations.value = [location]
 }
 
-// Handler for location selection changes
-const handleLocationsChange = (locations) => {
+// Handler for multiple locations selection changes
+const handleLocationsChange = (locations: string[]) => {
   selectedLocations.value = locations
-  // If locations are selected, update coordinates to the first one
-  if (locations.length > 0 && prefectureCoordinates[locations[0]]) {
-    coordinates.value = prefectureCoordinates[locations[0]]
+  if (locations.length > 0) {
+    selectedLocation.value = locations[0]
   }
 }
 
-const handleWeatherDataSourceChange = (newSource) => {
+const handleWeatherDataSourceChange = (newSource: 'manual' | 'api') => {
   weatherDataSource.value = newSource
 }
 
-const handleCoordinatesChange = (newCoords) => {
+const handleCoordinatesChange = (newCoords: Coordinates) => {
   coordinates.value = newCoords
 }
 
-const handleSettingsChange = (newSettings) => {
+const handleSettingsChange = (newSettings: GenerateSettings) => {
   generateSettings.value = newSettings
 }
 
+// Fetch weather data from API
+const handleFetchWeather = async () => {
+  if (weatherDataSource.value !== 'api') return
+  
+  isLoadingWeather.value = true
+  error.value = null
+  
+  try {
+    const response = await api.fetchWeatherData(
+      coordinates.value, 
+      generateSettings.value.targetTime
+    )
+    
+    if (response.success && response.data) {
+      currentWeatherData.value = response.data
+    } else {
+      error.value = response.error || '天気データの取得に失敗しました'
+    }
+  } catch (err) {
+    error.value = '天気データの取得中にエラーが発生しました'
+    console.error('Weather fetch error:', err)
+  } finally {
+    isLoadingWeather.value = false
+  }
+}
+
+// Generate comments using API
 const handleGenerate = async () => {
   isGenerating.value = true
+  error.value = null
+  
   try {
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // 天気データが必要な場合は先に取得
+    if (weatherDataSource.value === 'api' && !currentWeatherData.value) {
+      await handleFetchWeather()
+    }
     
-    const baseComments = [
-      '今日は雲が多めですが、気温は過ごしやすそうですね！☁️',
-      '少し肌寒いかもしれません。羽織物があると良いでしょう。🧥',
-      '湿度が高めなので、熱中症にお気をつけください。💧',
-      '風が強いようです。傘の持参をお勧めします。🌬️',
-      '晴れ間も見えるので、お出かけ日和かもしれませんね！☀️',
-      '今日は暖かくて過ごしやすい一日になりそうです。🌞',
-      '雨の予報が出ています。お出かけの際はご注意ください。☔',
-      '気温の変化が激しそうです。体調管理にお気をつけください。🌡️',
-      '穏やかな天気で、散歩には最適な日ですね。🚶‍♀️',
-      '夕方から天気が崩れる予報です。早めの帰宅をお勧めします。🌅'
-    ]
+    const response = await api.generateComments(
+      selectedLocations.value.length > 0 ? selectedLocations.value : [selectedLocation.value || '東京'],
+      generateSettings.value,
+      currentWeatherData.value || undefined
+    )
     
-    let selectedComments = baseComments.slice(0, generateSettings.value.count)
-    
-    selectedComments = selectedComments.map(comment => {
-      let modifiedComment = comment
-      
-      if (!generateSettings.value.includeEmoji) {
-        modifiedComment = modifiedComment.replace(/[^\w\s！？。、（）]/g, '')
-      }
-      
-      if (generateSettings.value.method === 'business') {
-        modifiedComment = modifiedComment.replace(/ですね/g, 'でございます')
-        modifiedComment = modifiedComment.replace(/です/g, 'でございます')
-      } else if (generateSettings.value.method === 'creative') {
-        const creativeWords = ['素敵な', 'とても', 'きっと', 'なんだか']
-        const randomWord = creativeWords[Math.floor(Math.random() * creativeWords.length)]
-        modifiedComment = randomWord + modifiedComment
-      }
-      
-      return modifiedComment
-    })
-    
-    generatedComments.value = selectedComments
-  } catch (error) {
-    console.error('コメント生成エラー:', error)
+    if (response.success && response.data) {
+      generatedComments.value = response.data
+    } else {
+      error.value = response.error || 'コメント生成に失敗しました'
+    }
+  } catch (err) {
+    error.value = 'コメント生成中にエラーが発生しました'
+    console.error('Generate error:', err)
   } finally {
     isGenerating.value = false
   }
@@ -177,6 +173,8 @@ const handleGenerate = async () => {
 
 const handleClear = () => {
   generatedComments.value = []
+  error.value = null
+  currentWeatherData.value = null
 }
 </script>
 

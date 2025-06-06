@@ -16,11 +16,31 @@
               class="method-select"
             >
               <option value="実例ベース">実例ベース（推奨）</option>
-              <option value="パターンベース">パターンベース</option>
-              <option value="WeatherSummarizer">WeatherSummarizer(本格版）</option>
+              <option value="practical">パターンベース</option>
+              <option value="creative">クリエイティブ</option>
+              <option value="business">ビジネス</option>
             </select>
             <div class="dropdown-arrow">▼</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Target Time Selection -->
+      <div class="target-time-section">
+        <h4>予報時間</h4>
+        <div class="time-buttons">
+          <button 
+            @click="setTargetTime('12h')"
+            :class="['time-btn', { active: settings.targetTime === '12h' }]"
+          >
+            12時間後
+          </button>
+          <button 
+            @click="setTargetTime('24h')"
+            :class="['time-btn', { active: settings.targetTime === '24h' }]"
+          >
+            24時間後
+          </button>
         </div>
       </div>
 
@@ -99,370 +119,453 @@
           :disabled="isGenerating"
           class="generate-button"
         >
-          <span class="button-icon">✨</span>
-          <span v-if="isGenerating">生成中...</span>
-          <span v-else>コメント生成</span>
+          <span v-if="!isGenerating" class="button-content">
+            <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v10m0 0l4-4m-4 4l-4-4m10 9v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3"></path>
+            </svg>
+            コメントを生成
+          </span>
+          <span v-else class="button-content">
+            <svg class="spinner-icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"></circle>
+              <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            生成中...
+          </span>
         </button>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-const props = defineProps({
-  settings: {
-    type: Object,
-    default: () => ({
-      method: 'standard',
-      count: 5,
-      includeEmoji: true,
-      includeAdvice: false,
-      politeForm: true
-    })
-  }
-})
+<script setup lang="ts">
+import { defineProps, defineEmits } from 'vue'
+import type { GenerateSettings } from '~/types'
 
-const emit = defineEmits(['settings-changed', 'generate'])
+// Props
+interface Props {
+  settings: GenerateSettings
+}
 
+const props = defineProps<Props>()
 const isGenerating = ref(false)
 
-const handleMethodChange = (event) => {
-  const newSettings = {
-    ...props.settings,
-    method: event.target.value
-  }
-  emit('settings-changed', newSettings)
+// Emits
+interface Emits {
+  (e: 'settings-changed', settings: GenerateSettings): void
+  (e: 'generate'): void
 }
 
-const handleCountChange = (event) => {
-  const newSettings = {
+const emit = defineEmits<Emits>()
+
+// Methods
+const handleMethodChange = (event: Event) => {
+  const target = event.target as HTMLSelectElement
+  emit('settings-changed', {
     ...props.settings,
-    count: parseInt(event.target.value)
-  }
-  emit('settings-changed', newSettings)
+    method: target.value as GenerateSettings['method']
+  })
 }
 
-const setCount = (count) => {
-  const newSettings = {
+const handleCountChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  emit('settings-changed', {
+    ...props.settings,
+    count: parseInt(target.value)
+  })
+}
+
+const setCount = (count: number) => {
+  emit('settings-changed', {
     ...props.settings,
     count
-  }
-  emit('settings-changed', newSettings)
+  })
 }
 
-const handleEmojiChange = (event) => {
-  const newSettings = {
+const setTargetTime = (time: '12h' | '24h') => {
+  emit('settings-changed', {
     ...props.settings,
-    includeEmoji: event.target.checked
-  }
-  emit('settings-changed', newSettings)
+    targetTime: time
+  })
 }
 
-const handleAdviceChange = (event) => {
-  const newSettings = {
+const handleEmojiChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  emit('settings-changed', {
     ...props.settings,
-    includeAdvice: event.target.checked
-  }
-  emit('settings-changed', newSettings)
+    includeEmoji: target.checked
+  })
 }
 
-const handlePoliteFormChange = (event) => {
-  const newSettings = {
+const handleAdviceChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  emit('settings-changed', {
     ...props.settings,
-    politeForm: event.target.checked
-  }
-  emit('settings-changed', newSettings)
+    includeAdvice: target.checked
+  })
 }
 
-const handleGenerate = () => {
+const handlePoliteFormChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  emit('settings-changed', {
+    ...props.settings,
+    politeForm: target.checked
+  })
+}
+
+const handleGenerate = async () => {
   isGenerating.value = true
   emit('generate')
-  
-
+  // Reset after parent handles the generation
   setTimeout(() => {
     isGenerating.value = false
-  }, 2500)
+  }, 100)
 }
 </script>
 
 <style scoped>
 .generate-settings {
-  background: white;
+  background: linear-gradient(135deg, #E8FEF0 0%, #F3FFF8 100%);
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(12, 65, 154, 0.1);
+  padding: 0;
+  box-shadow: 0 4px 12px rgba(11, 252, 103, 0.1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 600px;
 }
 
 .component-header {
-  background: linear-gradient(135deg, #0C419A 0%, #6BA2FC 100%);
+  background: linear-gradient(135deg, #0BFC67 0%, #66FFB3 100%);
   color: white;
-  padding: 20px 24px;
-  text-align: center;
-  flex-shrink: 0;
-  min-height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 3px solid #66FFB3;
 }
 
 .component-header h3 {
   font-size: 1.4rem;
   font-weight: 700;
   margin: 0;
-  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .settings-content {
-  padding: 24px;
+  padding: 2rem;
+  overflow-y: auto;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
 }
 
-.content-spacer {
-  flex: 1;
+/* Method Section */
+.method-section, .target-time-section, .count-section, .advanced-section {
+  margin-bottom: 2rem;
 }
 
-.button-container {
-  margin-top: auto;
-  padding-top: 24px;
-  border-top: 1px solid rgba(107, 162, 252, 0.2);
-}
-
-.method-section,
-.count-section,
-.advanced-section {
-  margin-bottom: 0;
-}
-
-.method-section h4,
-.count-section h4,
-.advanced-section h4 {
-  font-size: 1rem;
+.method-section h4, .target-time-section h4, .count-section h4, .advanced-section h4 {
+  color: #0BFC67;
   font-weight: 600;
-  margin-bottom: 12px;
-  color: #0C419A;
-}
-
-.method-dropdown {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
 }
 
 .custom-dropdown {
   position: relative;
-  display: inline-block;
   width: 100%;
 }
 
 .method-select {
   width: 100%;
-  padding: 12px 40px 12px 16px;
-  border: 2px solid #6BA2FC;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #FFFFFF 0%, #F8FBFF 100%);
-  color: #0C419A;
+  padding: 16px 20px;
+  padding-right: 40px;
   font-size: 1rem;
-  font-weight: 600;
+  border: 2px solid #E8FEF0;
+  border-radius: 12px;
+  background: white;
   appearance: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(11, 252, 103, 0.05);
 }
 
 .method-select:hover {
-  border-color: #0C419A;
-  box-shadow: 0 2px 8px rgba(12, 65, 154, 0.15);
+  border-color: #66FFB3;
+  box-shadow: 0 4px 12px rgba(102, 255, 179, 0.2);
 }
 
 .method-select:focus {
   outline: none;
-  border-color: #0C419A;
-  box-shadow: 0 0 0 3px rgba(107, 162, 252, 0.3);
+  border-color: #0BFC67;
+  box-shadow: 0 0 0 3px rgba(11, 252, 103, 0.1);
 }
 
 .dropdown-arrow {
   position: absolute;
-  right: 12px;
+  right: 20px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6BA2FC;
-  font-size: 0.8rem;
   pointer-events: none;
-  transition: transform 0.3s ease;
+  color: #66FFB3;
+  font-size: 0.8rem;
 }
 
-.custom-dropdown:hover .dropdown-arrow {
-  color: #0C419A;
-}
-
-.count-controls {
+/* Target Time Section */
+.time-buttons {
   display: flex;
-  flex-direction: column;
   gap: 1rem;
 }
 
-.count-controls label {
+.time-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid #E8FEF0;
+  border-radius: 10px;
+  background: white;
+  color: #374151;
   font-weight: 600;
-  color: #0C419A;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.time-btn:hover {
+  border-color: #66FFB3;
+  background: #F0FFF8;
+}
+
+.time-btn.active {
+  background: linear-gradient(135deg, #0BFC67 0%, #66FFB3 100%);
+  border-color: #0BFC67;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 252, 103, 0.3);
+}
+
+/* Count Section */
+.count-controls label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 1rem;
   font-size: 0.95rem;
 }
 
 .slider-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin: 1rem 0;
+  margin-bottom: 1.5rem;
 }
 
 .count-slider {
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: #e1e5e9;
+  height: 8px;
+  background: #E5E7EB;
+  border-radius: 4px;
   outline: none;
+  -webkit-appearance: none;
   appearance: none;
+  margin-bottom: 0.5rem;
 }
 
 .count-slider::-webkit-slider-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #6BA2FC;
-  cursor: pointer;
+  -webkit-appearance: none;
   appearance: none;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #0BFC67 0%, #66FFB3 100%);
+  border: 3px solid white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(11, 252, 103, 0.3);
+  transition: all 0.3s ease;
+}
+
+.count-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(11, 252, 103, 0.4);
 }
 
 .count-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #0BFC67 0%, #66FFB3 100%);
+  border: 3px solid white;
   border-radius: 50%;
-  background: #6BA2FC;
   cursor: pointer;
-  border: none;
+  box-shadow: 0 2px 8px rgba(11, 252, 103, 0.3);
+  transition: all 0.3s ease;
 }
 
 .slider-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
-  color: #6c757d;
-  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #6B7280;
 }
 
 .count-buttons {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 0.25rem;
-  margin-top: 0.5rem;
+  gap: 0.5rem;
 }
 
 .count-btn {
-  padding: 0.375rem 0.5rem;
-  border: 2px solid #e1e5e9;
+  padding: 10px;
+  border: 2px solid #E8FEF0;
+  border-radius: 8px;
   background: white;
-  border-radius: 4px;
+  color: #374151;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-weight: 500;
-  font-size: 0.85rem;
-  min-height: 32px;
 }
 
 .count-btn:hover {
-  border-color: #6BA2FC;
+  border-color: #66FFB3;
+  background: #F0FFF8;
+  transform: translateY(-1px);
 }
 
 .count-btn.active {
-  background: #6BA2FC;
+  background: linear-gradient(135deg, #0BFC67 0%, #66FFB3 100%);
+  border-color: #0BFC67;
   color: white;
-  border-color: #6BA2FC;
+  box-shadow: 0 2px 8px rgba(11, 252, 103, 0.3);
 }
 
+/* Advanced Options */
 .advanced-options {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .option-checkbox {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
-  background: #f8f9fa;
-  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid #E8FEF0;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  user-select: none;
 }
 
 .option-checkbox:hover {
-  background: #e9ecef;
+  border-color: #66FFB3;
+  background: #F0FFF8;
 }
 
 .option-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  accent-color: #0BFC67;
+  cursor: pointer;
+}
+
+.option-checkbox span {
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Content Spacer */
+.content-spacer {
+  flex: 1;
+  min-height: 1rem;
+}
+
+/* Generate Button */
+.button-container {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 2px solid #E8FEF0;
 }
 
 .generate-button {
   width: 100%;
-  padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #0C419A 0%, #6BA2FC 100%);
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #0BFC67 0%, #66FFB3 100%);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(11, 252, 103, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  min-height: 56px;
 }
 
 .generate-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(12, 65, 154, 0.3);
+  box-shadow: 0 6px 20px rgba(11, 252, 103, 0.4);
+}
+
+.generate-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(11, 252, 103, 0.3);
 }
 
 .generate-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .button-icon {
-  font-size: 1.2rem;
+  width: 24px;
+  height: 24px;
+}
+
+.spinner-icon {
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .count-buttons {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .time-buttons {
+    flex-direction: column;
+  }
+  
+  .time-btn {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
   .settings-content {
-    padding: 1rem;
+    padding: 1.5rem;
   }
   
   .count-buttons {
     grid-template-columns: repeat(5, 1fr);
-    gap: 0.2rem;
+    gap: 0.4rem;
   }
   
   .count-btn {
-    padding: 0.25rem 0.375rem;
-    font-size: 0.8rem;
-    min-height: 28px;
-  }
-  
-  .method-option {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+    padding: 8px;
+    font-size: 0.9rem;
   }
 }
 </style>
