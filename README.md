@@ -4,119 +4,147 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
 
 ## 現在の実装状況
 
-### ✅ Phase 1-1: 地点データ管理システム (Issue #2) - **完了**
+### ✅ Phase 1: 基盤機能（完了）
 
+#### ✅ 地点データ管理システム (Issue #2) - **完了**
 地点データの読み込み、検索、正規化機能が実装されています。
+- `src/data/location_manager.py`: 包括的な地点管理機能
+- 47都道府県・8地方区分の自動推定
+- 高性能検索エンジン（レーベンシュタイン距離によるあいまい検索）
+- 距離計算機能（ハヴァーサイン式）
 
-#### 主な機能
-- `Chiten.csv`からの地点データ読み込み（141件の地点）
-- 地点名の正規化処理（全角半角統一、空白除去、ひらがなカタカナ統一）
-- 地点検索機能（完全一致・部分一致・類似度検索）
-- 緯度経度データ対応（3列形式CSVサポート）
-- 型安全性とエラーハンドリング
+#### ✅ 天気予報統合機能 (Issue #3) - **完了**
+Weathernews WxTech APIとの統合が完了しています。
+- `src/apis/wxtech_client.py`: APIクライアント実装
+- `src/nodes/weather_forecast_node.py`: LangGraphノード実装
+- 同期・非同期両対応
+- リトライ機能とエラーハンドリング
 
-#### 改善された機能
-- ✅ **CSVデータ読み込みロジックの簡素化**
-- ✅ **緯度経度データ対応**（3列以上のCSVファイル対応）
-- ✅ **オプショナル依存関係の警告機能**
-- ✅ **スコア付き検索機能**（`search_location_with_scores()`）
-- ✅ **依存関係状態確認**（`get_dependency_status()`）
+#### ✅ S3過去コメント取得機能 (Issue #4) - **完了**
+S3バケットからの過去コメント取得と類似検索が実装されています。
+- `src/repositories/s3_comment_repository.py`: S3連携
+- `src/nodes/retrieve_past_comments_node.py`: LangGraphノード
+- 類似度計算アルゴリズム実装
+- コメントタイプ（weather_comment/advice）の管理
 
-#### 使用方法
+### 🔄 Phase 2: LangGraphワークフロー統合（実装中）
 
-```python
-from src.data.location_manager import LocationManager, search_location
+#### ✅ LLM統合とGenerateCommentNode (Issue #8) - **完了**
+マルチLLMプロバイダー対応のコメント生成機能が実装されています。
+- OpenAI、Gemini、Anthropic Claude対応
+- 15文字制限の遵守
+- プロンプトエンジニアリング実装
 
-# LocationManagerを使用
-manager = LocationManager("Chiten.csv")
+#### 🚧 コメント選択・類似度計算 (Issue #5) - **実装予定**
+- コサイン類似度による過去コメントペア選択
+- 天気条件・セマンティック類似度の総合評価
 
-# 全地点取得
-all_locations = manager.get_all_locations()
-print(f"読み込まれた地点数: {len(all_locations)}")
+#### 🚧 コメント評価・バリデーション (Issue #6) - **実装予定**
+- 15文字制限チェック
+- NG表現・不適切ワードの検出
+- 表現ルールの適用
 
-# 地点検索
-results = manager.search_location("札幌")
-for location in results:
-    print(f"地点: {location.name} (正規化名: {location.normalized_name})")
-
-# 完全一致検索
-exact_match = manager.find_exact_match("東京")
-if exact_match:
-    print(f"発見: {exact_match.name}")
-
-# スコア付き検索
-results_with_scores = manager.search_location_with_scores("大阪")
-for location, score in results_with_scores:
-    print(f"地点: {location.name}, スコア: {score:.2f}")
-
-# 依存関係状態確認
-status = manager.get_dependency_status()
-print(f"jaconv利用可能: {status['jaconv_available']}")
-print(f"Levenshtein利用可能: {status['levenshtein_available']}")
-
-# 関数インターフェース
-results = search_location("大阪", "Chiten.csv")
+#### 🚧 LangGraphワークフロー統合 (Issue #7) - **優先実装中**
+全ノードを統合したエンドツーエンドのワークフロー構築
+```
+InputNode → FetchForecastNode → RetrievePastCommentsNode
+    ↓
+SelectCommentPair → EvaluateCandidate → GenerateComment → OutputNode
+    ↑_______________|（リトライループ）
 ```
 
-#### CSV形式サポート
+### 📋 Phase 3: UI・フロントエンド（計画中）
 
-**基本形式（地点名のみ）:**
-```csv
-稚内
-札幌
-東京
-大阪
-```
+#### 📋 Streamlitバックエンド (Issue #9)
+#### 📋 React/TypeScriptフロントエンド (Issue #10)
 
-**拡張形式（緯度経度付き）:**
-```csv
-稚内,45.4167,141.6833
-札幌,43.0642,141.3469
-東京,35.6762,139.6503
-大阪,34.6937,135.5023
-```
+### 📋 Phase 4: デプロイメント（計画中）
 
-## 開発環境のセットアップ
+#### 📋 AWSデプロイメント (Issue #11)
 
-### 1. 依存関係のインストール
+## システムの主な処理フロー
+
+1. **地点読み込み**: `Chiten.csv` を読み取り、地点名と緯度経度を取得
+2. **天気予報取得**: WxTech API から 12h／24h 先の予報を取得
+3. **過去コメント取得**: S3 から対象年月の JSONL を読み込み、地点名でフィルタ
+4. **コメント候補選定**: 予報条件に近い `weather_comment` / `advice` ペアを抽出
+5. **LLM 生成**: 選定したペアをプロンプトに組み込み、LLM に新規コメント生成を依頼
+6. **ルールチェック**: 表現ルールを自動検証し、問題があれば再生成または別ペアを選択
+7. **結果表示**: フロントエンドにコメントを返却し、ユーザーはコピー可能
+
+## 環境構築
+
+### 前提条件
+
+* Python 3.10 以上
+* AWS CLI (S3 連携用)
+* OpenAI, Anthropic, Gemini, WxTech の API キー
+
+### バックエンドセットアップ
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env   # 環境変数を設定
 ```
 
-**必須ライブラリ**: `pandas`, `numpy`  
-**推奨ライブラリ**: `jaconv`（ひらがなカタカナ正規化）, `python-Levenshtein`（高度な類似度検索）
+### 必要な環境変数
 
-### 2. テストの実行
+```env
+# Weather API
+WXTECH_API_KEY=your_wxtech_api_key
+
+# LLM Providers
+OPENAI_API_KEY=your_openai_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+GOOGLE_API_KEY=your_google_api_key
+
+# AWS
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_DEFAULT_REGION=ap-northeast-1
+```
+
+## 使用方法
+
+現在、個別機能のテストが可能です。完全なワークフローはIssue #7の完了後に利用可能になります。
+
+### 地点検索の例
+```python
+from src.data.location_manager import LocationManager
+
+manager = LocationManager("Chiten.csv")
+results = manager.search_location("東京")
+```
+
+### 天気予報取得の例
+```python
+from src.apis.wxtech_client import WxTechAPIClient
+
+client = WxTechAPIClient(api_key)
+forecast = client.get_forecast(35.6762, 139.6503)  # 東京
+```
+
+### 過去コメント取得の例
+```python
+from src.repositories.s3_comment_repository import S3CommentRepository
+
+repo = S3CommentRepository()
+comments = repo.fetch_comments_by_period('202406')
+```
+
+## テスト実行
 
 ```bash
 # 全テスト実行
 pytest
 
-# カバレッジ付きテスト実行
+# カバレッジ付きテスト
 pytest --cov=src --cov-report=html
 
 # 特定のテストファイル実行
 pytest tests/test_location_manager.py
-
-# 詳細出力
-pytest -v
-```
-
-### 3. 型チェック
-
-```bash
-mypy src/
-```
-
-### 4. コード品質チェック
-
-```bash
-# フォーマット
-black src/ tests/
-
-# リント
-flake8 src/ tests/
 ```
 
 ## プロジェクト構造
@@ -124,43 +152,49 @@ flake8 src/ tests/
 ```
 .
 ├── src/
-│   ├── data/
-│   │   ├── __init__.py
-│   │   └── location_manager.py    # 地点データ管理 ✅
-│   └── __init__.py
-├── tests/
-│   ├── __init__.py
-│   └── test_location_manager.py   # 地点管理のテスト ✅
-├── Chiten.csv                     # 地点データファイル ✅
-├── requirements.txt               # 依存関係
-├── pytest.ini                    # pytest設定
-├── mypy.ini                       # 型チェック設定
-├── pyproject.toml                 # プロジェクト設定
-├── .gitignore
-└── README.md
+│   ├── data/                # データクラス・管理
+│   │   ├── location_manager.py     # 地点管理 ✅
+│   │   ├── weather_data.py         # 天気データ ✅
+│   │   ├── past_comment.py         # 過去コメント ✅
+│   │   └── comment_generation_state.py  # LangGraph状態管理 ✅
+│   ├── apis/                # 外部API連携
+│   │   └── wxtech_client.py        # WxTech API ✅
+│   ├── repositories/        # データリポジトリ
+│   │   └── s3_comment_repository.py # S3連携 ✅
+│   ├── nodes/              # LangGraphノード
+│   │   ├── weather_forecast_node.py     # 天気予報取得 ✅
+│   │   ├── retrieve_past_comments_node.py # 過去コメント取得 ✅
+│   │   ├── generate_comment_node.py      # コメント生成 ✅
+│   │   ├── select_comment_pair_node.py   # コメント選択 🚧
+│   │   └── evaluate_candidate_node.py    # 評価・検証 🚧
+│   ├── llm/                # LLM統合
+│   │   ├── llm_client.py           # マルチLLMクライアント ✅
+│   │   └── prompt_builder.py       # プロンプト構築 ✅
+│   └── config/             # 設定管理
+│       ├── weather_config.py       # 天気API設定 ✅
+│       └── llm_config.py          # LLM設定 ✅
+├── tests/                  # テストスイート
+├── docs/                   # ドキュメント
+├── examples/               # 使用例
+├── Chiten.csv             # 地点データ
+├── requirements.txt        # 依存関係
+└── README.md              # このファイル
 ```
 
-## 次の開発予定
+## 今後の開発予定
 
-- **Issue #3**: 天気予報取得機能の統合とLangGraphノード化
-- **Issue #4**: S3過去コメント取得機能の実装
+### 直近の優先事項（Issue #17）
+1. **LangGraphワークフロー骨格の実装**
+   - モックノードを使用した基本フローの確立
+   - エンドツーエンドテストの実装
+   
+2. **表現ルール設定の具体化**
+   - NGワード設定ファイルの作成
+   - バリデーションルールの実装
 
-## テスト結果
-
-### 受け入れ条件達成状況
-- [x] `Chiten.csv`からの地点データ読み込みが正常動作
-- [x] 地点名検索（完全一致・部分一致）が動作  
-- [x] データ正規化処理が適切に動作
-- [x] ユニットテストのカバレッジ80%以上
-- [x] 型ヒントとdocstringの完備
-
-### テストカバレッジ
-- **Locationクラス**: データクラス作成・文字列表現
-- **LocationManagerクラス**: CSV読み込み・検索・正規化・エラーハンドリング
-- **緯度経度データ**: 3列形式CSV、無効データ処理
-- **検索機能**: 完全一致・部分一致・スコア付き・類似度検索
-- **関数インターフェース**: `load_locations_from_csv()`, `search_location()`
-- **エッジケース**: 空ファイル・空白・不正データ・依存関係なし等
+3. **ノード統合の段階的実施**
+   - 実装済みノードから順次統合
+   - モックノードの実装置き換え
 
 ## 貢献方法
 
@@ -175,5 +209,5 @@ MIT License
 
 ---
 
-**Current Status**: Phase 1-1 ✅ **COMPLETED**  
-**Next Milestone**: Issue #3 (天気予報取得機能の統合とLangGraphノード化)
+**Current Status**: Phase 2 実装中 🚧  
+**Next Milestone**: Issue #7 (LangGraphワークフロー統合)
