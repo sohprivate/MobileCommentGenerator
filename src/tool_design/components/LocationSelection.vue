@@ -129,18 +129,18 @@ const filteredLocations = computed(() => {
   return locations.value.filter(location => getAreaName(location) === selectedRegion.value)
 })
 
-// Load locations from CSV file
+
 const loadLocationsFromCSV = async () => {
   try {
     const response = await fetch('/地点名.csv')
     const data = await response.text()
     
-    // Parse CSV data (simple parsing, assuming one location per line)
+  
     const parsedLocations = data.split('\n')
       .map(line => line.trim())
-      .filter(line => line && !line.startsWith('//')) // Remove empty lines and comments
+      .filter(line => line && !line.startsWith('//')) 
     
-    // Update locations ref
+   
     locations.value = parsedLocations
     
     console.log(`Loaded ${locations.value.length} locations from CSV`)
@@ -151,17 +151,14 @@ const loadLocationsFromCSV = async () => {
   }
 }
 
-// Load locations when component is mounted
+
 onMounted(() => {
   loadLocationsFromCSV()
 })
 
-// Region change handler
 const handleRegionChange = () => {
   
 }
-
-// Toggle location selection
 const toggleLocation = (location) => {
   const index = selectedLocations.value.indexOf(location)
   if (index === -1) {
@@ -172,7 +169,7 @@ const toggleLocation = (location) => {
   emitLocationChanges()
 }
 
-// Select all filtered locations
+
 const selectAllLocations = () => {
   filteredLocations.value.forEach(location => {
     if (!selectedLocations.value.includes(location)) {
@@ -182,13 +179,13 @@ const selectAllLocations = () => {
   emitLocationChanges()
 }
 
-// Clear all selections
+
 const clearAllSelections = () => {
   selectedLocations.value = []
   emitLocationChanges()
 }
 
-// Select all locations in the current region
+
 const selectRegionLocations = () => {
   const regionLocations = getRegionLocations()
   regionLocations.forEach(location => {
@@ -199,7 +196,7 @@ const selectRegionLocations = () => {
   emitLocationChanges()
 }
 
-// Get locations in the selected region
+
 const getRegionLocations = () => {
   if (!selectedRegion.value) return []
   return locations.value.filter(location => getAreaName(location) === selectedRegion.value)

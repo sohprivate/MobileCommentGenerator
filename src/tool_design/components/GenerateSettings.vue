@@ -178,7 +178,7 @@ const handleGenerate = () => {
   isGenerating.value = true
   emit('generate')
   
-  // Reset after a delay to sync with parent
+
   setTimeout(() => {
     isGenerating.value = false
   }, 2500)

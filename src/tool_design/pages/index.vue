@@ -14,7 +14,6 @@
           @locations-changed="handleLocationsChange"
         />
 
-        <!-- Weather Data Input -->
         <WeatherData 
           :coordinates="coordinates"
           :weatherDataSource="weatherDataSource"
@@ -29,7 +28,6 @@
           @generate="handleGenerate"
         />
 
-        <!-- Generated Comments -->
         <GeneratedComment 
           :comments="generatedComments"
           :isLoading="isGenerating"
@@ -42,7 +40,6 @@
 </template>
 
 <script setup>
-// Reactive variables for weather app
 const weatherDataSource = ref('手動入力')
 const coordinates = ref({
   latitude: 35.6762,
@@ -59,7 +56,7 @@ const generatedComments = ref([])
 const isGenerating = ref(false)
 const selectedLocations = ref([])
 
-// Prefecture coordinates mapping for location selection
+// Prefecture coordinates mapping for location selection　（not sure if this is needed...)
 const prefectureCoordinates = {
   '北海道': { latitude: 43.0642, longitude: 141.3469 },
   '青森県': { latitude: 40.8244, longitude: 140.7400 },
@@ -231,17 +228,17 @@ const handleClear = () => {
   }
 }
 
-/* Ensure the first three components have the same height structure */
+
 .content-grid > *:nth-child(1),
 .content-grid > *:nth-child(2),
 .content-grid > *:nth-child(3) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 600px; /* Minimum height for the top three columns */
+  min-height: 600px;
 }
 
-/* GeneratedComment spans full width and is below the other components */
+
 .content-grid > *:nth-child(4) {
   grid-column: 1 / -1;
   display: flex;
@@ -249,7 +246,6 @@ const handleClear = () => {
   min-height: 400px;
 }
 
-/* Location Selection Section */
 .location-section {
   background: white;
   border-radius: 16px;
