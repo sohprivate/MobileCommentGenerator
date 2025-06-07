@@ -13,14 +13,10 @@ from src.data.comment_generation_state import CommentGenerationState
 from src.nodes.weather_forecast_node import fetch_weather_forecast_node
 from src.nodes.retrieve_past_comments_node import retrieve_past_comments_node
 from src.nodes.generate_comment_node import generate_comment_node
-
-# 一時的なモックノード（実装待ち）
-from src.nodes.mock_nodes import (
-    mock_input_node,
-    mock_output_node
-)
 from src.nodes.select_comment_pair_node import select_comment_pair_node
 from src.nodes.evaluate_candidate_node import evaluate_candidate_node
+from src.nodes.input_node import input_node
+from src.nodes.output_node import output_node
 
 
 # 定数
@@ -60,13 +56,13 @@ def create_comment_generation_workflow() -> StateGraph:
     workflow = StateGraph(CommentGenerationState)
     
     # ノードの追加
-    workflow.add_node("input", mock_input_node)
+    workflow.add_node("input", input_node)
     workflow.add_node("fetch_forecast", fetch_weather_forecast_node)
     workflow.add_node("retrieve_comments", retrieve_past_comments_node)
     workflow.add_node("select_pair", select_comment_pair_node)
     workflow.add_node("evaluate", evaluate_candidate_node)
     workflow.add_node("generate", generate_comment_node)
-    workflow.add_node("output", mock_output_node)
+    workflow.add_node("output", output_node)
     
     # エッジの追加（通常フロー）
     workflow.add_edge("input", "fetch_forecast")
@@ -132,7 +128,7 @@ def run_comment_generation(
             "success": True,
             "final_comment": result.get("final_comment"),
             "generation_metadata": result.get("generation_metadata", {}),
-            "execution_time_ms": result.get("execution_time_ms"),
+            "execution_time_ms": result.get("generation_metadata", {}).get("execution_time_ms", 0),
             "retry_count": result.get("retry_count", 0)
         }
     except Exception as e:
