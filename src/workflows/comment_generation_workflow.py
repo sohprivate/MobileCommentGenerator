@@ -6,6 +6,7 @@ LangGraphを使用した天気コメント生成のメインワークフロー�
 
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+import time
 from langgraph import StateGraph
 from langgraph.graph import END
 
@@ -45,6 +46,34 @@ def should_retry(state: CommentGenerationState) -> str:
     return "continue"
 
 
+def timed_node(node_func):
+    """ノード実行時間を計測するデコレーター"""
+    def wrapper(state: CommentGenerationState) -> CommentGenerationState:
+        node_name = node_func.__name__
+        start_time = time.time()
+        
+        try:
+            # ノード実行
+            result = node_func(state)
+            
+            # 実行時間を記録
+            execution_time = (time.time() - start_time) * 1000  # ミリ秒
+            if "node_execution_times" not in result:
+                result["node_execution_times"] = {}
+            result["node_execution_times"][node_name] = execution_time
+            
+            return result
+        except Exception as e:
+            # エラーでも実行時間を記録
+            execution_time = (time.time() - start_time) * 1000
+            if "node_execution_times" not in state:
+                state["node_execution_times"] = {}
+            state["node_execution_times"][node_name] = execution_time
+            raise e
+    
+    return wrapper
+
+
 def create_comment_generation_workflow() -> StateGraph:
     """
     天気コメント生成ワークフローを構築
@@ -55,14 +84,14 @@ def create_comment_generation_workflow() -> StateGraph:
     # ワークフローの初期化
     workflow = StateGraph(CommentGenerationState)
     
-    # ノードの追加
-    workflow.add_node("input", input_node)
-    workflow.add_node("fetch_forecast", fetch_weather_forecast_node)
-    workflow.add_node("retrieve_comments", retrieve_past_comments_node)
-    workflow.add_node("select_pair", select_comment_pair_node)
-    workflow.add_node("evaluate", evaluate_candidate_node)
-    workflow.add_node("generate", generate_comment_node)
-    workflow.add_node("output", output_node)
+    # ノードの追加（実行時間計測付き）
+    workflow.add_node("input", timed_node(input_node))
+    workflow.add_node("fetch_forecast", timed_node(fetch_weather_forecast_node))
+    workflow.add_node("retrieve_comments", timed_node(retrieve_past_comments_node))
+    workflow.add_node("select_pair", timed_node(select_comment_pair_node))
+    workflow.add_node("evaluate", timed_node(evaluate_candidate_node))
+    workflow.add_node("generate", timed_node(generate_comment_node))
+    workflow.add_node("output", timed_node(output_node))
     
     # エッジの追加（通常フロー）
     workflow.add_edge("input", "fetch_forecast")
@@ -118,30 +147,46 @@ def run_comment_generation(
         "retry_count": 0,
         "errors": [],
         "warnings": [],
+        "workflow_start_time": datetime.now(),
         **kwargs
     }
     
     # ワークフローの実行
     try:
         result = workflow.invoke(initial_state)
+        
+        # 実行時間の計算
+        workflow_end_time = datetime.now()
+        total_execution_time = (workflow_end_time - result.get("workflow_start_time", workflow_end_time)).total_seconds() * 1000
+        
         return {
             "success": True,
             "final_comment": result.get("final_comment"),
             "generation_metadata": result.get("generation_metadata", {}),
-            "execution_time_ms": result.get("generation_metadata", {}).get("execution_time_ms", 0),
-            "retry_count": result.get("retry_count", 0)
+            "execution_time_ms": total_execution_time,
+            "retry_count": result.get("retry_count", 0),
+            "node_execution_times": result.get("node_execution_times", {}),
+            "warnings": result.get("warnings", [])
         }
     except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"ワークフロー実行エラー: {str(e)}", exc_info=True)
+        
         return {
             "success": False,
             "error": str(e),
             "final_comment": None,
-            "generation_metadata": {}
+            "generation_metadata": {},
+            "execution_time_ms": 0,
+            "retry_count": 0
         }
 
 
 # エクスポート
 __all__ = [
     "create_comment_generation_workflow",
-    "run_comment_generation"
+    "run_comment_generation",
+    "should_retry",
+    "MAX_RETRY_COUNT"
 ]
