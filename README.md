@@ -1,140 +1,167 @@
-# 天気コメント生成システム
+# 天気予報コメント生成プロジェクト
 
 LangGraphとLLMを活用した天気コメント自動生成システムです。
 
-## 現在の実装状況
+## 🌟 プロジェクト概要
 
-### ✅ Phase 1: 基盤機能（完了）
+本プロジェクトは、Python/StreamlitバックエンドとVue.js/TypeScriptフロントエンドから構成される天気予報コメント生成システムです。指定した各地点の天気予報データと過去のコメントデータをもとに、LLM（大規模言語モデル）を活用して短い天気コメント（約15文字）を自動生成します。
 
-#### ✅ 地点データ管理システム (Issue #2) - **完了**
-地点データの読み込み、検索、正規化機能が実装されています。
-- `src/data/location_manager.py`: 包括的な地点管理機能
-- 47都道府県・8地方区分の自動推定
-- 高性能検索エンジン（レーベンシュタイン距離によるあいまい検索）
-- 距離計算機能（ハヴァーサイン式）
+### 主な特徴
+- **LangGraphワークフロー**: 状態遷移と再試行ロジックを簡潔に記述
+- **マルチLLMプロバイダー**: OpenAI/Gemini/Anthropic Claude対応
+- **類似度ベース選択**: 過去コメントから最適なペアを選定
+- **表現ルール適用**: NGワード・文字数制限の自動チェック
+- **リアルタイムUI**: Streamlit/Vue.jsによる直感的な操作
 
-#### ✅ 天気予報統合機能 (Issue #3) - **完了**
-Weathernews WxTech APIとの統合が完了しています。
-- `src/apis/wxtech_client.py`: APIクライアント実装
-- `src/nodes/weather_forecast_node.py`: LangGraphノード実装
-- 同期・非同期両対応
-- リトライ機能とエラーハンドリング
+## 📋 現在の進捗状況（2025/6/7時点）
 
-#### ✅ S3過去コメント取得機能 (Issue #4) - **完了**
-S3バケットからの過去コメント取得と類似検索が実装されています。
-- `src/repositories/s3_comment_repository.py`: S3連携
-- `src/nodes/retrieve_past_comments_node.py`: LangGraphノード
-- 類似度計算アルゴリズム実装
-- コメントタイプ（weather_comment/advice）の管理
+### ✅ Phase 1: 基盤機能（100%完了）
+- [x] **地点データ管理システム**: CSV読み込み・検索・正規化機能
+- [x] **天気予報統合機能**: WxTech API統合
+- [x] **S3過去コメント取得**: JSONL解析・類似検索
+- [x] **LLM統合**: マルチプロバイダー対応
 
-### 🔄 Phase 2: LangGraphワークフロー統合（実装中）
+### 🚧 Phase 2: LangGraphワークフロー（70%完了）
+- [x] **SelectCommentPairNode**: コサイン類似度による選択
+- [x] **EvaluateCandidateNode**: 8つの評価基準による検証
+- [x] **基本ワークフロー**: モックノード使用の骨格実装
+- [ ] **InputNode/OutputNode**: 本実装（現在モック）
 
-#### ✅ LLM統合とGenerateCommentNode (Issue #8) - **完了**
-マルチLLMプロバイダー対応のコメント生成機能が実装されています。
-- OpenAI、Gemini、Anthropic Claude対応
-- 15文字制限の遵守
-- プロンプトエンジニアリング実装
+### 📱 Phase 3: UI実装（100%完了）
+- [x] **Streamlit UI**: Web UIの実装
+- [x] **Vue.js/TypeScript**: モダンなフロントエンド
 
-#### 🚧 コメント選択・類似度計算 (Issue #5) - **実装予定**
-- コサイン類似度による過去コメントペア選択
-- 天気条件・セマンティック類似度の総合評価
+### 🚀 Phase 4: デプロイメント（0%完了）
+- [ ] **AWSデプロイメント**: Lambda/ECS・CloudWatch統合
 
-#### 🚧 コメント評価・バリデーション (Issue #6) - **実装予定**
-- 15文字制限チェック
-- NG表現・不適切ワードの検出
-- 表現ルールの適用
+## 🔄 システムの主な処理フロー
 
-#### 🚧 LangGraphワークフロー統合 (Issue #7) - **優先実装中**
-全ノードを統合したエンドツーエンドのワークフロー構築
 ```
-InputNode → FetchForecastNode → RetrievePastCommentsNode
-    ↓
-SelectCommentPair → EvaluateCandidate → GenerateComment → OutputNode
-    ↑_______________|（リトライループ）
+┌─────────────┐      ┌──────────────────┐      ┌────────────────────────┐
+│ InputNode    │──▶──│ FetchForecastNode │──▶──│ RetrievePastCommentsNode │
+└─────────────┘      └──────────────────┘      └────────────────────────┘
+                                                           │
+                              ┌────────────────────────────┘
+                              ▼
+                     ┌──────────────────┐
+                     │ SelectCommentPair │
+                     └──────────────────┘
+                              │
+                              ▼
+                     ┌──────────────────┐  Failure  ┌──────────────────┐
+                     │ EvaluateCandidate│ ────────▶ │ SelectCommentPair │
+                     └──────────────────┘           └──────────────────┘
+                              │ Success              (リトライループ)
+                              ▼
+                     ┌──────────────────┐
+                     │ GenerateComment   │
+                     └──────────────────┘
+                              │
+                              ▼
+                     ┌──────────────────┐
+                     │ OutputNode       │
+                     └──────────────────┘
 ```
 
-### 📋 Phase 3: UI・フロントエンド（計画中）
+## 🛠️ 技術スタック
 
-#### 📋 Streamlitバックエンド (Issue #9)
-#### 📋 React/TypeScriptフロントエンド (Issue #10)
+### バックエンド
+- **Python 3.10+**
+- **LangGraph**: ワークフロー管理
+- **Streamlit**: Web UI
+- **boto3**: AWS S3連携
+- **requests/aiohttp**: API通信
 
-### 📋 Phase 4: デプロイメント（計画中）
+### フロントエンド
+- **Vue.js 3/Nuxt 3**
+- **TypeScript**
+- **Composition API**
+- **Scoped CSS**
 
-#### 📋 AWSデプロイメント (Issue #11)
+### LLMプロバイダー
+- **OpenAI API**
+- **Google Gemini API**
+- **Anthropic Claude API**
 
-## システムの主な処理フロー
+### データソース
+- **Weathernews WxTech API**: 12h/24h予報
+- **S3バケット**: 過去コメントJSONL
+- **地点リストCSV**: Chiten.csv
 
-1. **地点読み込み**: `Chiten.csv` を読み取り、地点名と緯度経度を取得
-2. **天気予報取得**: WxTech API から 12h／24h 先の予報を取得
-3. **過去コメント取得**: S3 から対象年月の JSONL を読み込み、地点名でフィルタ
-4. **コメント候補選定**: 予報条件に近い `weather_comment` / `advice` ペアを抽出
-5. **LLM 生成**: 選定したペアをプロンプトに組み込み、LLM に新規コメント生成を依頼
-6. **ルールチェック**: 表現ルールを自動検証し、問題があれば再生成または別ペアを選択
-7. **結果表示**: フロントエンドにコメントを返却し、ユーザーはコピー可能
-
-## 環境構築
+## 🚀 セットアップ
 
 ### 前提条件
-
-* Python 3.10 以上
-* AWS CLI (S3 連携用)
-* OpenAI, Anthropic, Gemini, WxTech の API キー
+- Python 3.10以上
+- Node.js 18以上
+- AWS CLI（S3連携用）
+- 各種APIキー
 
 ### バックエンドセットアップ
-
 ```bash
+# 仮想環境作成
 python -m venv .venv
 source .venv/bin/activate
+
+# 依存関係インストール
 pip install -r requirements.txt
-cp .env.example .env   # 環境変数を設定
+
+# 環境変数設定
+cp .env.example .env
+# .envファイルを編集してAPIキーを設定
+
+# Streamlit起動
+streamlit run app.py
 ```
 
-### 必要な環境変数
-
-```env
-# Weather API
-WXTECH_API_KEY=your_wxtech_api_key
-
-# LLM Providers
-OPENAI_API_KEY=your_openai_api_key
-ANTHROPIC_API_KEY=your_anthropic_api_key
-GOOGLE_API_KEY=your_google_api_key
-
-# AWS
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_DEFAULT_REGION=ap-northeast-1
+### フロントエンドセットアップ
+```bash
+cd src/tool_design
+npm install
+npm run dev
 ```
 
-## 使用方法
+## 📊 主要機能
 
-現在、個別機能のテストが可能です。完全なワークフローはIssue #7の完了後に利用可能になります。
-
-### 地点検索の例
+### 1. 地点管理
 ```python
 from src.data.location_manager import LocationManager
 
 manager = LocationManager("Chiten.csv")
-results = manager.search_location("東京")
+results = manager.search_location("東京", fuzzy=True)
 ```
 
-### 天気予報取得の例
+### 2. 天気予報取得
 ```python
 from src.apis.wxtech_client import WxTechAPIClient
 
 client = WxTechAPIClient(api_key)
-forecast = client.get_forecast(35.6762, 139.6503)  # 東京
+forecast = client.get_forecast(35.6762, 139.6503)
 ```
 
-### 過去コメント取得の例
+### 3. 過去コメント検索
 ```python
 from src.repositories.s3_comment_repository import S3CommentRepository
 
 repo = S3CommentRepository()
-comments = repo.fetch_comments_by_period('202406')
+comments = repo.search_similar_comments(
+    target_weather_condition="晴れ",
+    target_temperature=25.0,
+    target_location="東京"
+)
 ```
 
-## テスト実行
+### 4. コメント生成
+```python
+from src.workflows.comment_generation_workflow import run_comment_generation
+
+result = run_comment_generation(
+    location_name="東京",
+    llm_provider="openai"
+)
+print(result['final_comment'])
+```
+
+## 🧪 テスト実行
 
 ```bash
 # 全テスト実行
@@ -143,71 +170,65 @@ pytest
 # カバレッジ付きテスト
 pytest --cov=src --cov-report=html
 
-# 特定のテストファイル実行
+# 特定のテスト実行
 pytest tests/test_location_manager.py
 ```
 
-## プロジェクト構造
+## 📁 プロジェクト構造
 
 ```
 .
 ├── src/
-│   ├── data/                # データクラス・管理
-│   │   ├── location_manager.py     # 地点管理 ✅
-│   │   ├── weather_data.py         # 天気データ ✅
-│   │   ├── past_comment.py         # 過去コメント ✅
-│   │   └── comment_generation_state.py  # LangGraph状態管理 ✅
-│   ├── apis/                # 外部API連携
-│   │   └── wxtech_client.py        # WxTech API ✅
-│   ├── repositories/        # データリポジトリ
-│   │   └── s3_comment_repository.py # S3連携 ✅
-│   ├── nodes/              # LangGraphノード
-│   │   ├── weather_forecast_node.py     # 天気予報取得 ✅
-│   │   ├── retrieve_past_comments_node.py # 過去コメント取得 ✅
-│   │   ├── generate_comment_node.py      # コメント生成 ✅
-│   │   ├── select_comment_pair_node.py   # コメント選択 🚧
-│   │   └── evaluate_candidate_node.py    # 評価・検証 🚧
-│   ├── llm/                # LLM統合
-│   │   ├── llm_client.py           # マルチLLMクライアント ✅
-│   │   └── prompt_builder.py       # プロンプト構築 ✅
-│   └── config/             # 設定管理
-│       ├── weather_config.py       # 天気API設定 ✅
-│       └── llm_config.py          # LLM設定 ✅
-├── tests/                  # テストスイート
-├── docs/                   # ドキュメント
-├── examples/               # 使用例
-├── Chiten.csv             # 地点データ
-├── requirements.txt        # 依存関係
-└── README.md              # このファイル
+│   ├── data/              # データクラス・管理
+│   ├── apis/              # 外部API連携
+│   ├── repositories/      # データリポジトリ
+│   ├── nodes/             # LangGraphノード
+│   ├── workflows/         # ワークフロー定義
+│   ├── llm/               # LLM統合
+│   ├── ui/                # Streamlit UI
+│   └── config/            # 設定管理
+├── tests/                 # テストスイート
+├── docs/                  # ドキュメント
+├── examples/              # 使用例
+└── src/tool_design/       # Vue.jsフロントエンド
 ```
 
-## 今後の開発予定
+## 🔥 優先実装事項
 
-### 直近の優先事項（Issue #17）
-1. **LangGraphワークフロー骨格の実装**
-   - モックノードを使用した基本フローの確立
-   - エンドツーエンドテストの実装
-   
-2. **表現ルール設定の具体化**
-   - NGワード設定ファイルの作成
-   - バリデーションルールの実装
+### 即時対応（今週中）
+1. SelectCommentPair/EvaluateCandidateNode統合
+2. InputNode/OutputNode本実装
+3. エンドツーエンド統合テスト
 
-3. **ノード統合の段階的実施**
-   - 実装済みノードから順次統合
-   - モックノードの実装置き換え
+### 短期対応（来週）
+1. 表現ルール設定ファイル化
+2. パフォーマンス最適化
+3. エラーハンドリング強化
 
-## 貢献方法
+### 中期対応（今月中）
+1. AWS Lambda/ECSデプロイメント
+2. CI/CDパイプライン構築
+3. 監視・ログ設定
 
-1. 各Issueの受け入れ条件を確認
-2. 実装前にテストを書く（TDD推奨）
-3. 型ヒントとdocstringを必ず記述
-4. テストカバレッジ80%以上を維持
+## 🤝 コントリビューション
 
-## ライセンス
+1. Issueの確認と選択
+2. ブランチ作成: `feature/issue-{number}-{description}`
+3. テスト作成（TDD推奨）
+4. PR作成とレビュー依頼
+
+詳細は[CONTRIBUTING.md](CONTRIBUTING.md)を参照してください。
+
+## 📝 ライセンス
 
 MIT License
 
+## 👥 開発チーム
+
+- **Project Lead**: @sakamo-wni
+- **Contributors**: @ah925
+
 ---
 
-**Current Status**: Phase 2 実装中 🚧  
-**Next Milestone**: Issue #7 (LangGraphワークフロー統合)
+**Last Updated**: 2025/06/07  
+**Status**: Active Development
