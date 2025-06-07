@@ -53,31 +53,56 @@ export const useApi = () => {
     }
   }
 
-  // コメントを生成
+  // コメントを生成 - ワークフロー統合
   const generateComments = async (
     locations: string[],
     settings: GenerateSettings,
     weatherData?: WeatherData
   ): Promise<ApiResponse<GeneratedComment[]>> => {
     try {
-      const response = await $fetch<GeneratedComment[]>(`${baseURL}/api/generate-comments`, {
+      // 新しいワークフロー統合エンドポイントを使用
+      const response = await $fetch<{
+        success: boolean;
+        final_comment: string;
+        generation_metadata: any;
+        error?: string;
+      }>(`${baseURL}/api/generate-comment`, {
         method: 'POST',
         body: {
-          locations,
-          settings: {
-            method: settings.method,
-            count: settings.count,
+          location_name: locations[0] || '東京', // 現在は単一地点に対応
+          target_datetime: new Date().toISOString(),
+          llm_provider: settings.method === '実例ベース' ? 'openai' : 'gemini',
+          generation_settings: {
             include_emoji: settings.includeEmoji,
             include_advice: settings.includeAdvice,
             polite_form: settings.politeForm,
-            target_time: settings.targetTime || '12h'
+            comment_count: settings.count
           },
           weather_data: weatherData
         }
       })
-      return {
-        success: true,
-        data: response
+      
+      // ワークフローレスポンスを GeneratedComment 形式に変換
+      if (response.success && response.final_comment) {
+        const generatedComments: GeneratedComment[] = [{
+          id: Date.now().toString(),
+          text: response.final_comment,
+          location: locations[0] || '東京',
+          timestamp: new Date().toISOString(),
+          weather_condition: response.generation_metadata?.weather_condition || '不明',
+          method: settings.method,
+          metadata: response.generation_metadata || {}
+        }]
+        
+        return {
+          success: true,
+          data: generatedComments
+        }
+      } else {
+        return {
+          success: false,
+          error: response.error || 'コメント生成に失敗しました'
+        }
       }
     } catch (error) {
       return handleApiError(error)
@@ -94,10 +119,24 @@ export const useApi = () => {
     }
   }
 
+  // ワークフロー統合のステータス確認
+  const checkWorkflowIntegration = async (): Promise<ApiResponse<boolean>> => {
+    try {
+      const response = await $fetch<{status: string, workflow_available: boolean}>(`${baseURL}/api/workflow/status`)
+      return {
+        success: true,
+        data: response.workflow_available
+      }
+    } catch (error) {
+      return handleApiError(error)
+    }
+  }
+
   return {
     fetchLocations,
     fetchWeatherData,
     generateComments,
-    checkHealth
+    checkHealth,
+    checkWorkflowIntegration
   }
 }
