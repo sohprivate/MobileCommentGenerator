@@ -17,10 +17,10 @@ from src.nodes.generate_comment_node import generate_comment_node
 # 一時的なモックノード（実装待ち）
 from src.nodes.mock_nodes import (
     mock_input_node,
-    mock_evaluate_candidate_node,
     mock_output_node
 )
 from src.nodes.select_comment_pair_node import select_comment_pair_node
+from src.nodes.evaluate_candidate_node import evaluate_candidate_node
 
 
 # 定数
@@ -64,7 +64,7 @@ def create_comment_generation_workflow() -> StateGraph:
     workflow.add_node("fetch_forecast", fetch_weather_forecast_node)
     workflow.add_node("retrieve_comments", retrieve_past_comments_node)
     workflow.add_node("select_pair", select_comment_pair_node)
-    workflow.add_node("evaluate", mock_evaluate_candidate_node)
+    workflow.add_node("evaluate", evaluate_candidate_node)
     workflow.add_node("generate", generate_comment_node)
     workflow.add_node("output", mock_output_node)
     
