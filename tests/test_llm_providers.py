@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock, Mock
 from src.llm.providers.openai_provider import OpenAIProvider
 from src.llm.providers.gemini_provider import GeminiProvider
 from src.llm.providers.anthropic_provider import AnthropicProvider
-from src.data.weather_forecast import WeatherForecast
+from src.data.weather_data import WeatherForecast
 from src.data.comment_pair import CommentPair
 from src.data.past_comment import PastComment
 

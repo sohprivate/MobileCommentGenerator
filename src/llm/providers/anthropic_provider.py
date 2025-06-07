@@ -6,7 +6,7 @@ from typing import Dict, Any
 from anthropic import Anthropic
 
 from src.llm.providers.base_provider import LLMProvider
-from src.data.weather_forecast import WeatherForecast
+from src.data.weather_data import WeatherForecast
 from src.data.comment_pair import CommentPair
 
 logger = logging.getLogger(__name__)
