@@ -1,6 +1,10 @@
 # Mobile Comment Generator - Makefile
 # 開発タスクの自動化
 
+# シェルフラグの設定（エラーハンドリング強化）
+SHELL := /bin/bash
+.SHELLFLAGS := -eu -o pipefail -c
+
 .PHONY: help install install-dev clean test lint format run-streamlit run-frontend setup-env
 
 # デフォルトターゲット
@@ -33,7 +37,15 @@ help:
 # 🚀 セットアップコマンド
 setup: clean-venv
 	@echo "🚀 完全セットアップを開始..."
-	uv venv --python 3.11
+	@if command -v python3 &> /dev/null; then \
+		PYTHON_CMD=python3; \
+	elif command -v python &> /dev/null; then \
+		PYTHON_CMD=python; \
+	else \
+		echo "❌ Python が見つかりません"; \
+		exit 1; \
+	fi; \
+	uv venv --python $$PYTHON_CMD
 	$(MAKE) install-dev
 	$(MAKE) setup-env
 	@echo "✅ セットアップ完了！"

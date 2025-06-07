@@ -51,7 +51,21 @@ check_uv() {
     
     if ! command -v uv &> /dev/null; then
         log_warning "uv が見つかりません。インストール中..."
-        curl -LsSf https://astral.sh/uv/install.sh | sh
+        
+        # セキュリティ強化: インストールスクリプトを検証
+        INSTALL_SCRIPT="/tmp/uv-install-$$.sh"
+        curl -LsSf https://astral.sh/uv/install.sh -o "$INSTALL_SCRIPT"
+        
+        # インストールスクリプトが正常にダウンロードされたか確認
+        if [ ! -f "$INSTALL_SCRIPT" ] || [ ! -s "$INSTALL_SCRIPT" ]; then
+            log_error "uv インストールスクリプトのダウンロードに失敗しました"
+            exit 1
+        fi
+        
+        # インストール実行
+        sh "$INSTALL_SCRIPT"
+        rm -f "$INSTALL_SCRIPT"
+        
         export PATH="$HOME/.cargo/bin:$PATH"
         
         if ! command -v uv &> /dev/null; then
@@ -74,8 +88,8 @@ setup_venv() {
         rm -rf .venv
     fi
     
-    # 新しい仮想環境作成
-    uv venv --python 3.11
+    # 新しい仮想環境作成（検出されたPythonバージョンを使用）
+    uv venv --python $PYTHON_CMD
     log_success "仮想環境を作成しました"
 }
 
