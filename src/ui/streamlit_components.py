@@ -25,6 +25,7 @@ def location_selector() -> str:
     # 検索機能
     search_query = st.text_input(
         "🔍 地点名で検索",
+        key="location_search",
         placeholder="例: 東京、大阪、札幌...",
         help="地点名の一部を入力して検索できます"
     )
@@ -129,14 +130,10 @@ def result_display(result: Dict[str, Any]):
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("📋 コピー", use_container_width=True, type="primary"):
-            # JavaScriptでクリップボードにコピー
-            st.markdown(f"""
-            <script>
-            navigator.clipboard.writeText("{comment}");
-            </script>
-            """, unsafe_allow_html=True)
-            st.success("クリップボードにコピーしました！")
+        if st.button("📋 コピー", key="copy_button", use_container_width=True, type="primary"):
+            from .streamlit_utils import copy_to_clipboard
+            copy_to_clipboard(comment)
+            st.toast("✅ クリップボードにコピーしました！", icon='✅')
     
     with col2:
         if st.button("🔄 再生成", use_container_width=True):
@@ -182,10 +179,28 @@ def generation_history_display(history: List[Dict[str, Any]]):
         history: 生成履歴のリスト
     """
     if not history:
-        st.info("履歴がありません")
+        st.info("まだ生成履歴がありません。")
         return
     
+    import pandas as pd
+    
+    # DataFrameとして表示
+    df = pd.DataFrame(history)
+    st.dataframe(df)
+    
+    # CSVダウンロードボタン
+    csv = df.to_csv(index=False)
+    st.download_button(
+        label="📥 履歴をダウンロード",
+        data=csv,
+        file_name=f"history_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+        mime="text/csv"
+    )
+    
     # 最新の履歴から表示
+    st.divider()
+    st.subheader("最近の生成履歴")
+    
     for idx, item in enumerate(reversed(history[-10:])):  # 最新10件
         timestamp = item.get('timestamp', '')
         location = item.get('location', '不明')
@@ -226,41 +241,80 @@ def settings_panel():
     """
     st.subheader("🔐 APIキー設定")
     
+    import os
+    
     # OpenAI
     openai_key = st.text_input(
         "OpenAI APIキー",
         type="password",
-        value=st.session_state.get('openai_api_key', ''),
+        value=os.environ.get('OPENAI_API_KEY', st.session_state.get('openai_api_key', '')),
         help="OpenAI APIキーを入力してください"
     )
     if openai_key:
         st.session_state.openai_api_key = openai_key
+        if openai_key and len(openai_key) > 10:
+            st.success("✅ OpenAI APIキー設定済み")
     
     # Gemini
     gemini_key = st.text_input(
         "Gemini APIキー",
         type="password",
-        value=st.session_state.get('gemini_api_key', ''),
+        value=os.environ.get('GEMINI_API_KEY', st.session_state.get('gemini_api_key', '')),
         help="Google Gemini APIキーを入力してください"
     )
     if gemini_key:
         st.session_state.gemini_api_key = gemini_key
+        if gemini_key and len(gemini_key) > 10:
+            st.success("✅ Gemini APIキー設定済み")
     
     # Anthropic
     anthropic_key = st.text_input(
         "Anthropic APIキー",
         type="password",
-        value=st.session_state.get('anthropic_api_key', ''),
+        value=os.environ.get('ANTHROPIC_API_KEY', st.session_state.get('anthropic_api_key', '')),
         help="Anthropic Claude APIキーを入力してください"
     )
     if anthropic_key:
         st.session_state.anthropic_api_key = anthropic_key
+        if anthropic_key and len(anthropic_key) > 10:
+            st.success("✅ Anthropic APIキー設定済み")
     
     # 検証ボタン
     if st.button("🔍 APIキーを検証"):
         with st.spinner("検証中..."):
             # TODO: 実際のAPI検証ロジックを実装
             st.success("APIキーが有効です！")
+    
+    st.divider()
+    
+    # 生成設定
+    st.subheader("⚙️ 生成設定")
+    
+    # 文字数制限
+    max_chars = st.slider(
+        "最大文字数",
+        min_value=10,
+        max_value=200,
+        value=50,
+        help="生成コメントの最大文字数"
+    )
+    st.session_state.max_chars = max_chars
+    
+    # コメントスタイル
+    comment_style = st.selectbox(
+        "コメントスタイル",
+        options=["カジュアル", "フォーマル", "親しみやすい"],
+        help="生成コメントのスタイルを選択"
+    )
+    st.session_state.comment_style = comment_style
+    
+    # 絵文字使用
+    use_emoji = st.checkbox(
+        "絵文字を使用する",
+        value=st.session_state.get('use_emoji', True),
+        help="コメントに絵文字を含めるかどうか"
+    )
+    st.session_state.use_emoji = use_emoji
     
     st.divider()
     

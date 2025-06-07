@@ -41,15 +41,16 @@ class TestLocationSelector:
         
         # selectboxの引数を確認
         args, kwargs = mock_selectbox.call_args
-        assert args[0] == "🌍 地点を選択"
-        assert set(args[1]) == set(mock_locations)
+        assert args[0] == "📍 地点を選択"
+        assert set(kwargs.get('options', [])) == set(mock_locations)
     
+    @patch('streamlit.checkbox')
     @patch('streamlit.text_input')
     @patch('streamlit.selectbox')
     @patch('src.ui.streamlit_utils.load_locations')
     @patch('src.ui.streamlit_utils.filter_locations')
     def test_location_selector_with_search(
-        self, mock_filter, mock_load_locations, mock_selectbox, mock_text_input
+        self, mock_filter, mock_load_locations, mock_selectbox, mock_text_input, mock_checkbox
     ):
         """検索機能付き地点選択のテスト"""
         # モックデータ
@@ -59,6 +60,7 @@ class TestLocationSelector:
         mock_text_input.return_value = "東"
         mock_filter.return_value = filtered_locations
         mock_selectbox.return_value = "東京"
+        mock_checkbox.return_value = False  # お気に入りのみ表示をオフ
         
         # 実行
         result = location_selector()
@@ -68,8 +70,8 @@ class TestLocationSelector:
         mock_filter.assert_called_once_with(all_locations, "東")
         
         # フィルタされた結果がselectboxに渡されることを確認
-        args, _ = mock_selectbox.call_args
-        assert set(args[1]) == set(filtered_locations)
+        args, kwargs = mock_selectbox.call_args
+        assert set(kwargs.get('options', [])) == set(filtered_locations)
 
 
 class TestLLMProviderSelector:
@@ -85,10 +87,10 @@ class TestLLMProviderSelector:
         # 検証
         mock_selectbox.assert_called_once()
         args, kwargs = mock_selectbox.call_args
-        assert args[0] == "🤖 LLMプロバイダー"
-        assert "openai" in args[1]
-        assert "gemini" in args[1]
-        assert "anthropic" in args[1]
+        assert args[0] == "🤖 LLMプロバイダーを選択"
+        assert "openai" in kwargs.get('options', [])
+        assert "gemini" in kwargs.get('options', [])
+        assert "anthropic" in kwargs.get('options', [])
         assert result == "openai"
 
 
@@ -165,11 +167,11 @@ class TestResultDisplay:
         mock_copy.assert_called_once_with('テストコメント')
         mock_toast.assert_called_once_with("✅ クリップボードにコピーしました！", icon='✅')
     
-    @patch('streamlit.warning')
-    def test_result_display_empty(self, mock_warning):
+    @patch('streamlit.error')
+    def test_result_display_empty(self, mock_error):
         """空の結果の場合のテスト"""
         result_display({})
-        mock_warning.assert_called_once()
+        mock_error.assert_called_once_with("生成結果がありません")
 
 
 class TestGenerationHistoryDisplay:
