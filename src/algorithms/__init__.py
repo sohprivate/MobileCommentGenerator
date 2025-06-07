@@ -5,5 +5,6 @@
 """
 
 from .similarity_calculator import CommentSimilarityCalculator
+from .comment_evaluator import CommentEvaluator
 
-__all__ = ["CommentSimilarityCalculator"]
+__all__ = ["CommentSimilarityCalculator", "CommentEvaluator"]
