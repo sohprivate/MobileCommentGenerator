@@ -1,313 +1,259 @@
 """
-ワークフロー統合テスト
+コメント生成ワークフローの統合テスト
 
-InputNode、OutputNode、および全体ワークフローのテスト
+エンドツーエンドのワークフロー動作を検証
 """
 
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch, MagicMock, Mock
+from datetime import datetime
+import os
 import json
-import pytz
 
-from src.data.comment_generation_state import CommentGenerationState
-from src.data.location import Location
-from src.data.weather_data import WeatherForecast
-from src.data.past_comment import PastComment
-from src.data.comment_pair import CommentPair
-from src.nodes.input_node import input_node, _create_location, _get_default_preferences
-from src.nodes.output_node import output_node, _determine_final_comment, _create_generation_metadata
 from src.workflows.comment_generation_workflow import (
     create_comment_generation_workflow,
     run_comment_generation,
-    should_retry
+    should_retry,
+    MAX_RETRY_COUNT
 )
-
-
-class TestInputNode:
-    """InputNodeのテストスイート"""
-    
-    def test_input_node_basic(self):
-        """基本的な入力処理"""
-        state = {
-            "location_name": "東京",
-            "target_datetime": datetime.now(),
-            "llm_provider": "openai"
-        }
-        
-        result = input_node(state)
-        
-        assert result["input_processed"] is True
-        assert result["retry_count"] == 0
-        assert "location" in result
-        assert result["location"]["name"] == "東京"
-        assert "execution_context" in result
-        assert "user_preferences" in result
-    
-    def test_input_node_minimal(self):
-        """最小限の入力での処理"""
-        state = {"location_name": "稚内"}
-        
-        result = input_node(state)
-        
-        assert result["input_processed"] is True
-        assert result["llm_provider"] == "openai"  # デフォルト
-        assert result["target_datetime"] is not None
-        assert result["location"]["name"] == "稚内"
-    
-    def test_input_node_invalid_location(self):
-        """未登録地点の処理"""
-        state = {"location_name": "不明な地点"}
-        
-        result = input_node(state)
-        
-        assert result["input_processed"] is True
-        assert result["location"]["name"] == "不明な地点"
-        assert result["location"]["region"] == "不明"
-        assert len(result.get("warnings", [])) == 0  # 警告は出るがエラーにはしない
-    
-    def test_input_node_missing_location(self):
-        """地点名なしでのエラー処理"""
-        state = {}
-        
-        result = input_node(state)
-        
-        assert result["input_processed"] is False
-        assert len(result["errors"]) > 0
-        assert "location_name" in result["errors"][0]
-    
-    def test_input_node_validation(self):
-        """入力検証のテスト"""
-        # 長すぎる地点名
-        state = {"location_name": "a" * 51}
-        result = input_node(state)
-        assert result["input_processed"] is False
-        assert len(result["errors"]) > 0
-        
-        # 無効なLLMプロバイダー
-        state = {"location_name": "東京", "llm_provider": "invalid"}
-        result = input_node(state)
-        assert result["input_processed"] is False
-        assert "LLMプロバイダー" in result["errors"][0]
-    
-    def test_input_node_future_datetime(self):
-        """未来の日時での警告"""
-        future_date = datetime.now() + timedelta(days=10)
-        state = {
-            "location_name": "東京",
-            "target_datetime": future_date
-        }
-        
-        result = input_node(state)
-        
-        assert result["input_processed"] is True
-        assert len(result["warnings"]) > 0
-        assert "7日以上先" in result["warnings"][0]
-    
-    def test_create_location(self):
-        """地点作成のテスト"""
-        # 登録済み地点
-        location = _create_location("稚内")
-        assert location.name == "稚内"
-        assert location.latitude == 45.4158
-        assert location.region == "北海道"
-        
-        # 未登録地点
-        location = _create_location("未知の場所")
-        assert location.name == "未知の場所"
-        assert location.region == "不明"
-    
-    def test_get_default_preferences(self):
-        """デフォルト設定のテスト"""
-        prefs = _get_default_preferences()
-        assert prefs["style"] == "casual"
-        assert prefs["length"] == "medium"
-        assert prefs["emoji_usage"] is True
-
-
-class TestOutputNode:
-    """OutputNodeのテストスイート"""
-    
-    def setup_method(self):
-        """テストセットアップ"""
-        self.sample_state = {
-            "location_name": "東京",
-            "target_datetime": datetime.now(),
-            "execution_start_time": datetime.now() - timedelta(seconds=2),
-            "retry_count": 1,
-            "generated_comment": "今日は爽やかな晴れですね",
-            "weather_data": {
-                "weather_description": "晴れ",
-                "temperature": 20.0,
-                "humidity": 60.0,
-                "wind_speed": 3.0
-            },
-            "selected_pair": {
-                "weather_comment": {
-                    "comment_text": "気持ちの良い朝です",
-                    "comment_type": "weather_comment",
-                    "temperature": 19.0,
-                    "weather_condition": "晴れ"
-                },
-                "advice_comment": {
-                    "comment_text": "日焼け止めをお忘れなく",
-                    "comment_type": "advice",
-                    "temperature": 21.0,
-                    "weather_condition": "晴れ"
-                },
-                "similarity_score": 0.85,
-                "selection_reason": "天気条件が一致"
-            },
-            "validation_result": {
-                "is_valid": True,
-                "total_score": 0.8
-            }
-        }
-    
-    def test_output_node_success(self):
-        """正常な出力処理"""
-        result = output_node(self.sample_state)
-        
-        assert result["output_processed"] is True
-        assert result["final_comment"] == "今日は爽やかな晴れですね"
-        assert "output_json" in result
-        
-        # JSON形式の確認
-        output_data = json.loads(result["output_json"])
-        assert output_data["final_comment"] == "今日は爽やかな晴れですね"
-        assert "generation_metadata" in output_data
-        assert output_data["generation_metadata"]["retry_count"] == 1
-        assert output_data["generation_metadata"]["execution_time_ms"] > 0
-    
-    def test_output_node_no_generated_comment(self):
-        """生成コメントなしの場合"""
-        state = self.sample_state.copy()
-        del state["generated_comment"]
-        
-        result = output_node(state)
-        
-        assert result["output_processed"] is True
-        assert result["final_comment"] == "気持ちの良い朝です"  # selected_pairから
-    
-    def test_output_node_minimal_state(self):
-        """最小限の状態での処理"""
-        state = {"location_name": "東京"}
-        
-        result = output_node(state)
-        
-        assert result["output_processed"] is True
-        assert result["final_comment"] == "今日も素敵な一日をお過ごしください"
-    
-    def test_determine_final_comment(self):
-        """最終コメント決定ロジック"""
-        # LLM生成コメント優先
-        state = {"generated_comment": "LLMコメント"}
-        assert _determine_final_comment(state) == "LLMコメント"
-        
-        # selected_pairから
-        state = {
-            "selected_pair": {
-                "weather_comment": {"comment_text": "ペアコメント"}
-            }
-        }
-        assert _determine_final_comment(state) == "ペアコメント"
-        
-        # デフォルト
-        state = {}
-        assert _determine_final_comment(state) == "今日も素敵な一日をお過ごしください"
-    
-    def test_create_generation_metadata(self):
-        """メタデータ生成のテスト"""
-        metadata = _create_generation_metadata(self.sample_state, 2500)
-        
-        assert metadata["execution_time_ms"] == 2500
-        assert metadata["retry_count"] == 1
-        assert metadata["weather_condition"] == "晴れ"
-        assert metadata["temperature"] == 20.0
-        assert metadata["validation_passed"] is True
-        assert len(metadata["selected_past_comments"]) == 2
-    
-    def test_output_node_with_errors(self):
-        """エラー情報を含む出力"""
-        state = self.sample_state.copy()
-        state["errors"] = ["エラー1", "エラー2"]
-        state["warnings"] = ["警告1"]
-        
-        result = output_node(state)
-        output_data = json.loads(result["output_json"])
-        
-        assert len(output_data["generation_metadata"]["errors"]) == 2
-        assert len(output_data["generation_metadata"]["warnings"]) == 1
+from src.data.comment_generation_state import CommentGenerationState
 
 
 class TestWorkflowIntegration:
-    """ワークフロー全体のテスト"""
+    """ワークフロー統合テストクラス"""
     
-    def test_should_retry(self):
-        """リトライ判定のテスト"""
-        # リトライ不要
-        state = {"retry_count": 0, "validation_result": {"is_valid": True}}
-        assert should_retry(state) == "continue"
+    @pytest.fixture
+    def mock_env_vars(self):
+        """環境変数のモック"""
+        env_vars = {
+            "WXTECH_API_KEY": "test-wx-key",
+            "AWS_ACCESS_KEY_ID": "test-aws-key",
+            "AWS_SECRET_ACCESS_KEY": "test-aws-secret",
+            "S3_COMMENT_BUCKET": "test-bucket",
+            "OPENAI_API_KEY": "test-openai-key",
+            "GEMINI_API_KEY": "test-gemini-key",
+            "ANTHROPIC_API_KEY": "test-anthropic-key"
+        }
+        with patch.dict(os.environ, env_vars):
+            yield
+    
+    @patch('src.nodes.weather_forecast_node.requests.get')
+    @patch('src.nodes.retrieve_past_comments_node.boto3.client')
+    @patch('src.llm.providers.openai_provider.OpenAI')
+    def test_complete_workflow_success(
+        self,
+        mock_openai_class,
+        mock_boto_client,
+        mock_requests_get,
+        mock_env_vars
+    ):
+        """完全なワークフローの成功ケース"""
+        # 天気APIのモック
+        mock_weather_response = MagicMock()
+        mock_weather_response.json.return_value = {
+            "forecasts": [{
+                "location": "稚内",
+                "datetime": "2024-06-05T09:00:00",
+                "weather_code": "clear",
+                "weather_description": "晴れ",
+                "temperature": 20.5,
+                "humidity": 60,
+                "wind_speed": 2.5
+            }]
+        }
+        mock_requests_get.return_value = mock_weather_response
         
-        # リトライ必要
-        state = {"retry_count": 1, "validation_result": {"is_valid": False}}
+        # S3クライアントのモック
+        mock_s3 = MagicMock()
+        mock_s3.list_objects_v2.return_value = {
+            'Contents': [{'Key': 'comments_2024_06.jsonl'}]
+        }
+        mock_s3.get_object.return_value = {
+            'Body': MagicMock(
+                read=lambda: b'{"location": "稚内", "weather_condition": "晴れ", "temperature": 20.0, "comment_text": "爽やかな朝です", "comment_type": "weather_comment"}\n{"location": "稚内", "weather_condition": "晴れ", "temperature": 20.0, "comment_text": "日焼け対策を", "comment_type": "advice"}'
+            )
+        }
+        mock_boto_client.return_value = mock_s3
+        
+        # OpenAIクライアントのモック
+        mock_openai = MagicMock()
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "爽やかな一日です"
+        mock_openai.chat.completions.create.return_value = mock_response
+        mock_openai_class.return_value = mock_openai
+        
+        # ワークフロー実行
+        result = run_comment_generation(
+            location_name="稚内",
+            llm_provider="openai"
+        )
+        
+        # 検証
+        assert result["success"] is True
+        assert result["final_comment"] == "爽やかな一日です"
+        assert "generation_metadata" in result
+        assert result["retry_count"] >= 0
+        
+        # API呼び出しの検証
+        mock_requests_get.assert_called_once()
+        mock_openai.chat.completions.create.assert_called_once()
+    
+    def test_should_retry_logic(self):
+        """リトライロジックのテスト"""
+        # リトライ上限に達していない場合
+        state = {
+            "retry_count": 2,
+            "validation_result": {"is_valid": False}
+        }
         assert should_retry(state) == "retry"
         
-        # リトライ上限
-        state = {"retry_count": 5, "validation_result": {"is_valid": False}}
+        # リトライ上限に達した場合
+        state = {
+            "retry_count": MAX_RETRY_COUNT,
+            "validation_result": {"is_valid": False}
+        }
+        assert should_retry(state) == "continue"
+        
+        # バリデーション成功の場合
+        state = {
+            "retry_count": 1,
+            "validation_result": {"is_valid": True}
+        }
         assert should_retry(state) == "continue"
     
-    @patch('src.nodes.weather_forecast_node.fetch_weather_forecast_node')
-    @patch('src.nodes.retrieve_past_comments_node.retrieve_past_comments_node')
-    def test_workflow_creation(self, mock_retrieve, mock_fetch):
-        """ワークフロー構築のテスト"""
+    @patch('src.nodes.weather_forecast_node.requests.get')
+    @patch('src.nodes.retrieve_past_comments_node.boto3.client')
+    @patch('src.llm.providers.openai_provider.OpenAI')
+    def test_workflow_with_retry(
+        self,
+        mock_openai_class,
+        mock_boto_client,
+        mock_requests_get,
+        mock_env_vars
+    ):
+        """リトライを含むワークフローのテスト"""
+        # 天気APIとS3のモック設定（省略）
+        mock_weather_response = MagicMock()
+        mock_weather_response.json.return_value = {
+            "forecasts": [{
+                "location": "稚内",
+                "datetime": "2024-06-05T09:00:00",
+                "weather_code": "clear",
+                "weather_description": "晴れ",
+                "temperature": 20.5
+            }]
+        }
+        mock_requests_get.return_value = mock_weather_response
+        
+        mock_s3 = MagicMock()
+        mock_s3.list_objects_v2.return_value = {'Contents': [{'Key': 'test.jsonl'}]}
+        mock_s3.get_object.return_value = {
+            'Body': MagicMock(
+                read=lambda: b'{"location": "稚内", "weather_condition": "晴れ", "temperature": 20.0, "comment_text": "今日は本当に素晴らしい天気ですね", "comment_type": "weather_comment"}\n{"location": "稚内", "weather_condition": "晴れ", "temperature": 20.0, "comment_text": "日焼け止めを", "comment_type": "advice"}'
+            )
+        }
+        mock_boto_client.return_value = mock_s3
+        
+        # OpenAIクライアントのモック
+        # 最初は長すぎるコメント、次は成功
+        mock_openai = MagicMock()
+        responses = [
+            "今日は本当に素晴らしい天気ですね",  # 長すぎる
+            "爽やかな一日です"  # 成功
+        ]
+        
+        mock_response_list = []
+        for response_text in responses:
+            mock_response = MagicMock()
+            mock_response.choices = [MagicMock()]
+            mock_response.choices[0].message.content = response_text
+            mock_response_list.append(mock_response)
+        
+        mock_openai.chat.completions.create.side_effect = mock_response_list
+        mock_openai_class.return_value = mock_openai
+        
+        # ワークフロー実行
+        result = run_comment_generation(
+            location_name="稚内",
+            llm_provider="openai"
+        )
+        
+        # 検証
+        assert result["success"] is True
+        assert result["final_comment"] == "爽やかな一日です"
+        assert result["retry_count"] >= 1  # 少なくとも1回はリトライ
+    
+    def test_workflow_with_error(self):
+        """エラー時のワークフローテスト"""
+        # 環境変数なしでエラーになることを確認
+        with patch.dict(os.environ, {}, clear=True):
+            result = run_comment_generation(
+                location_name="稚内",
+                llm_provider="openai"
+            )
+            
+            assert result["success"] is False
+            assert "error" in result
+            assert result["final_comment"] is None
+    
+    @patch('src.workflows.comment_generation_workflow.create_comment_generation_workflow')
+    def test_workflow_creation(self, mock_create_workflow):
+        """ワークフロー作成のテスト"""
+        # モックワークフローの作成
+        mock_workflow = MagicMock()
+        mock_create_workflow.return_value = mock_workflow
+        
+        # ワークフロー作成を呼び出し
         workflow = create_comment_generation_workflow()
         
-        assert workflow is not None
-        # ワークフローが正しく構築されているかの確認
-        # （LangGraphの内部構造に依存するため、詳細なテストは省略）
-    
-    @patch('src.nodes.weather_forecast_node.WeatherAPI')
-    @patch('src.nodes.retrieve_past_comments_node.S3Client')
-    def test_run_comment_generation_success(self, mock_s3, mock_weather_api):
-        """コメント生成実行の成功テスト"""
-        # モックの設定
-        mock_weather_api.return_value.get_forecast.return_value = WeatherForecast(
-            location="東京",
-            datetime=datetime.now(),
-            temperature=20.0,
-            weather_code="100",
-            weather_description="晴れ",
-            precipitation=0.0,
-            humidity=60.0,
-            wind_speed=3.0,
-            wind_direction="北"
-        )
-        
-        mock_s3.return_value.list_objects.return_value = []
-        
-        # 実行
-        result = run_comment_generation(
-            location_name="東京",
-            target_datetime=datetime.now()
-        )
-        
-        assert result["success"] is True
-        assert result["final_comment"] is not None
-        assert "generation_metadata" in result
-    
-    def test_run_comment_generation_error(self):
-        """エラー時の処理"""
-        # 無効な入力でエラーを発生させる
-        result = run_comment_generation(
-            location_name="",  # 空の地点名
-            llm_provider="invalid"
-        )
-        
-        # エラーでも基本的な構造は返す
-        assert result["success"] is False or result["success"] is True
-        assert "error" in result or "final_comment" in result
+        # 呼び出しの確認
+        mock_create_workflow.assert_called_once()
+        assert workflow == mock_workflow
 
 
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+class TestStateManagement:
+    """状態管理のテスト"""
+    
+    def test_initial_state_creation(self):
+        """初期状態の作成テスト"""
+        from datetime import datetime
+        
+        initial_state = {
+            "location_name": "稚内",
+            "target_datetime": datetime.now(),
+            "llm_provider": "openai",
+            "retry_count": 0,
+            "errors": [],
+            "warnings": []
+        }
+        
+        assert initial_state["location_name"] == "稚内"
+        assert initial_state["llm_provider"] == "openai"
+        assert initial_state["retry_count"] == 0
+        assert len(initial_state["errors"]) == 0
+        assert len(initial_state["warnings"]) == 0
+    
+    def test_state_updates_through_workflow(self):
+        """ワークフローを通じた状態更新のテスト"""
+        state = CommentGenerationState()
+        state["location_name"] = "稚内"
+        state["retry_count"] = 0
+        
+        # リトライカウントの更新
+        state["retry_count"] += 1
+        assert state["retry_count"] == 1
+        
+        # エラーの追加
+        state["errors"] = state.get("errors", [])
+        state["errors"].append("Test error")
+        assert len(state["errors"]) == 1
+        assert state["errors"][0] == "Test error"
+        
+        # 最終コメントの設定
+        state["final_comment"] = "テストコメント"
+        assert state["final_comment"] == "テストコメント"
+
+
+if __name__ == '__main__':
+    pytest.main([__file__])

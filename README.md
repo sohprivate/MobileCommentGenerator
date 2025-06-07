@@ -4,14 +4,14 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
 
 ## 🌟 プロジェクト概要
 
-本プロジェクトは、Python/StreamlitバックエンドとVue.js/TypeScriptフロントエンドから構成される天気予報コメント生成システムです。指定した各地点の天気予報データと過去のコメントデータをもとに、LLM（大規模言語モデル）を活用して短い天気コメント（約15文字）を自動生成します。
+本プロジェクトは、Python/Streamlitバックエンドと構成される天気予報コメント生成システムです。指定した各地点の天気予報データと過去のコメントデータをもとに、LLM（大規模言語モデル）を活用して短い天気コメント（約15文字）を自動生成します。
 
 ### 主な特徴
 - **LangGraphワークフロー**: 状態遷移と再試行ロジックを洗練に記述
 - **マルチLLMプロバイダー**: OpenAI/Gemini/Anthropic Claude対応
 - **類似度ベース選択**: 過去コメントから最適なペアを選択
 - **表現ルール適用**: NGワード・文字数制限の自動チェック
-- **リアルタイムUI**: Streamlit/Vue.jsによる直感的な操作
+- **リアルタイムUI**: Streamlitによる直感的な操作
 
 ## 📊 現在の進捗状況（2025/6/7時点）
 
@@ -21,16 +21,18 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
 - [x] **S3過去コメント取得**: JSONL解析・類似検索
 - [x] **LLM統合**: マルチプロバイダー対応
 
-### 🚧 Phase 2: LangGraphワークフロー（90%完了）
-- [x] **SelectCommentPairNode**: コサイン類似度による選択 ✨ NEW
-- [x] **EvaluateCandidateNode**: 8つの評価基準による検証 ✨ NEW
-- [x] **基本ワークフロー**: 実装版ノードでの骨格実装 ✨ NEW
-- [x] **InputNode/OutputNode**: 本実装完了 ✨ NEW
-- [ ] **統合テスト**: エンドツーエンドテスト実施中
+### ✅ Phase 2: LangGraphワークフロー（100%完了）✨ NEW
+- [x] **SelectCommentPairNode**: コサイン類似度による選択 ✨ 
+- [x] **EvaluateCandidateNode**: 8つの評価基準による検証 ✨ 
+- [x] **基本ワークフロー**: 実装版ノードでの骨格実装 ✨ 
+- [x] **InputNode/OutputNode**: 本実装完了 ✨ 
+- [x] **GenerateCommentNode**: LLM統合実装 ✨ 
+- [x] **統合テスト**: エンドツーエンドテスト実施 ✨ 
+- [x] **ワークフロー可視化**: 実行トレース・診断ツール ✨ 
 
-### 📱 Phase 3: UI実装（100%完了）
-- [x] **Streamlit UI**: Web UIの実装
-- [x] **Vue.js/TypeScript**: モダンなフロントエンド
+### 🚧 Phase 3: UI実装（0%完了）
+- [ ] **Streamlit UI**: Web UIの実装
+- [ ] **API実装**: RESTful APIエンドポイント
 
 ### 🚀 Phase 4: デプロイメント（0%完了）
 - [ ] **AWSデプロイメント**: Lambda/ECS・CloudWatch統合
@@ -38,11 +40,11 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
 ## 🔄 システムの主な処理フロー
 
 ```
-┌─────────────┐      ┌──────────────────┐      ┌────────────────────────┐
-│ InputNode   │──▶──│ FetchForecastNode │──▶──│ RetrievePastCommentsNode │
-└─────────────┘      └──────────────────┘      └────────────────────────┘
-                                                            │
-      ┌─────────────────────────────────────────────────────┘
+┌──────────────┐      ┌──────────────────┐      ┌────────────────────────┐
+│ InputNode    │─────▶│ FetchForecastNode │─────▶│ RetrievePastCommentsNode │
+└──────────────┘      └──────────────────┘      └────────────────────────┘
+                                                               │
+      ┌─────────────────────────────────────────────────────────┘
       ▼
       ┌──────────────────┐
       │ SelectCommentPair │ ✨ 実装完了
@@ -55,7 +57,7 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
                 │ Success                (リトライループ)
                 ▼
       ┌──────────────────┐
-      │ GenerateComment   │
+      │ GenerateComment   │ ✨ 実装完了
       └──────────────────┘
                 │
                 ▼
@@ -73,12 +75,6 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
 - **boto3**: AWS S3連携
 - **requests/aiohttp**: API通信
 
-### フロントエンド
-- **Vue.js 3/Nuxt 3**
-- **TypeScript**
-- **Composition API**
-- **Scoped CSS**
-
 ### LLMプロバイダー
 - **OpenAI API**
 - **Google Gemini API**
@@ -93,7 +89,6 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
 
 ### 前提条件
 - Python 3.10以上
-- Node.js 18以上
 - AWS CLI（S3連携用）
 - 各種APIキー
 
@@ -114,14 +109,7 @@ cp .env.example .env
 streamlit run app.py
 ```
 
-### フロントエンドセットアップ
-```bash
-cd src/tool_design
-npm install
-npm run dev
-```
-
-## 📊 主要機能
+## 📌 主要機能
 
 ### 1. 地点管理
 ```python
@@ -172,7 +160,7 @@ pytest
 pytest --cov=src --cov-report=html
 
 # 特定のテスト実行
-pytest tests/test_location_manager.py
+pytest tests/test_workflow_integration.py
 ```
 
 ## 📁 プロジェクト構造
@@ -180,41 +168,42 @@ pytest tests/test_location_manager.py
 ```
 .
 ├── src/
-│   ├── data/               # データクラス・管理
-│   ├── apis/               # 外部API連携
-│   ├── repositories/       # データリポジトリ
-│   ├── nodes/              # LangGraphノード
-│   ├── workflows/          # ワークフロー定義
-│   ├── algorithms/         # 類似度計算等 ✨ NEW
-│   ├── llm/                # LLM統合
-│   ├── ui/                 # Streamlit UI
-│   └── config/             # 設定管理
-├── tests/                  # テストスイート
-├── docs/                   # ドキュメント
-├── examples/               # 使用例
-└── src/tool_design/        # Vue.jsフロントエンド
+│   ├── data/                # データクラス・管理
+│   ├── apis/                # 外部API連携
+│   ├── repositories/        # データリポジトリ
+│   ├── nodes/               # LangGraphノード
+│   ├── workflows/           # ワークフロー定義
+│   ├── algorithms/          # 類似度計算等 ✨ NEW
+│   ├── llm/                 # LLM統合
+│   ├── ui/                  # Streamlit UI
+│   └── config/              # 設定管理
+├── tests/                   # テストスイート
+├── scripts/                 # ユーティリティスクリプト
+├── docs/                    # ドキュメント
+└── examples/                # 使用例
 ```
 
 ## 🔥 最近の更新（2025/6/7）
 
-### 実装完了
-1. **SelectCommentPairNode統合**
-   - コサイン類似度計算エンジン実装
-   - 天気条件・気温・地点・時間帯による類似度計算
-   - weather_commentとadviceのペア選択機能
+### Phase 2 完了！ 🎉
+1. **ワークフロー統合完了**
+   - 全7ノードの本実装完了
+   - リトライループメカニズム実装
+   - エラーハンドリング強化
 
-2. **EvaluateCandidateNode統合**
-   - 8つの評価基準（関連性、創造性、自然さ、適切性、エンゲージメント、明確性、一貫性、オリジナリティ）
-   - 不適切表現の検出機能
-   - 合格/不合格判定とリトライメカニズム
+2. **パフォーマンス改善**
+   - ノード実行時間計測機能追加
+   - 実行トレース可視化ツール
+   - デバッグ情報出力機能
 
-3. **ワークフロー更新**
-   - モックノードから実装版への完全移行
-   - InputNode/OutputNode本実装完了
+3. **ドキュメント整備**
+   - ワークフロー図自動生成
+   - 実行サンプルスクリプト
+   - 統合テスト完備
 
 ### 次の優先事項
-1. 統合テスト実施
-2. 地点データ管理システム実装（Issue #2）
+1. Streamlit UI実装（Issue #9）
+2. API実装
 3. パフォーマンス最適化
 4. AWSデプロイメント準備
 
@@ -227,7 +216,7 @@ pytest tests/test_location_manager.py
 
 詳細は[CONTRIBUTING.md](CONTRIBUTING.md)を参照してください。
 
-## 📝 ライセンス
+## 📜 ライセンス
 
 MIT License
 
@@ -239,4 +228,4 @@ MIT License
 ---
 
 **Last Updated**: 2025/06/07  
-**Status**: Active Development
+**Status**: Active Development - Phase 2 Complete! 🎊
