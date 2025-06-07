@@ -7,13 +7,13 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
 本プロジェクトは、Python/StreamlitバックエンドとVue.js/TypeScriptフロントエンドから構成される天気予報コメント生成システムです。指定した各地点の天気予報データと過去のコメントデータをもとに、LLM（大規模言語モデル）を活用して短い天気コメント（約15文字）を自動生成します。
 
 ### 主な特徴
-- **LangGraphワークフロー**: 状態遷移と再試行ロジックを簡潔に記述
+- **LangGraphワークフロー**: 状態遷移と再試行ロジックを洗練に記述
 - **マルチLLMプロバイダー**: OpenAI/Gemini/Anthropic Claude対応
-- **類似度ベース選択**: 過去コメントから最適なペアを選定
+- **類似度ベース選択**: 過去コメントから最適なペアを選択
 - **表現ルール適用**: NGワード・文字数制限の自動チェック
 - **リアルタイムUI**: Streamlit/Vue.jsによる直感的な操作
 
-## 📋 現在の進捗状況（2025/6/7時点）
+## 📊 現在の進捗状況（2025/6/7時点）
 
 ### ✅ Phase 1: 基盤機能（100%完了）
 - [x] **地点データ管理システム**: CSV読み込み・検索・正規化機能
@@ -21,11 +21,12 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
 - [x] **S3過去コメント取得**: JSONL解析・類似検索
 - [x] **LLM統合**: マルチプロバイダー対応
 
-### 🚧 Phase 2: LangGraphワークフロー（70%完了）
-- [x] **SelectCommentPairNode**: コサイン類似度による選択
-- [x] **EvaluateCandidateNode**: 8つの評価基準による検証
-- [x] **基本ワークフロー**: モックノード使用の骨格実装
-- [ ] **InputNode/OutputNode**: 本実装（現在モック）
+### 🚧 Phase 2: LangGraphワークフロー（90%完了）
+- [x] **SelectCommentPairNode**: コサイン類似度による選択 ✨ NEW
+- [x] **EvaluateCandidateNode**: 8つの評価基準による検証 ✨ NEW
+- [x] **基本ワークフロー**: 実装版ノードでの骨格実装 ✨ NEW
+- [x] **InputNode/OutputNode**: 本実装完了 ✨ NEW
+- [ ] **統合テスト**: エンドツーエンドテスト実施中
 
 ### 📱 Phase 3: UI実装（100%完了）
 - [x] **Streamlit UI**: Web UIの実装
@@ -38,29 +39,29 @@ LangGraphとLLMを活用した天気コメント自動生成システムです�
 
 ```
 ┌─────────────┐      ┌──────────────────┐      ┌────────────────────────┐
-│ InputNode    │──▶──│ FetchForecastNode │──▶──│ RetrievePastCommentsNode │
+│ InputNode   │──▶──│ FetchForecastNode │──▶──│ RetrievePastCommentsNode │
 └─────────────┘      └──────────────────┘      └────────────────────────┘
-                                                           │
-                              ┌────────────────────────────┘
-                              ▼
-                     ┌──────────────────┐
-                     │ SelectCommentPair │
-                     └──────────────────┘
-                              │
-                              ▼
-                     ┌──────────────────┐  Failure  ┌──────────────────┐
-                     │ EvaluateCandidate│ ────────▶ │ SelectCommentPair │
-                     └──────────────────┘           └──────────────────┘
-                              │ Success              (リトライループ)
-                              ▼
-                     ┌──────────────────┐
-                     │ GenerateComment   │
-                     └──────────────────┘
-                              │
-                              ▼
-                     ┌──────────────────┐
-                     │ OutputNode       │
-                     └──────────────────┘
+                                                            │
+      ┌─────────────────────────────────────────────────────┘
+      ▼
+      ┌──────────────────┐
+      │ SelectCommentPair │ ✨ 実装完了
+      └──────────────────┘
+                │
+                ▼
+      ┌──────────────────┐  Failure  ┌──────────────────┐
+      │ EvaluateCandidate│ ────────▶ │ SelectCommentPair │
+      └──────────────────┘           └──────────────────┘
+                │ Success                (リトライループ)
+                ▼
+      ┌──────────────────┐
+      │ GenerateComment   │
+      └──────────────────┘
+                │
+                ▼
+      ┌──────────────────┐
+      │ OutputNode       │
+      └──────────────────┘
 ```
 
 ## 🛠️ 技術スタック
@@ -179,36 +180,43 @@ pytest tests/test_location_manager.py
 ```
 .
 ├── src/
-│   ├── data/              # データクラス・管理
-│   ├── apis/              # 外部API連携
-│   ├── repositories/      # データリポジトリ
-│   ├── nodes/             # LangGraphノード
-│   ├── workflows/         # ワークフロー定義
-│   ├── llm/               # LLM統合
-│   ├── ui/                # Streamlit UI
-│   └── config/            # 設定管理
-├── tests/                 # テストスイート
-├── docs/                  # ドキュメント
-├── examples/              # 使用例
-└── src/tool_design/       # Vue.jsフロントエンド
+│   ├── data/               # データクラス・管理
+│   ├── apis/               # 外部API連携
+│   ├── repositories/       # データリポジトリ
+│   ├── nodes/              # LangGraphノード
+│   ├── workflows/          # ワークフロー定義
+│   ├── algorithms/         # 類似度計算等 ✨ NEW
+│   ├── llm/                # LLM統合
+│   ├── ui/                 # Streamlit UI
+│   └── config/             # 設定管理
+├── tests/                  # テストスイート
+├── docs/                   # ドキュメント
+├── examples/               # 使用例
+└── src/tool_design/        # Vue.jsフロントエンド
 ```
 
-## 🔥 優先実装事項
+## 🔥 最近の更新（2025/6/7）
 
-### 即時対応（今週中）
-1. SelectCommentPair/EvaluateCandidateNode統合
-2. InputNode/OutputNode本実装
-3. エンドツーエンド統合テスト
+### 実装完了
+1. **SelectCommentPairNode統合**
+   - コサイン類似度計算エンジン実装
+   - 天気条件・気温・地点・時間帯による類似度計算
+   - weather_commentとadviceのペア選択機能
 
-### 短期対応（来週）
-1. 表現ルール設定ファイル化
-2. パフォーマンス最適化
-3. エラーハンドリング強化
+2. **EvaluateCandidateNode統合**
+   - 8つの評価基準（関連性、創造性、自然さ、適切性、エンゲージメント、明確性、一貫性、オリジナリティ）
+   - 不適切表現の検出機能
+   - 合格/不合格判定とリトライメカニズム
 
-### 中期対応（今月中）
-1. AWS Lambda/ECSデプロイメント
-2. CI/CDパイプライン構築
-3. 監視・ログ設定
+3. **ワークフロー更新**
+   - モックノードから実装版への完全移行
+   - InputNode/OutputNode本実装完了
+
+### 次の優先事項
+1. 統合テスト実施
+2. 地点データ管理システム実装（Issue #2）
+3. パフォーマンス最適化
+4. AWSデプロイメント準備
 
 ## 🤝 コントリビューション
 
