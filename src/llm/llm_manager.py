@@ -4,10 +4,10 @@
 """
 
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import logging
 
-from src.data.weather_forecast import WeatherForecast
+from src.data.weather_data import WeatherForecast
 from src.data.comment_pair import CommentPair
 from src.llm.providers.base_provider import LLMProvider
 from src.llm.providers.openai_provider import OpenAIProvider
@@ -97,11 +97,13 @@ class LLMManager:
                 constraints=constraints
             )
             
-            # 基本的な検証
-            if len(comment) > constraints.get("max_length", 15):
-                logger.warning(f"Generated comment exceeds max length: {comment}")
-                # 切り詰め
-                comment = comment[:constraints.get("max_length", 15)]
+            # コメント長の検証と調整
+            max_length = constraints.get("max_length", 15)
+            if len(comment) > max_length:
+                logger.warning(f"Generated comment exceeds max length ({len(comment)} > {max_length}): {comment}")
+                # 自然な位置で切り詰める
+                comment = self._truncate_naturally(comment, max_length)
+                logger.info(f"Truncated comment to: {comment}")
             
             return comment
             
@@ -114,6 +116,28 @@ class LLMManager:
         logger.info(f"Switching provider from {self.provider_name} to {provider_name}")
         self.provider_name = provider_name
         self.provider = self._initialize_provider(provider_name)
+    
+    def _truncate_naturally(self, text: str, max_length: int) -> str:
+        """コメントを自然な位置で切り詰める"""
+        if len(text) <= max_length:
+            return text
+        
+        # 句読点や助詞の位置を探す
+        natural_breaks = ['。', '、', 'です', 'ます', 'ね', 'よ', 'を', 'に', 'で', 'は', 'が']
+        
+        # max_length以内で最も後ろにある自然な区切り位置を探す
+        best_pos = max_length
+        for i in range(max_length, 0, -1):
+            for break_str in natural_breaks:
+                # 区切り文字列の開始位置を確認
+                if i + len(break_str) <= len(text):
+                    if text[i:i + len(break_str)] == break_str:
+                        # 区切り文字列の後で切る
+                        best_pos = i + len(break_str)
+                        return text[:best_pos]
+        
+        # 自然な区切りが見つからない場合は単純に切り詰め
+        return text[:max_length]
 
 
 # エクスポート

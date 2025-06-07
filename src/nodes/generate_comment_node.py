@@ -3,15 +3,17 @@
 LLMを使用して天気情報と過去コメントを基にコメントを生成する。
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import logging
 from datetime import datetime
+import yaml
+import os
 
 from langgraph.graph import node
 
 from src.data.comment_generation_state import CommentGenerationState
 from src.llm.llm_manager import LLMManager
-from src.data.weather_forecast import WeatherForecast
+from src.data.weather_data import WeatherForecast
 from src.data.comment_pair import CommentPair
 
 logger = logging.getLogger(__name__)
@@ -88,14 +90,34 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
         return state
 
 
-def _get_ng_words() -> list:
+def _get_ng_words() -> List[str]:
     """NGワードリストを取得"""
-    # TODO: 設定ファイルから読み込み
-    return [
-        "災害", "危険", "注意", "警告",
-        "絶対", "必ず", "間違いない",
-        "くそ", "やばい", "最悪"
-    ]
+    # 設定ファイルから読み込み
+    config_path = os.path.join(
+        os.path.dirname(__file__), 
+        '..', '..', 'config', 'ng_words.yaml'
+    )
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+            return config.get('ng_words', [])
+    except FileNotFoundError:
+        logger.warning(f"NG words config file not found: {config_path}")
+        # フォールバック
+        return [
+            "災害", "危険", "注意", "警告",
+            "絶対", "必ず", "間違いない",
+            "くそ", "やばい", "最悪"
+        ]
+    except Exception as e:
+        logger.error(f"Error loading NG words config: {e}")
+        # フォールバック
+        return [
+            "災害", "危険", "注意", "警告",
+            "絶対", "必ず", "間違いない",
+            "くそ", "やばい", "最悪"
+        ]
 
 
 def _get_time_period(target_datetime: Optional[datetime]) -> str:
@@ -152,4 +174,10 @@ def _get_fallback_comment(weather_data: Optional[WeatherForecast]) -> str:
 
 
 # エクスポート
-__all__ = ["generate_comment_node"]
+__all__ = [
+    "generate_comment_node",
+    "_get_ng_words",
+    "_get_time_period", 
+    "_get_season",
+    "_get_fallback_comment"
+]

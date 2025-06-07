@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any
 
-from src.data.weather_forecast import WeatherForecast
+from src.data.weather_data import WeatherForecast
 from src.data.comment_pair import CommentPair
 
 
