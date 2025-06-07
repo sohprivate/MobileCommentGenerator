@@ -21,7 +21,7 @@ def load_locations() -> List[str]:
     """
     try:
         # Chiten.csvファイルを読み込み
-        csv_path = "data/Chiten.csv"
+        csv_path = "Chiten.csv"
         if os.path.exists(csv_path):
             df = pd.read_csv(csv_path, encoding='utf-8')
             # 地点名カラムが存在する場合
@@ -69,12 +69,15 @@ def filter_locations(locations: List[str], query: str) -> List[str]:
     return filtered
 
 
-def copy_to_clipboard(text: str):
+def copy_to_clipboard(text: str) -> bool:
     """
     テキストをクリップボードにコピー
     
     Args:
         text: コピーするテキスト
+        
+    Returns:
+        成功した場合True
     """
     # StreamlitでのJavaScript実行
     js_code = f"""
@@ -87,6 +90,7 @@ def copy_to_clipboard(text: str):
     </script>
     """
     st.markdown(js_code, unsafe_allow_html=True)
+    return True
 
 
 def save_to_history(result: Dict[str, Any], location: str, llm_provider: str):
