@@ -1,183 +1,155 @@
-"""
-GenerateCommentNode - LLMを使用してコメントを生成するLangGraphノード
+"""天気コメント生成ノード
 
-このモジュールは、過去コメントと現在の天気情報を基に、
-適切な天気コメントをLLMで生成するLangGraphノードを提供します。
+LLMを使用して天気情報と過去コメントを基にコメントを生成する。
 """
 
 from typing import Dict, Any, Optional
 import logging
-from dataclasses import dataclass
 from datetime import datetime
 
-from ..llm.llm_client import LLMClientFactory
-from ..llm.prompt_builder import CommentPromptBuilder
-from ..data.comment_generation_state import CommentGenerationState
+from langgraph.graph import node
+
+from src.data.comment_generation_state import CommentGenerationState
+from src.llm.llm_manager import LLMManager
+from src.data.weather_forecast import WeatherForecast
+from src.data.comment_pair import CommentPair
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class GenerationResult:
-    """コメント生成結果"""
-    generated_comment: str
-    provider_used: str
-    generation_time_ms: int
-    is_fallback: bool = False
-    metadata: Dict[str, Any] = None
-
-    def __post_init__(self):
-        if self.metadata is None:
-            self.metadata = {}
-
-
+@node
 def generate_comment_node(state: CommentGenerationState) -> CommentGenerationState:
     """
-    LLMを使用してコメントを生成するLangGraphノード
+    LLMを使用してコメントを生成するノード。
     
     Args:
-        state: コメント生成の状態データ
+        state: 現在のワークフロー状態
         
     Returns:
-        CommentGenerationState: 生成されたコメントが追加された状態
+        更新された状態（generated_comment追加）
     """
-    logger.info(f"コメント生成開始 - 地点: {state.location_name}")
-    
     try:
-        # LLMクライアント作成
-        llm_provider = getattr(state, 'llm_provider', 'openai')
-        client_factory = LLMClientFactory()
-        client = client_factory.create_client(llm_provider)
+        logger.info("Starting comment generation")
         
-        # プロンプト構築
-        prompt_builder = CommentPromptBuilder()
-        prompt = prompt_builder.build_prompt(
-            weather_data=state.weather_data,
-            past_comments=state.past_comments,
-            location=state.location_name,
-            selected_pair=getattr(state, 'selected_pair', None)
-        )
+        # 必要なデータの確認
+        weather_data = state.get("weather_data")
+        selected_pair = state.get("selected_pair")
+        llm_provider = state.get("llm_provider", "openai")
         
-        logger.debug(f"プロンプト構築完了 - 長さ: {len(prompt)} 文字")
+        if not weather_data:
+            raise ValueError("Weather data is required for comment generation")
         
-        # コメント生成
-        start_time = datetime.now()
-        generated_comment = client.generate_comment(prompt)
-        end_time = datetime.now()
-        generation_time = int((end_time - start_time).total_seconds() * 1000)
+        if not selected_pair:
+            raise ValueError("Selected comment pair is required for generation")
         
-        # 結果作成
-        result = GenerationResult(
-            generated_comment=generated_comment,
-            provider_used=llm_provider,
-            generation_time_ms=generation_time,
-            metadata={
-                'prompt_length': len(prompt),
-                'generated_at': datetime.now().isoformat(),
-                'weather_condition': state.weather_data.weather_description if state.weather_data else None,
-                'temperature': state.weather_data.temperature if state.weather_data else None
-            }
-        )
+        # LLMマネージャーの初期化
+        llm_manager = LLMManager(provider=llm_provider)
         
-        # stateに結果を格納
-        state.generated_comment = generated_comment
-        state.generation_metadata.update({
-            'llm_provider': llm_provider,
-            'generation_time_ms': generation_time,
-            'generated_at': result.metadata['generated_at']
-        })
-        
-        logger.info(f"コメント生成成功 - {generation_time}ms")
-        logger.debug(f"生成コメント: {generated_comment}")
-        
-    except Exception as e:
-        logger.error(f"コメント生成エラー: {str(e)}")
-        
-        # フォールバック処理
-        fallback_comment = _get_fallback_comment(state)
-        
-        state.generated_comment = fallback_comment
-        state.generation_metadata.update({
-            'llm_provider': 'fallback',
-            'generation_error': str(e),
-            'is_fallback': True,
-            'generated_at': datetime.now().isoformat()
-        })
-        
-        logger.info(f"フォールバックコメント使用: {fallback_comment}")
-    
-    return state
-
-
-def _get_fallback_comment(state: CommentGenerationState) -> str:
-    """
-    エラー時のフォールバックコメントを取得
-    
-    Args:
-        state: コメント生成の状態データ
-        
-    Returns:
-        str: フォールバックコメント
-    """
-    # 天気情報があれば天気に応じたデフォルトコメント
-    if state.weather_data:
-        weather_condition = state.weather_data.weather_description
-        
-        fallback_comments = {
-            '晴れ': '爽やかな一日ですね',
-            '曇り': '過ごしやすい天気です',
-            '雨': '雨の日も素敵です',
-            '雪': '雪景色が美しいです'
+        # 制約条件の設定
+        constraints = {
+            "max_length": 15,
+            "ng_words": _get_ng_words(),
+            "time_period": _get_time_period(state.get("target_datetime")),
+            "season": _get_season(state.get("target_datetime"))
         }
         
-        for condition, comment in fallback_comments.items():
-            if condition in weather_condition:
-                return comment
-    
-    # 過去コメントがあれば最初のコメントを使用
-    if state.past_comments:
-        return state.past_comments[0].comment_text
-    
-    # デフォルトコメント
-    return '今日も良い一日を'
-
-
-def generate_comment_with_fallback(state: CommentGenerationState) -> CommentGenerationState:
-    """
-    フォールバック機能付きコメント生成
-    
-    複数のLLMプロバイダーでリトライしてコメント生成を試行します。
-    
-    Args:
-        state: コメント生成の状態データ
+        # コメント生成
+        generated_comment = llm_manager.generate_comment(
+            weather_data=weather_data,
+            past_comments=selected_pair,
+            constraints=constraints
+        )
         
-    Returns:
-        CommentGenerationState: 生成されたコメントが追加された状態
-    """
-    providers = ['openai', 'anthropic', 'gemini']
-    original_provider = getattr(state, 'llm_provider', 'openai')
+        logger.info(f"Generated comment: {generated_comment}")
+        
+        # 状態の更新
+        state["generated_comment"] = generated_comment
+        state["generation_metadata"] = state.get("generation_metadata", {})
+        state["generation_metadata"].update({
+            "llm_provider": llm_provider,
+            "generation_timestamp": datetime.now().isoformat(),
+            "constraints_applied": constraints
+        })
+        
+        return state
+        
+    except Exception as e:
+        logger.error(f"Error in generate_comment_node: {str(e)}")
+        state["errors"] = state.get("errors", [])
+        state["errors"].append({
+            "node": "generate_comment",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # フォールバックコメント
+        state["generated_comment"] = _get_fallback_comment(weather_data)
+        
+        return state
+
+
+def _get_ng_words() -> list:
+    """NGワードリストを取得"""
+    # TODO: 設定ファイルから読み込み
+    return [
+        "災害", "危険", "注意", "警告",
+        "絶対", "必ず", "間違いない",
+        "くそ", "やばい", "最悪"
+    ]
+
+
+def _get_time_period(target_datetime: Optional[datetime]) -> str:
+    """時間帯を判定"""
+    if not target_datetime:
+        target_datetime = datetime.now()
     
-    # オリジナルプロバイダーを最初に試行
-    if original_provider in providers:
-        providers.remove(original_provider)
-        providers.insert(0, original_provider)
+    hour = target_datetime.hour
+    if 5 <= hour < 10:
+        return "朝"
+    elif 10 <= hour < 17:
+        return "昼"
+    elif 17 <= hour < 21:
+        return "夕方"
+    else:
+        return "夜"
+
+
+def _get_season(target_datetime: Optional[datetime]) -> str:
+    """季節を判定"""
+    if not target_datetime:
+        target_datetime = datetime.now()
     
-    for provider in providers:
-        try:
-            state.llm_provider = provider
-            return generate_comment_node(state)
-        except Exception as e:
-            logger.warning(f"プロバイダー {provider} での生成失敗: {str(e)}")
-            continue
+    month = target_datetime.month
+    if month in [3, 4, 5]:
+        return "春"
+    elif month in [6, 7, 8]:
+        return "夏"
+    elif month in [9, 10, 11]:
+        return "秋"
+    else:
+        return "冬"
+
+
+def _get_fallback_comment(weather_data: Optional[WeatherForecast]) -> str:
+    """フォールバックコメントを生成"""
+    if not weather_data:
+        return "今日も一日頑張ろう"
     
-    # 全てのプロバイダーで失敗した場合のフォールバック
-    logger.error("全LLMプロバイダーでの生成に失敗")
-    state.generated_comment = _get_fallback_comment(state)
-    state.generation_metadata.update({
-        'llm_provider': 'fallback_all_failed',
-        'generation_error': 'All LLM providers failed',
-        'is_fallback': True,
-        'generated_at': datetime.now().isoformat()
-    })
+    # シンプルな天気ベースのコメント
+    weather_comments = {
+        "晴れ": "晴れて気持ちいい",
+        "曇り": "曇り空ですね",
+        "雨": "傘をお忘れなく",
+        "雪": "雪に注意です"
+    }
     
-    return state
+    weather_condition = weather_data.weather_description
+    for key, comment in weather_comments.items():
+        if key in weather_condition:
+            return comment
+    
+    return "今日も良い一日を"
+
+
+# エクスポート
+__all__ = ["generate_comment_node"]
