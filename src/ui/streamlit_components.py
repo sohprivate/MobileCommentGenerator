@@ -6,7 +6,7 @@ Streamlit UIコンポーネント
 
 import streamlit as st
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import import datetime
 import json
 
 
@@ -17,7 +17,7 @@ def location_selector() -> str:
     Returns:
         選択された地点名
     """
-    from .streamlit_utils import load_locations, filter_locations
+    from src.ui.streamlit_utils import load_locations, filter_locations
     
     # 地点データの読み込み
     locations = load_locations()
@@ -49,7 +49,7 @@ def location_selector() -> str:
     
     # 地点選択
     selected_location = st.selectbox(
-        "📍 地点を選択",
+        "🏍 地点を選択",
         options=filtered_locations,
         index=0 if filtered_locations else None,
         help="天気コメントを生成する地点を選択してください"
@@ -96,7 +96,7 @@ def llm_provider_selector() -> str:
     # プロバイダー情報の表示
     provider_info = {
         "openai": "高品質で安定した生成が可能です。",
-        "gemini": "Google製の最新AIモデルです。",
+        "gemini": "Googleの最新AIモデルです。",
         "anthropic": "安全性を重視した生成が特徴です。"
     }
     
@@ -131,7 +131,7 @@ def result_display(result: Dict[str, Any]):
     
     with col1:
         if st.button("📋 コピー", key="copy_button", use_container_width=True, type="primary"):
-            from .streamlit_utils import copy_to_clipboard
+            from src.ui.streamlit_utils import copy_to_clipboard
             copy_to_clipboard(comment)
             st.toast("✅ クリップボードにコピーしました！", icon='✅')
     
@@ -141,7 +141,7 @@ def result_display(result: Dict[str, Any]):
     
     with col3:
         if st.button("💾 保存", use_container_width=True):
-            # 履歴に保存（既に保存済みの場合はスキップ）
+            # 履歴に保存（省略：保存機能の実装はスキップ）
             st.info("履歴に保存されています")
     
     # メタデータ表示
@@ -160,7 +160,7 @@ def result_display(result: Dict[str, Any]):
             st.metric("LLMプロバイダー", metadata.get('llm_provider', 'N/A'))
             st.metric("検証スコア", f"{metadata.get('validation_score', 0):.2f}" if metadata.get('validation_score') else "N/A")
         
-        # 選択されたコメント情報
+        # 選択された過去コメント情報
         if 'selected_past_comments' in metadata:
             st.subheader("📝 参考にした過去コメント")
             for comment in metadata['selected_past_comments']:
@@ -191,7 +191,7 @@ def generation_history_display(history: List[Dict[str, Any]]):
     # CSVダウンロードボタン
     csv = df.to_csv(index=False)
     st.download_button(
-        label="📥 履歴をダウンロード",
+        label="📅 履歴をダウンロード",
         data=csv,
         file_name=f"history_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
         mime="text/csv"
@@ -210,13 +210,13 @@ def generation_history_display(history: List[Dict[str, Any]]):
             col1, col2 = st.columns([3, 1])
             
             with col1:
-                st.text(f"📍 {location}")
+                st.text(f"🏍 {location}")
                 st.caption(f"💬 {comment}")
             
             with col2:
                 st.caption(timestamp[:16])  # YYYY-MM-DD HH:MM
                 
-            # 詳細ボタン
+                # 詳細ボタン
             if st.button(f"詳細", key=f"history_{idx}"):
                 with st.expander("履歴詳細", expanded=True):
                     st.json(item)
@@ -224,7 +224,7 @@ def generation_history_display(history: List[Dict[str, Any]]):
             st.divider()
     
     # 全履歴のエクスポート
-    if st.button("📥 履歴をエクスポート"):
+    if st.button("📅 履歴をエクスポート"):
         # JSON形式でダウンロード
         json_str = json.dumps(history, ensure_ascii=False, indent=2)
         st.download_button(
