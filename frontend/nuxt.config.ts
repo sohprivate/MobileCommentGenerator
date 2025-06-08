@@ -16,7 +16,7 @@ export default defineNuxtConfig({
     }
   },
 
-  // 開発サーバー設定
+  // 開発サーバープロキシ設定
   nitro: {
     devProxy: {
       '/api': {
