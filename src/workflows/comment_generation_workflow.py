@@ -7,8 +7,7 @@ LangGraphを使用した天気コメント生成のメインワークフロー�
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import time
-from langgraph import StateGraph
-from langgraph.graph import END
+from langgraph.graph import StateGraph, END
 
 from src.data.comment_generation_state import CommentGenerationState
 from src.nodes.weather_forecast_node import fetch_weather_forecast_node

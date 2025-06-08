@@ -9,7 +9,7 @@ from datetime import datetime
 import yaml
 import os
 
-from langgraph.graph import node
+# langgraph nodeデコレータは新バージョンでは不要
 
 from src.data.comment_generation_state import CommentGenerationState
 from src.llm.llm_manager import LLMManager
@@ -19,7 +19,6 @@ from src.data.comment_pair import CommentPair
 logger = logging.getLogger(__name__)
 
 
-@node
 def generate_comment_node(state: CommentGenerationState) -> CommentGenerationState:
     """
     LLMを使用してコメントを生成するノード。

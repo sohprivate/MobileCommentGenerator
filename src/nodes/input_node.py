@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import pytz
 
 from src.data.comment_generation_state import CommentGenerationState
-from src.data.location import Location
+from src.data.location_manager import Location
 
 logger = logging.getLogger(__name__)
 

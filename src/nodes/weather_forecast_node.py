@@ -392,6 +392,30 @@ async def integrate_weather_into_conversation(
         return messages
 
 
+# ワークフロー用の関数
+async def fetch_weather_forecast_node(state: Dict[str, Any]) -> Dict[str, Any]:
+    """ワークフロー用の天気予報取得ノード関数
+    
+    Args:
+        state: ワークフローの状態辞書
+        
+    Returns:
+        更新された状態辞書
+    """
+    # 環境変数からAPIキーを取得
+    import os
+    api_key = os.getenv('WXTECH_API_KEY')
+    if not api_key:
+        return {
+            **state,
+            'error_message': 'WXTECH_API_KEY環境変数が設定されていません'
+        }
+    
+    # WeatherForecastNodeを使用して天気予報を取得
+    weather_node = WeatherForecastNode(api_key)
+    return await weather_node.get_weather_forecast(state)
+
+
 if __name__ == "__main__":
     # テスト用コード
     import os
