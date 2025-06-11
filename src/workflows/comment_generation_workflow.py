@@ -5,7 +5,7 @@ LangGraphを使用した天気コメント生成のメインワークフロー�
 """
 
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 from langgraph.graph import StateGraph, END
 
@@ -173,7 +173,7 @@ def run_comment_generation(
     # 初期状態の準備
     initial_state = {
         "location_name": location_name,
-        "target_datetime": target_datetime or datetime.now(),
+        "target_datetime": target_datetime or (datetime.now() + timedelta(hours=12)),
         "llm_provider": llm_provider,
         "retry_count": 0,
         "errors": [],

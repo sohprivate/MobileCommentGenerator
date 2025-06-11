@@ -35,12 +35,18 @@ def input_node(state: CommentGenerationState) -> CommentGenerationState:
 
         # デフォルト値の設定
         target_datetime = state.target_datetime
+        logger.info(f"InputNode - 元のtarget_datetime: {target_datetime}")
+        
         if not target_datetime:
             # 日本時間で12時間後を設定
             jst = pytz.timezone("Asia/Tokyo")
             target_datetime = datetime.now(jst) + timedelta(hours=12)
             state.target_datetime = target_datetime
             logger.info(f"target_datetimeが未指定のため、12時間後を使用: {target_datetime}")
+        else:
+            logger.info(f"既存のtarget_datetimeを使用: {target_datetime}")
+        
+        logger.info(f"InputNode - 最終的なtarget_datetime: {state.target_datetime}")
 
         # Location オブジェクトの作成
         location = _create_location(location_name)
