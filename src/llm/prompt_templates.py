@@ -49,7 +49,4 @@ COMMENT_EVALUATION_PROMPT = """以下のコメントを評価してください�
 各項目について「OK」または「NG」で評価し、総合評価を出してください。"""
 
 # エクスポート
-__all__ = [
-    "COMMENT_GENERATION_PROMPT",
-    "COMMENT_EVALUATION_PROMPT"
-]
+__all__ = ["COMMENT_GENERATION_PROMPT", "COMMENT_EVALUATION_PROMPT"]

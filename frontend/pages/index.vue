@@ -27,11 +27,18 @@
         />
 
         <!-- Generate Settings -->
-        <GenerateSettings 
-          :settings="generateSettings"
-          @settings-changed="handleSettingsChange"
-          @generate="handleGenerate"
-        />
+        <!-- Comment Generation Button -->
+        <div class="generate-section">
+          <h3>コメント生成</h3>
+          <button 
+            @click="handleGenerate"
+            :disabled="isGenerating || selectedLocations.length === 0"
+            class="generate-button"
+          >
+            {{ isGenerating ? '生成中...' : 'コメントを生成' }}
+          </button>
+          <p class="generate-info">過去コメントの組み合わせで自動生成（16字以内）</p>
+        </div>
 
         <GeneratedComment 
           :comments="generatedComments"
@@ -217,6 +224,52 @@ const handleClear = () => {
   gap: 2rem;
   align-items: stretch;
   min-height: calc(100vh - 200px); /* Account for header height */
+}
+
+/* Generate section styles */
+.generate-section {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.generate-section h3 {
+  color: #0C419A;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.generate-button {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: #0C419A;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.generate-button:hover:not(:disabled) {
+  background: #0a356d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.generate-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.generate-info {
+  margin-top: 0.5rem;
+  color: #666;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 /* Component styles continue... */

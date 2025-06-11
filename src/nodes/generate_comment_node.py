@@ -22,100 +22,130 @@ logger = logging.getLogger(__name__)
 def generate_comment_node(state: CommentGenerationState) -> CommentGenerationState:
     """
     LLMを使用してコメントを生成するノード。
-    
+
     Args:
         state: 現在のワークフロー状態
-        
+
     Returns:
         更新された状態（generated_comment追加）
     """
     try:
         logger.info("Starting comment generation")
-        
+
         # 必要なデータの確認
-        weather_data = state.get("weather_data")
-        selected_pair = state.get("selected_pair")
-        llm_provider = state.get("llm_provider", "openai")
-        
+        weather_data = state.weather_data
+        selected_pair = state.selected_pair
+        llm_provider = state.llm_provider if state.llm_provider else "openai"
+
         if not weather_data:
             raise ValueError("Weather data is required for comment generation")
-        
+
         if not selected_pair:
             raise ValueError("Selected comment pair is required for generation")
-        
+
         # LLMマネージャーの初期化
         llm_manager = LLMManager(provider=llm_provider)
-        
+
         # 制約条件の設定
         constraints = {
             "max_length": 15,
             "ng_words": _get_ng_words(),
-            "time_period": _get_time_period(state.get("target_datetime")),
-            "season": _get_season(state.get("target_datetime"))
+            "time_period": _get_time_period(state.target_datetime),
+            "season": _get_season(state.target_datetime),
         }
-        
-        # コメント生成
-        generated_comment = llm_manager.generate_comment(
-            weather_data=weather_data,
-            past_comments=selected_pair,
-            constraints=constraints
+
+        # 選択されたコメントペアから最終コメントを構成
+        # S3から選択された天気コメントとアドバイスをそのまま組み合わせる
+        weather_comment = (
+            selected_pair.weather_comment.comment_text if selected_pair.weather_comment else ""
         )
-        
-        logger.info(f"Generated comment: {generated_comment}")
-        
+        advice_comment = (
+            selected_pair.advice_comment.comment_text if selected_pair.advice_comment else ""
+        )
+
+        # 最終コメントは選択されたコメントをそのまま使用
+        if weather_comment and advice_comment:
+            generated_comment = f"{weather_comment}{advice_comment}"
+        elif weather_comment:
+            generated_comment = weather_comment
+        elif advice_comment:
+            generated_comment = advice_comment
+        else:
+            generated_comment = "コメントが選択できませんでした"
+
+        logger.info(f"Final comment (from CSV): {generated_comment}")
+        logger.info(f"  - Weather part: {weather_comment}")
+        logger.info(f"  - Advice part: {advice_comment}")
+
         # 状態の更新
-        state["generated_comment"] = generated_comment
-        state["generation_metadata"] = state.get("generation_metadata", {})
-        state["generation_metadata"].update({
-            "llm_provider": llm_provider,
-            "generation_timestamp": datetime.now().isoformat(),
-            "constraints_applied": constraints
-        })
-        
+        state.generated_comment = generated_comment
+        state.update_metadata("llm_provider", llm_provider)
+        state.update_metadata("generation_timestamp", datetime.now().isoformat())
+        state.update_metadata("constraints_applied", constraints)
+        state.update_metadata(
+            "selected_past_comments",
+            [
+                {"type": "weather", "text": weather_comment} if weather_comment else None,
+                {"type": "advice", "text": advice_comment} if advice_comment else None,
+            ],
+        )
+        state.update_metadata("comment_source", "S3_PAST_COMMENTS")
+
+        # 気象データをメタデータに追加
+        if weather_data:
+            state.update_metadata("temperature", weather_data.temperature)
+            state.update_metadata("weather_condition", weather_data.weather_description)
+            state.update_metadata("humidity", weather_data.humidity)
+            state.update_metadata("wind_speed", weather_data.wind_speed)
+
         return state
-        
+
     except Exception as e:
         logger.error(f"Error in generate_comment_node: {str(e)}")
-        state["errors"] = state.get("errors", [])
-        state["errors"].append({
-            "node": "generate_comment",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        })
-        
-        # フォールバックコメント
-        state["generated_comment"] = _get_fallback_comment(weather_data)
-        
-        return state
+        state.add_error(str(e), "generate_comment")
+
+        # エラーを再発生させて適切に処理
+        raise
 
 
 def _get_ng_words() -> List[str]:
     """NGワードリストを取得"""
     # 設定ファイルから読み込み
-    config_path = os.path.join(
-        os.path.dirname(__file__), 
-        '..', '..', 'config', 'ng_words.yaml'
-    )
-    
+    config_path = os.path.join(os.path.dirname(__file__), "..", "..", "config", "ng_words.yaml")
+
     try:
-        with open(config_path, 'r', encoding='utf-8') as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
-            return config.get('ng_words', [])
+            return config.get("ng_words", [])
     except FileNotFoundError:
         logger.warning(f"NG words config file not found: {config_path}")
         # フォールバック
         return [
-            "災害", "危険", "注意", "警告",
-            "絶対", "必ず", "間違いない",
-            "くそ", "やばい", "最悪"
+            "災害",
+            "危険",
+            "注意",
+            "警告",
+            "絶対",
+            "必ず",
+            "間違いない",
+            "くそ",
+            "やばい",
+            "最悪",
         ]
     except Exception as e:
         logger.error(f"Error loading NG words config: {e}")
         # フォールバック
         return [
-            "災害", "危険", "注意", "警告",
-            "絶対", "必ず", "間違いない",
-            "くそ", "やばい", "最悪"
+            "災害",
+            "危険",
+            "注意",
+            "警告",
+            "絶対",
+            "必ず",
+            "間違いない",
+            "くそ",
+            "やばい",
+            "最悪",
         ]
 
 
@@ -123,7 +153,7 @@ def _get_time_period(target_datetime: Optional[datetime]) -> str:
     """時間帯を判定"""
     if not target_datetime:
         target_datetime = datetime.now()
-    
+
     hour = target_datetime.hour
     if 5 <= hour < 10:
         return "朝"
@@ -139,7 +169,7 @@ def _get_season(target_datetime: Optional[datetime]) -> str:
     """季節を判定"""
     if not target_datetime:
         target_datetime = datetime.now()
-    
+
     month = target_datetime.month
     if month in [3, 4, 5]:
         return "春"
@@ -155,20 +185,20 @@ def _get_fallback_comment(weather_data: Optional[WeatherForecast]) -> str:
     """フォールバックコメントを生成"""
     if not weather_data:
         return "今日も一日頑張ろう"
-    
+
     # シンプルな天気ベースのコメント
     weather_comments = {
         "晴れ": "晴れて気持ちいい",
         "曇り": "曇り空ですね",
         "雨": "傘をお忘れなく",
-        "雪": "雪に注意です"
+        "雪": "雪に注意です",
     }
-    
+
     weather_condition = weather_data.weather_description
     for key, comment in weather_comments.items():
         if key in weather_condition:
             return comment
-    
+
     return "今日も良い一日を"
 
 
@@ -176,7 +206,7 @@ def _get_fallback_comment(weather_data: Optional[WeatherForecast]) -> str:
 __all__ = [
     "generate_comment_node",
     "_get_ng_words",
-    "_get_time_period", 
+    "_get_time_period",
     "_get_season",
-    "_get_fallback_comment"
+    "_get_fallback_comment",
 ]

@@ -12,6 +12,7 @@ from enum import Enum
 
 class EvaluationCriteria(Enum):
     """評価基準の種類"""
+
     RELEVANCE = "relevance"  # 関連性
     CREATIVITY = "creativity"  # 創造性
     NATURALNESS = "naturalness"  # 自然さ
@@ -26,7 +27,7 @@ class EvaluationCriteria(Enum):
 class CriterionScore:
     """
     個別評価基準のスコア
-    
+
     Attributes:
         criterion: 評価基準
         score: スコア (0.0-1.0)
@@ -34,24 +35,25 @@ class CriterionScore:
         reason: スコアの理由
         details: 詳細情報
     """
+
     criterion: EvaluationCriteria
     score: float
     weight: float = 1.0
     reason: str = ""
     details: Dict[str, Any] = field(default_factory=dict)
-    
+
     def __post_init__(self):
         """初期化後の検証"""
         if not 0.0 <= self.score <= 1.0:
             raise ValueError(f"スコアは0.0-1.0の範囲である必要があります: {self.score}")
         if not 0.0 <= self.weight <= 1.0:
             raise ValueError(f"重みは0.0-1.0の範囲である必要があります: {self.weight}")
-    
+
     @property
     def weighted_score(self) -> float:
         """重み付きスコアを取得"""
         return self.score * self.weight
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """辞書形式に変換"""
         return {
@@ -60,7 +62,7 @@ class CriterionScore:
             "weight": self.weight,
             "weighted_score": self.weighted_score,
             "reason": self.reason,
-            "details": self.details
+            "details": self.details,
         }
 
 
@@ -68,7 +70,7 @@ class CriterionScore:
 class EvaluationResult:
     """
     評価結果
-    
+
     Attributes:
         is_valid: 検証結果（合格/不合格）
         total_score: 総合スコア
@@ -78,6 +80,7 @@ class EvaluationResult:
         suggestions: 改善提案
         metadata: メタデータ
     """
+
     is_valid: bool
     total_score: float
     criterion_scores: List[CriterionScore]
@@ -85,7 +88,7 @@ class EvaluationResult:
     failed_criteria: List[EvaluationCriteria] = field(default_factory=list)
     suggestions: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def __post_init__(self):
         """初期化後の処理"""
         # 合格/不合格基準の自動分類
@@ -95,27 +98,27 @@ class EvaluationResult:
                     self.passed_criteria.append(score.criterion)
                 else:
                     self.failed_criteria.append(score.criterion)
-    
+
     @property
     def pass_rate(self) -> float:
         """合格率を計算"""
         total = len(self.passed_criteria) + len(self.failed_criteria)
         return len(self.passed_criteria) / total if total > 0 else 0.0
-    
+
     @property
     def average_score(self) -> float:
         """平均スコアを計算"""
         if not self.criterion_scores:
             return 0.0
         return sum(s.score for s in self.criterion_scores) / len(self.criterion_scores)
-    
+
     def get_score_by_criterion(self, criterion: EvaluationCriteria) -> Optional[CriterionScore]:
         """特定の基準のスコアを取得"""
         for score in self.criterion_scores:
             if score.criterion == criterion:
                 return score
         return None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """辞書形式に変換"""
         return {
@@ -127,7 +130,7 @@ class EvaluationResult:
             "passed_criteria": [c.value for c in self.passed_criteria],
             "failed_criteria": [c.value for c in self.failed_criteria],
             "suggestions": self.suggestions,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
@@ -135,7 +138,7 @@ class EvaluationResult:
 class EvaluationContext:
     """
     評価コンテキスト
-    
+
     Attributes:
         weather_condition: 天気条件
         location: 地点
@@ -143,23 +146,21 @@ class EvaluationContext:
         user_preferences: ユーザー設定
         history: 過去の評価履歴
     """
+
     weather_condition: str
     location: str
     target_datetime: datetime
     user_preferences: Dict[str, Any] = field(default_factory=dict)
     history: List[Dict[str, Any]] = field(default_factory=list)
-    
+
     def get_preference(self, key: str, default: Any = None) -> Any:
         """ユーザー設定を取得"""
         return self.user_preferences.get(key, default)
-    
+
     def add_history(self, evaluation: Dict[str, Any]):
         """評価履歴を追加"""
-        self.history.append({
-            "timestamp": datetime.now().isoformat(),
-            "evaluation": evaluation
-        })
-    
+        self.history.append({"timestamp": datetime.now().isoformat(), "evaluation": evaluation})
+
     def to_dict(self) -> Dict[str, Any]:
         """辞書形式に変換"""
         return {
@@ -167,7 +168,7 @@ class EvaluationContext:
             "location": self.location,
             "target_datetime": self.target_datetime.isoformat(),
             "user_preferences": self.user_preferences,
-            "history_count": len(self.history)
+            "history_count": len(self.history),
         }
 
 
@@ -180,7 +181,7 @@ DEFAULT_CRITERION_WEIGHTS = {
     EvaluationCriteria.ENGAGEMENT: 0.10,
     EvaluationCriteria.CREATIVITY: 0.05,
     EvaluationCriteria.CONSISTENCY: 0.03,
-    EvaluationCriteria.ORIGINALITY: 0.02
+    EvaluationCriteria.ORIGINALITY: 0.02,
 }
 
 
