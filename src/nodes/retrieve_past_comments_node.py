@@ -47,7 +47,6 @@ def retrieve_past_comments_node(state: Dict[str, Any]) -> Dict[str, Any]:
             
         # コメント取得
         past_comments = repository.get_recent_comments(
-            weather_forecast=weather_data,
             limit=30  # weather_comment + advice
         )
         

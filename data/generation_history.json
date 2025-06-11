@@ -5302,5 +5302,233 @@
       }
     },
     "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:04:50.461202",
+    "location": "仙台",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2076,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:04:50.459994",
+      "location_name": "仙台",
+      "target_datetime": "2025-06-11T15:04:48.368731",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 22.0,
+      "humidity": 83.0,
+      "wind_speed": 1.0,
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2076,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:04:50.459994\",\n    \"location_name\": \"仙台\",\n    \"target_datetime\": \"2025-06-11T15:04:48.368731\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 22.0,\n    \"humidity\": 83.0,\n    \"wind_speed\": 1.0,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.1049041748046875
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:04:52.720416",
+    "location": "盛岡",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空蒸し暑い",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2237,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:04:52.719360",
+      "location_name": "盛岡",
+      "target_datetime": "2025-06-11T15:04:50.472564",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 23.0,
+      "humidity": 80.0,
+      "wind_speed": 4.0,
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "蒸し暑い",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空蒸し暑い\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2237,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:04:52.719360\",\n    \"location_name\": \"盛岡\",\n    \"target_datetime\": \"2025-06-11T15:04:50.472564\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 23.0,\n    \"humidity\": 80.0,\n    \"wind_speed\": 4.0,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"蒸し暑い\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.06985664367675781
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:04:55.324179",
+    "location": "秋田",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空蒸し暑い",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2577,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:04:55.323030",
+      "location_name": "秋田",
+      "target_datetime": "2025-06-11T15:04:52.732616",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 22.0,
+      "humidity": 95.0,
+      "wind_speed": 5.0,
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "蒸し暑い",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空蒸し暑い\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2577,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:04:55.323030\",\n    \"location_name\": \"秋田\",\n    \"target_datetime\": \"2025-06-11T15:04:52.732616\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 22.0,\n    \"humidity\": 95.0,\n    \"wind_speed\": 5.0,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"蒸し暑い\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.07700920104980469
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:04:56.960374",
+    "location": "山形",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空蒸し暑い",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1604,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:04:56.959047",
+      "location_name": "山形",
+      "target_datetime": "2025-06-11T15:04:55.334241",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 24.0,
+      "humidity": 74.0,
+      "wind_speed": 3.0,
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "蒸し暑い",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空蒸し暑い\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1604,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:04:56.959047\",\n    \"location_name\": \"山形\",\n    \"target_datetime\": \"2025-06-11T15:04:55.334241\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 24.0,\n    \"humidity\": 74.0,\n    \"wind_speed\": 3.0,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"蒸し暑い\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.07224082946777344
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:04:58.617616",
+    "location": "福島",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1635,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:04:58.616470",
+      "location_name": "福島",
+      "target_datetime": "2025-06-11T15:04:56.970990",
+      "llm_provider": "openai",
+      "weather_condition": "小雨",
+      "temperature": 24.0,
+      "humidity": 78.0,
+      "wind_speed": 1.0,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1635,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:04:58.616470\",\n    \"location_name\": \"福島\",\n    \"target_datetime\": \"2025-06-11T15:04:56.970990\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"小雨\",\n    \"temperature\": 24.0,\n    \"humidity\": 78.0,\n    \"wind_speed\": 1.0,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.07915496826171875
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:05:00.618354",
+    "location": "青森",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1982,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:05:00.617144",
+      "location_name": "青森",
+      "target_datetime": "2025-06-11T15:04:58.625466",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 22.0,
+      "humidity": 82.0,
+      "wind_speed": 2.0,
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1982,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:05:00.617144\",\n    \"location_name\": \"青森\",\n    \"target_datetime\": \"2025-06-11T15:04:58.625466\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 22.0,\n    \"humidity\": 82.0,\n    \"wind_speed\": 2.0,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.08606910705566406
+      }
+    },
+    "error": null
   }
 ]
