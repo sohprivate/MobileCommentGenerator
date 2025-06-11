@@ -207,6 +207,47 @@ AWS_ACCESS_KEY_ID=your_aws_access_key_id
 AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
 ```
 
+## ⚙️ 天気予報時刻の設定
+
+システムは現在、**12時間後の天気予報データ**を使用してコメントを生成します。この設定を変更したい場合は、以下の4箇所のファイルを修正してください：
+
+### 変更が必要なファイル
+
+1. **`src/nodes/weather_forecast_node.py`** (172行目)
+   ```python
+   target_time = datetime.now() + timedelta(hours=12)  # hours=12を変更
+   ```
+
+2. **`src/nodes/weather_forecast_node.py`** (498行目)
+   ```python
+   target_datetime = datetime.now() + timedelta(hours=12)  # hours=12を変更
+   ```
+
+3. **`src/nodes/input_node.py`** (43行目)
+   ```python
+   target_datetime = datetime.now(jst) + timedelta(hours=12)  # hours=12を変更
+   ```
+
+4. **`src/workflows/comment_generation_workflow.py`** (176行目)
+   ```python
+   "target_datetime": target_datetime or (datetime.now() + timedelta(hours=12)),  # hours=12を変更
+   ```
+
+### 設定例
+
+```python
+# 6時間後の予報を使用する場合
+timedelta(hours=6)
+
+# 24時間後（翌日同時刻）の予報を使用する場合
+timedelta(hours=24)
+
+# 3時間後の予報を使用する場合
+timedelta(hours=3)
+```
+
+**注意**: 一貫性を保つため、変更する際は4箇所すべてを同じ値に設定してください。
+
 ## 🚀 使用方法
 
 ### Streamlit UI（推奨）
