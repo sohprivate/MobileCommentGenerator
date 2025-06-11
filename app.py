@@ -1,14 +1,19 @@
-"""
-MobileCommentGenerator Streamlit UI
-
-天気コメント生成システムのWebユーザーインターフェース
-"""
+"""天気コメント生成システム - Streamlit UI"""
 
 import streamlit as st
+
+# ページ設定（最初に呼ぶ必要がある）
+st.set_page_config(
+    page_title="天気コメント生成システム",
+    page_icon="☀️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 from datetime import datetime
-import json
+import logging
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List
 
 from src.workflows.comment_generation_workflow import run_comment_generation
 from src.ui.streamlit_components import (
@@ -18,125 +23,229 @@ from src.ui.streamlit_components import (
     generation_history_display,
     settings_panel
 )
-from src.ui.streamlit_utils import (
-    load_locations,
-    copy_to_clipboard,
-    save_to_history,
-    load_history,
-    format_timestamp
-)
+from src.ui.streamlit_utils import save_to_history, load_history, load_locations, format_timestamp
 
-# ページ設定
-st.set_page_config(
-    page_title="天気コメント生成システム",
-    page_icon="☀️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# カスタムCSS
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 2.5rem;
-        color: #1E88E5;
-        text-align: center;
-        padding: 1rem 0;
-        margin-bottom: 2rem;
-    }
-    .result-box {
-        background-color: #E3F2FD;
-        border: 2px solid #1E88E5;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        font-size: 1.5rem;
-        text-align: center;
-    }
-    .copy-button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    .metadata-box {
-        background-color: #F5F5F5;
-        border-radius: 5px;
-        padding: 1rem;
-        margin-top: 1rem;
-    }
-</style>
-""", unsafe_allow_html=True)
-
+logger = logging.getLogger(__name__)
 
 def initialize_session_state():
     """セッション状態の初期化"""
-    if 'generation_history' not in st.session_state:
-        st.session_state.generation_history = load_history()
+    defaults = {
+        'generation_history': load_history(),
+        'selected_location': load_locations(),  # 全地点がデフォルト
+        'llm_provider': "openai",
+        'current_result': None,
+        'is_generating': False
+    }
     
-    if 'selected_location' not in st.session_state:
-        st.session_state.selected_location = "東京"
-    
-    if 'llm_provider' not in st.session_state:
-        st.session_state.llm_provider = "openai"
-    
-    if 'current_result' not in st.session_state:
-        st.session_state.current_result = None
-    
-    if 'is_generating' not in st.session_state:
-        st.session_state.is_generating = False
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
 
 
-def generate_comment_with_progress(location: str, llm_provider: str) -> Dict[str, Any]:
-    """プログレスバー付きコメント生成"""
+def display_single_result(result: Dict[str, Any]):
+    """個別の結果を表示（累積表示を避ける）"""
+    location = result['location']
+    success = result['success']
+    comment = result.get('comment', '')
+    error = result.get('error', '')
+    source_files = result.get('source_files', [])
+    
+    if success:
+        st.success(f"✅ **{location}**: {comment}")
+        
+        # メタデータがある場合は天気情報も表示
+        if result.get('result') and result['result'].get('generation_metadata'):
+            metadata = result['result']['generation_metadata']
+            with st.expander(f"📊 {location}の詳細情報"):
+                # 天気データの表示（現在の気象情報）
+                col1, col2 = st.columns(2)
+                with col1:
+                    temp = metadata.get('temperature')
+                    if temp is not None:
+                        st.text(f"🌡️ 気温: {temp}°C")
+                    
+                    weather = metadata.get('weather_condition')
+                    if weather and weather != '不明':
+                        st.text(f"☁️ 天気: {weather}")
+                
+                with col2:
+                    wind = metadata.get('wind_speed')
+                    if wind is not None:
+                        st.text(f"💨 風速: {wind}m/s")
+                    
+                    humidity = metadata.get('humidity')
+                    if humidity is not None:
+                        st.text(f"💧 湿度: {humidity}%")
+                
+                # 選択されたコメントペア
+                selection_meta = metadata.get('selection_metadata', {})
+                if selection_meta:
+                    st.markdown("**🎯 選択されたコメント:**")
+                    weather_comment = selection_meta.get('selected_weather_comment')
+                    advice_comment = selection_meta.get('selected_advice_comment')
+                    
+                    if weather_comment:
+                        st.text(f"天気: {weather_comment}")
+                    if advice_comment:
+                        st.text(f"アドバイス: {advice_comment}")
+                    
+                    # LLMプロバイダー情報
+                    provider = selection_meta.get('llm_provider')
+                    if provider:
+                        st.text(f"選択方法: LLM ({provider})")
+    else:
+        st.error(f"❌ **{location}**: {error}")
+
+
+def display_streaming_results(results: List[Dict[str, Any]]):
+    """結果をストリーミング表示（従来関数・最終結果用）"""
+    # ヘッダーはgenerate_comment_with_progressで表示済み
+    
+    for result in results:
+        display_single_result(result)
+    
+    # 残りの地点数を表示
+    remaining = len([r for r in results if not r['success'] and not r.get('error')])
+    if remaining > 0:
+        st.info(f"⏳ 生成待ち: {remaining}地点")
+
+
+def generate_comment_with_progress(locations: List[str], llm_provider: str, results_container) -> Dict[str, Any]:
+    """プログレスバー付きコメント生成（複数地点対応）"""
+    if not locations:
+        return {'success': False, 'error': '地点が選択されていません'}
+    
     progress_bar = st.progress(0)
     status_text = st.empty()
     
-    # 進捗更新のシミュレーション（実際のワークフローではコールバックを使用）
-    progress_stages = [
-        (0.2, "天気予報を取得中..."),
-        (0.4, "過去コメントを検索中..."),
-        (0.6, "類似コメントを選択中..."),
-        (0.8, "コメントを生成中..."),
-        (1.0, "完了！")
-    ]
+    all_results = []
+    total_locations = len(locations)
+    
+    # ヘッダーを一度だけ表示
+    with results_container.container():
+        st.markdown("### 🌤️ 生成結果")
     
     try:
         # ワークフロー実行の開始
         st.session_state.is_generating = True
         
-        # 各ステージで進捗更新（実際の実装では非同期処理）
-        for progress, message in progress_stages[:-1]:
+        for idx, location in enumerate(locations):
+            # 進捗更新
+            progress = (idx / total_locations)
             progress_bar.progress(progress)
-            status_text.text(message)
-            time.sleep(0.5)  # デモ用の遅延
-        
-        # 実際のコメント生成
-        result = run_comment_generation(
-            location_name=location,
-            target_datetime=datetime.now(),
-            llm_provider=llm_provider
-        )
+            status_text.text(f"生成中... {location} ({idx + 1}/{total_locations})")
+            
+            try:
+                # 実際のコメント生成
+                result = run_comment_generation(
+                    location_name=location,
+                    target_datetime=datetime.now(),
+                    llm_provider=llm_provider
+                )
+                
+                # 結果を収集
+                location_result = {
+                    'location': location,
+                    'result': result,
+                    'success': result.get('success', False),
+                    'comment': result.get('final_comment', ''),
+                    'error': result.get('error', None)
+                }
+                
+                # ソースファイル情報を抽出
+                metadata = result.get('generation_metadata', {})
+                if metadata.get('selected_past_comments'):
+                    sources = []
+                    for comment in metadata['selected_past_comments']:
+                        if 'source_file' in comment:
+                            sources.append(comment['source_file'])
+                    if sources:
+                        location_result['source_files'] = sources
+                        # 詳細ログ出力
+                        logger.info(f"地点: {location}")
+                        logger.info(f"  天気: {metadata.get('weather_condition', '不明')}")
+                        logger.info(f"  気温: {metadata.get('temperature', '不明')}°C")
+                        logger.info(f"  コメント生成元ファイル: {sources}")
+                        logger.info(f"  生成コメント: {result.get('final_comment', '')}")
+                
+                all_results.append(location_result)
+                
+                # 個別地点の結果を追加表示（累積表示を避ける）
+                with results_container.container():
+                    display_single_result(location_result)
+                
+                # 履歴に保存
+                if result.get('success'):
+                    save_to_history(result, location, llm_provider)
+                    
+            except Exception as location_error:
+                # 個別地点のエラーをキャッチして記録
+                location_result = {
+                    'location': location,
+                    'result': None,
+                    'success': False,
+                    'comment': '',
+                    'error': str(location_error)
+                }
+                all_results.append(location_result)
+                
+                # 個別地点の結果を追加表示（累積表示を避ける）
+                with results_container.container():
+                    display_single_result(location_result)
         
         # 完了
         progress_bar.progress(1.0)
-        status_text.text("完了！")
+        
+        # 成功数をカウント
+        success_count = sum(1 for r in all_results if r['success'])
+        
+        if success_count > 0:
+            status_text.text(f"完了！{success_count}/{total_locations}地点の生成が成功しました")
+        else:
+            status_text.text("エラー：すべての地点でコメント生成に失敗しました")
+        
         time.sleep(0.5)
         
-        # 履歴に保存
-        if result['success']:
-            save_to_history(result, location, llm_provider)
-            st.session_state.generation_history = load_history()
+        # エラーがあった場合は詳細を収集
+        errors = [r for r in all_results if not r['success']]
+        error_messages = []
         
-        return result
+        for err in errors:
+            location = err['location']
+            error_msg = err.get('error', '不明なエラー')
+            error_messages.append(f"{location}: {error_msg}")
+        
+        return {
+            'success': success_count > 0,
+            'total_locations': total_locations,
+            'success_count': success_count,
+            'results': all_results,
+            'final_comment': '\n'.join([f"{r['location']}: {r['comment']}" for r in all_results if r['success']]),
+            'errors': error_messages
+        }
         
     except Exception as e:
-        st.error(f"エラーが発生しました: {str(e)}")
+        error_msg = str(e)
+        
+        # エラーメッセージをユーザーにわかりやすく表示
+        if "OPENAI_API_KEY" in error_msg or "GEMINI_API_KEY" in error_msg or "ANTHROPIC_API_KEY" in error_msg:
+            st.error(f"🔐 APIキーエラー: {error_msg}")
+            st.info("💡 ヒント: サイドバーの「APIキー設定」から必要なAPIキーを設定してください")
+        elif "S3への接続に失敗" in error_msg:
+            st.error("🗄️ S3接続エラー: 過去コメントデータベースに接続できません")
+            st.info("💡 ヒント: AWS認証情報（AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY）を確認してください")
+        elif "WXTECH_API_KEY" in error_msg:
+            st.error("☁️ 気象APIエラー: 天気予報データを取得できません")
+            st.info("💡 ヒント: WXTECH_API_KEY環境変数を設定してください")
+        elif "地点が見つかりません" in error_msg:
+            st.error(f"📍 地点エラー: {error_msg}")
+            st.info("💡 ヒント: 地点名を確認して、正しい地点を選択してください")
+        else:
+            st.error(f"⚠️ エラーが発生しました: {error_msg}")
+        
         return {
             'success': False,
-            'error': str(e),
+            'error': error_msg,
             'final_comment': None
         }
     finally:
@@ -189,23 +298,44 @@ def main():
             disabled=st.session_state.is_generating,
             use_container_width=True
         ):
+            # 結果表示用のコンテナを先に作成
+            # col2の内容をクリアしてから新しいコンテナを作成
+            col2.empty()
+            results_container = col2.container()
+            
             with st.spinner("生成中..."):
-                result = generate_comment_with_progress(location, llm_provider)
+                # 複数地点の処理
+                if isinstance(location, list) and len(location) > 0:
+                    result = generate_comment_with_progress(location, llm_provider, results_container)
+                else:
+                    st.error("地点が選択されていません")
+                    result = None
                 st.session_state.current_result = result
                 
-                if result['success']:
-                    st.success("✅ コメント生成が完了しました！")
-                    st.balloons()
-                else:
-                    st.error(f"❌ 生成に失敗しました: {result.get('error', '不明なエラー')}")
+                if result and result['success']:
+                    st.success(f"✅ コメント生成が完了しました！ ({result['success_count']}/{result['total_locations']}地点成功)")
+                    if result['success_count'] == result['total_locations']:
+                        st.balloons()
+                    # 一部失敗した場合のエラー表示
+                    if result.get('errors'):
+                        with st.expander("⚠️ エラー詳細"):
+                            for error in result['errors']:
+                                st.warning(error)
+                elif result:
+                    # すべて失敗した場合はerrorメッセージをわかりやすく表示
+                    if result.get('errors'):
+                        for error in result['errors']:
+                            st.error(error)
     
     with col2:
         st.header("💬 生成結果")
         
-        if st.session_state.current_result:
-            result_display(st.session_state.current_result)
-        else:
-            st.info("👈 左側のパネルから地点とLLMプロバイダーを選択して、「コメント生成」ボタンをクリックしてください。")
+        # 生成中でない場合のみ固定の結果を表示
+        if not st.session_state.is_generating:
+            if st.session_state.current_result:
+                result_display(st.session_state.current_result)
+            else:
+                st.info("👈 左側のパネルから地点とLLMプロバイダーを選択して、「コメント生成」ボタンをクリックしてください。")
             
             # サンプル表示
             with st.expander("サンプルコメント"):

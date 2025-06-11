@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, defineProps, defineEmits } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useApi } from '~/composables/useApi'
 import { getAreaName, REGIONS } from '~/constants/locations'
 import type { Location } from '~/types'
@@ -173,10 +173,9 @@ const loadLocations = async () => {
     if (response.success && response.data) {
       allLocations.value = response.data
       
-      // 初期選択があるか確認
-      if (props.selectedLocation) {
-        selectedLocations.value = [props.selectedLocation]
-      }
+      // デフォルトで全地点を選択
+      selectedLocations.value = allLocations.value.map(loc => loc.name)
+      emitLocationChanges()
     } else {
       // APIが利用できない場合は、CSVファイルから読み込む
       await loadLocationsFromCSV()
@@ -206,6 +205,10 @@ const loadLocationsFromCSV = async () => {
         area: getAreaName(name.trim())
       }
     })
+    
+    // デフォルトで全地点を選択
+    selectedLocations.value = allLocations.value.map(loc => loc.name)
+    emitLocationChanges()
   } catch (err) {
     error.value = '地点データの読み込みに失敗しました'
     console.error('Failed to load CSV:', err)
