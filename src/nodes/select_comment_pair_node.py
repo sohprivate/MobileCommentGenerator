@@ -108,7 +108,18 @@ def _select_best_comment(comments, weather_data, location_name, target_datetime,
         candidates = weather_matched[:20] + others[:10]
         logger.info(f"天気コメント候補: 全{len(comments)}件中、天気一致{len(weather_matched)}件を優先")
     else:
-        candidates = [_create_candidate_dict(i, c) for i, c in enumerate(comments[:30])]
+        # アドバイスコメントは気温による事前フィルタリング
+        candidates = []
+        for i, comment in enumerate(comments[:30]):
+            candidate = _create_candidate_dict(i, comment)
+            # 気温による除外
+            if weather_data.temperature < 25 and "熱中症" in comment.comment_text:
+                logger.info(f"気温{weather_data.temperature}°Cのため熱中症コメントを除外: {comment.comment_text}")
+                continue
+            if weather_data.temperature >= 15 and any(word in comment.comment_text for word in ["防寒", "暖かく", "寒さ"]):
+                logger.info(f"気温{weather_data.temperature}°Cのため防寒コメントを除外: {comment.comment_text}")
+                continue
+            candidates.append(candidate)
 
     # プロンプト生成
     prompt = _generate_prompt(candidates, weather_data, location_name, target_datetime, comment_type)
