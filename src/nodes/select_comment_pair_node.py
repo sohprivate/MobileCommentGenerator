@@ -185,7 +185,7 @@ def _should_exclude_advice_comment(comment_text: str, weather_data) -> bool:
     comment_lower = comment_text.lower()
     
     # 気温による除外（従来の処理）
-    if weather_data.temperature < 25 and "熱中症" in comment_text:
+    if weather_data.temperature < 30 and "熱中症" in comment_text:
         return True
     if weather_data.temperature >= 15 and any(word in comment_text for word in ["防寒", "暖かく", "寒さ"]):
         return True
@@ -246,11 +246,11 @@ def _generate_prompt(candidates, weather_data, location_name, target_datetime, c
     else:
         base += f"""選択基準:
 1. 気温による除外（{weather_data.temperature}°C）：
-   - 25°C未満で「熱中症」系は選択禁止
+   - 30°C未満で「熱中症」系は選択禁止
    - 15°C以上で「防寒」系は選択禁止
 2. 天気条件への適切性（雨なら濡れ対策等）
 3. 実用的で具体的なアドバイス
 
-**重要**: 現在{weather_data.temperature}°Cなので、熱中症関連は{'選択禁止' if weather_data.temperature < 25 else '選択可能'}です。"""
+**重要**: 現在{weather_data.temperature}°Cなので、熱中症関連は{'選択禁止' if weather_data.temperature < 30 else '選択可能'}です。"""
 
     return base + f"\n\n必ず候補から1つ選び、index (0〜{len(candidates)-1}) を半角数字のみで答えてください。"
