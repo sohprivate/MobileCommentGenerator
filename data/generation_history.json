@@ -5530,5 +5530,537 @@
       }
     },
     "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:16:45.731110",
+    "location": "父島",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1610,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:16:45.729629",
+      "location_name": "父島",
+      "target_datetime": "2025-06-11T15:16:44.105670",
+      "llm_provider": "openai",
+      "weather_condition": "晴れ",
+      "temperature": 28.9,
+      "humidity": 82.0,
+      "wind_speed": 1.6,
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1610,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:16:45.729629\",\n    \"location_name\": \"父島\",\n    \"target_datetime\": \"2025-06-11T15:16:44.105670\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 28.9,\n    \"humidity\": 82.0,\n    \"wind_speed\": 1.6,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.09799003601074219
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:16:47.676937",
+    "location": "横浜",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1905,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:16:47.675466",
+      "location_name": "横浜",
+      "target_datetime": "2025-06-11T15:16:45.754084",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 21.7,
+      "humidity": 96.0,
+      "wind_speed": 1.7,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1905,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:16:47.675466\",\n    \"location_name\": \"横浜\",\n    \"target_datetime\": \"2025-06-11T15:16:45.754084\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 21.7,\n    \"humidity\": 96.0,\n    \"wind_speed\": 1.7,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.08797645568847656
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:16:49.634429",
+    "location": "小田原",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1924,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:16:49.633411",
+      "location_name": "小田原",
+      "target_datetime": "2025-06-11T15:16:47.699046",
+      "llm_provider": "openai",
+      "weather_condition": "小雨",
+      "temperature": 23.0,
+      "humidity": 96.0,
+      "wind_speed": 1.1,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1924,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:16:49.633411\",\n    \"location_name\": \"小田原\",\n    \"target_datetime\": \"2025-06-11T15:16:47.699046\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"小雨\",\n    \"temperature\": 23.0,\n    \"humidity\": 96.0,\n    \"wind_speed\": 1.1,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.06890296936035156
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:16:51.591539",
+    "location": "さいたま",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空蒸し暑い",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1931,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:16:51.590676",
+      "location_name": "さいたま",
+      "target_datetime": "2025-06-11T15:16:49.649600",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 21.0,
+      "humidity": 98.0,
+      "wind_speed": 1.4,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "蒸し暑い",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空蒸し暑い\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1931,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:16:51.590676\",\n    \"location_name\": \"さいたま\",\n    \"target_datetime\": \"2025-06-11T15:16:49.649600\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 21.0,\n    \"humidity\": 98.0,\n    \"wind_speed\": 1.4,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"蒸し暑い\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.057220458984375
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:16:53.735275",
+    "location": "熊谷",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2073,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:16:53.734242",
+      "location_name": "熊谷",
+      "target_datetime": "2025-06-11T15:16:51.598888",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 21.1,
+      "humidity": 97.0,
+      "wind_speed": 2.0,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2073,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:16:53.734242\",\n    \"location_name\": \"熊谷\",\n    \"target_datetime\": \"2025-06-11T15:16:51.598888\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 21.1,\n    \"humidity\": 97.0,\n    \"wind_speed\": 2.0,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.09822845458984375
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:16:55.795139",
+    "location": "秩父",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2033,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:16:55.793418",
+      "location_name": "秩父",
+      "target_datetime": "2025-06-11T15:16:53.751644",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 20.9,
+      "humidity": 98.0,
+      "wind_speed": 1.2,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2033,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:16:55.793418\",\n    \"location_name\": \"秩父\",\n    \"target_datetime\": \"2025-06-11T15:16:53.751644\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 20.9,\n    \"humidity\": 98.0,\n    \"wind_speed\": 1.2,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.19884109497070312
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:16:57.767593",
+    "location": "千葉",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1791,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:16:57.766839",
+      "location_name": "千葉",
+      "target_datetime": "2025-06-11T15:16:55.828135",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 20.7,
+      "humidity": 95.0,
+      "wind_speed": 4.2,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1791,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:16:57.766839\",\n    \"location_name\": \"千葉\",\n    \"target_datetime\": \"2025-06-11T15:16:55.828135\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 20.7,\n    \"humidity\": 95.0,\n    \"wind_speed\": 4.2,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.04792213439941406
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:16:59.900770",
+    "location": "銚子",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2104,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:16:59.899470",
+      "location_name": "銚子",
+      "target_datetime": "2025-06-11T15:16:57.786264",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 20.0,
+      "humidity": 96.0,
+      "wind_speed": 3.0,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2104,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:16:59.899470\",\n    \"location_name\": \"銚子\",\n    \"target_datetime\": \"2025-06-11T15:16:57.786264\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 20.0,\n    \"humidity\": 96.0,\n    \"wind_speed\": 3.0,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.19478797912597656
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:17:01.720132",
+    "location": "館山",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空蒸し暑い",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1790,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:17:01.719308",
+      "location_name": "館山",
+      "target_datetime": "2025-06-11T15:16:59.919314",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 24.5,
+      "humidity": 91.0,
+      "wind_speed": 6.2,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "蒸し暑い",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空蒸し暑い\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1790,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:17:01.719308\",\n    \"location_name\": \"館山\",\n    \"target_datetime\": \"2025-06-11T15:16:59.919314\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 24.5,\n    \"humidity\": 91.0,\n    \"wind_speed\": 6.2,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"蒸し暑い\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.05984306335449219
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:17:03.703177",
+    "location": "水戸",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1963,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:17:03.700615",
+      "location_name": "水戸",
+      "target_datetime": "2025-06-11T15:17:01.730116",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 19.8,
+      "humidity": 94.0,
+      "wind_speed": 1.6,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1963,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:17:03.700615\",\n    \"location_name\": \"水戸\",\n    \"target_datetime\": \"2025-06-11T15:17:01.730116\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 19.8,\n    \"humidity\": 94.0,\n    \"wind_speed\": 1.6,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.141143798828125
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:17:05.618796",
+    "location": "土浦",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1785,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:17:05.617783",
+      "location_name": "土浦",
+      "target_datetime": "2025-06-11T15:17:03.802225",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 19.8,
+      "humidity": 98.0,
+      "wind_speed": 1.3,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1785,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:17:05.617783\",\n    \"location_name\": \"土浦\",\n    \"target_datetime\": \"2025-06-11T15:17:03.802225\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 19.8,\n    \"humidity\": 98.0,\n    \"wind_speed\": 1.3,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.08392333984375
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:17:10.419465",
+    "location": "前橋",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空蒸し暑い",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 4613,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:17:10.418282",
+      "location_name": "前橋",
+      "target_datetime": "2025-06-11T15:17:05.648645",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 21.7,
+      "humidity": 94.0,
+      "wind_speed": 1.3,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "蒸し暑い",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空蒸し暑い\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 4613,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:17:10.418282\",\n    \"location_name\": \"前橋\",\n    \"target_datetime\": \"2025-06-11T15:17:05.648645\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 21.7,\n    \"humidity\": 94.0,\n    \"wind_speed\": 1.3,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"蒸し暑い\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.07486343383789062
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:17:17.655637",
+    "location": "みなかみ",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 7211,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:17:17.650200",
+      "location_name": "みなかみ",
+      "target_datetime": "2025-06-11T15:17:10.428256",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 20.6,
+      "humidity": 99.0,
+      "wind_speed": 0.5,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 7211,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:17:17.650200\",\n    \"location_name\": \"みなかみ\",\n    \"target_datetime\": \"2025-06-11T15:17:10.428256\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 20.6,\n    \"humidity\": 99.0,\n    \"wind_speed\": 0.5,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.1761913299560547
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-11T15:17:24.734157",
+    "location": "宇都宮",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 6699,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-11T15:17:24.729761",
+      "location_name": "宇都宮",
+      "target_datetime": "2025-06-11T15:17:17.853819",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 20.6,
+      "humidity": 98.0,
+      "wind_speed": 1.2,
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 6699,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-11T15:17:24.729761\",\n    \"location_name\": \"宇都宮\",\n    \"target_datetime\": \"2025-06-11T15:17:17.853819\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 20.6,\n    \"humidity\": 98.0,\n    \"wind_speed\": 1.2,\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.18405914306640625
+      }
+    },
+    "error": null
   }
 ]

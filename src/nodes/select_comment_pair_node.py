@@ -91,13 +91,18 @@ def _select_best_comment(comments, weather_data, location_name, target_datetime,
     if not comments:
         return None
 
-    # 候補の準備（天気コメントは天気一致を優先）
+    # 候補の準備（事前フィルタリング適用）
     candidates = []
     if comment_type == CommentType.WEATHER_COMMENT:
         weather_matched = []
         others = []
         
         for i, comment in enumerate(comments):
+            # 天気コメントの事前フィルタリング
+            if _should_exclude_weather_comment(comment.comment_text, weather_data):
+                logger.info(f"天気条件不適合のためコメントを除外: {comment.comment_text} (天気: {weather_data.weather_description})")
+                continue
+                
             candidate = _create_candidate_dict(i, comment)
             
             if _is_weather_matched(comment.weather_condition, weather_data.weather_description):
@@ -108,18 +113,14 @@ def _select_best_comment(comments, weather_data, location_name, target_datetime,
         candidates = weather_matched[:20] + others[:10]
         logger.info(f"天気コメント候補: 全{len(comments)}件中、天気一致{len(weather_matched)}件を優先")
     else:
-        # アドバイスコメントは気温による事前フィルタリング
+        # アドバイスコメントの事前フィルタリング
         candidates = []
         for i, comment in enumerate(comments[:30]):
-            candidate = _create_candidate_dict(i, comment)
-            # 気温による除外
-            if weather_data.temperature < 25 and "熱中症" in comment.comment_text:
-                logger.info(f"気温{weather_data.temperature}°Cのため熱中症コメントを除外: {comment.comment_text}")
+            # アドバイスコメントの事前フィルタリング
+            if _should_exclude_advice_comment(comment.comment_text, weather_data):
+                logger.info(f"天気・気温条件不適合のためコメントを除外: {comment.comment_text}")
                 continue
-            if weather_data.temperature >= 15 and any(word in comment.comment_text for word in ["防寒", "暖かく", "寒さ"]):
-                logger.info(f"気温{weather_data.temperature}°Cのため防寒コメントを除外: {comment.comment_text}")
-                continue
-            candidates.append(candidate)
+            candidates.append(_create_candidate_dict(i, comment))
 
     # プロンプト生成
     prompt = _generate_prompt(candidates, weather_data, location_name, target_datetime, comment_type)
@@ -147,6 +148,67 @@ def _create_candidate_dict(index, comment):
         "text": comment.comment_text,
         "season": comment.raw_data.get("season", "不明"),
     }
+
+
+def _should_exclude_weather_comment(comment_text: str, weather_data) -> bool:
+    """天気コメントを除外すべきかどうか判定"""
+    current_weather = weather_data.weather_description.lower()
+    comment_lower = comment_text.lower()
+    
+    # 雨天時の不適切なコメント
+    if any(rain_word in current_weather for rain_word in ["雨", "小雨", "大雨", "豪雨"]):
+        if any(sunny_word in comment_lower for sunny_word in ["青空", "晴れ", "快晴", "日差し", "太陽", "陽射し"]):
+            return True
+    
+    # 晴天時の不適切なコメント  
+    if any(sunny_word in current_weather for sunny_word in ["晴れ", "快晴"]):
+        if any(rain_word in comment_lower for rain_word in ["雨", "じめじめ", "湿った", "どんより"]):
+            return True
+    
+    # 曇天時の不適切なコメント
+    if "くもり" in current_weather or "曇" in current_weather:
+        if any(sunny_word in comment_lower for sunny_word in ["青空", "快晴", "眩しい"]):
+            return True
+    
+    # 気温による不適切なコメント
+    if weather_data.temperature < 10 and any(hot_word in comment_lower for hot_word in ["暑い", "猛暑", "酷暑"]):
+        return True
+    if weather_data.temperature > 30 and any(cold_word in comment_lower for cold_word in ["寒い", "冷える", "肌寒い"]):
+        return True
+    
+    return False
+
+
+def _should_exclude_advice_comment(comment_text: str, weather_data) -> bool:
+    """アドバイスコメントを除外すべきかどうか判定"""
+    current_weather = weather_data.weather_description.lower()
+    comment_lower = comment_text.lower()
+    
+    # 気温による除外（従来の処理）
+    if weather_data.temperature < 25 and "熱中症" in comment_text:
+        return True
+    if weather_data.temperature >= 15 and any(word in comment_text for word in ["防寒", "暖かく", "寒さ"]):
+        return True
+    
+    # 雨天時の不適切なアドバイス
+    if any(rain_word in current_weather for rain_word in ["雨", "小雨", "大雨"]):
+        if any(sunny_advice in comment_lower for sunny_advice in ["日焼け止め", "帽子", "サングラス", "日傘"]):
+            return True
+    
+    # 晴天時の不適切なアドバイス
+    if any(sunny_word in current_weather for sunny_word in ["晴れ", "快晴"]):
+        if any(rain_advice in comment_lower for rain_advice in ["傘", "レインコート", "濡れ"]):
+            return True
+    
+    # 低湿度時の不適切なアドバイス
+    if weather_data.humidity < 30 and any(humid_advice in comment_lower for humid_advice in ["除湿", "湿気対策"]):
+        return True
+    
+    # 高湿度時の不適切なアドバイス  
+    if weather_data.humidity > 80 and any(dry_advice in comment_lower for dry_advice in ["乾燥対策", "保湿"]):
+        return True
+    
+    return False
 
 
 def _is_weather_matched(comment_weather, current_weather):
