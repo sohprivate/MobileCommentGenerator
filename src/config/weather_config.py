@@ -18,6 +18,7 @@ class WeatherConfig:
         wxtech_api_key: WxTech API キー
         default_location: デフォルト地点名
         forecast_hours: デフォルト予報時間数
+        forecast_hours_ahead: 何時間後の予報を取得するか（デフォルト12時間）
         api_timeout: API タイムアウト（秒）
         max_retries: 最大リトライ回数
         rate_limit_delay: レート制限回避遅延（秒）
@@ -31,6 +32,9 @@ class WeatherConfig:
     )
     forecast_hours: int = field(
         default_factory=lambda: int(os.getenv("WEATHER_FORECAST_HOURS", "24"))
+    )
+    forecast_hours_ahead: int = field(
+        default_factory=lambda: int(os.getenv("WEATHER_FORECAST_HOURS_AHEAD", "12"))
     )
     api_timeout: int = field(default_factory=lambda: int(os.getenv("WEATHER_API_TIMEOUT", "30")))
     max_retries: int = field(default_factory=lambda: int(os.getenv("WEATHER_API_MAX_RETRIES", "3")))
@@ -65,6 +69,7 @@ class WeatherConfig:
             "wxtech_api_key": "***" if self.wxtech_api_key else "",
             "default_location": self.default_location,
             "forecast_hours": self.forecast_hours,
+            "forecast_hours_ahead": self.forecast_hours_ahead,
             "api_timeout": self.api_timeout,
             "max_retries": self.max_retries,
             "rate_limit_delay": self.rate_limit_delay,
@@ -228,6 +233,7 @@ def setup_environment_defaults():
     defaults = {
         "DEFAULT_WEATHER_LOCATION": "東京",
         "WEATHER_FORECAST_HOURS": "24",
+        "WEATHER_FORECAST_HOURS_AHEAD": "12",
         "WEATHER_API_TIMEOUT": "30",
         "WEATHER_API_MAX_RETRIES": "3",
         "WEATHER_API_RATE_LIMIT_DELAY": "0.1",

@@ -11,6 +11,7 @@ import pytz
 
 from src.data.comment_generation_state import CommentGenerationState
 from src.data.location_manager import Location, LocationManager
+from src.config.weather_config import get_config
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +36,20 @@ def input_node(state: CommentGenerationState) -> CommentGenerationState:
 
         # デフォルト値の設定
         target_datetime = state.target_datetime
+        logger.info(f"InputNode - 元のtarget_datetime: {target_datetime}")
+        
         if not target_datetime:
-            # 日本時間で現在時刻を設定
+            # 設定から何時間後の予報を使用するか取得
+            config = get_config()
+            forecast_hours_ahead = config.weather.forecast_hours_ahead
             jst = pytz.timezone("Asia/Tokyo")
-            target_datetime = datetime.now(jst)
+            target_datetime = datetime.now(jst) + timedelta(hours=forecast_hours_ahead)
             state.target_datetime = target_datetime
-            logger.info(f"target_datetimeが未指定のため、現在時刻を使用: {target_datetime}")
+            logger.info(f"target_datetimeが未指定のため、{forecast_hours_ahead}時間後を使用: {target_datetime}")
+        else:
+            logger.info(f"既存のtarget_datetimeを使用: {target_datetime}")
+        
+        logger.info(f"InputNode - 最終的なtarget_datetime: {state.target_datetime}")
 
         # Location オブジェクトの作成
         location = _create_location(location_name)

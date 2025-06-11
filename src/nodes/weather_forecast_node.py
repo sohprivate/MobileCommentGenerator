@@ -7,15 +7,15 @@ LangGraphノードとして天気予報データの取得・処理を行う
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional, Union
+from typing import Any
 
-from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
-from langgraph.graph import StateGraph, START, END
+from langchain_core.messages import AIMessage, BaseMessage
+from langgraph.graph import END, START, StateGraph
 
 from src.apis.wxtech_client import WxTechAPIClient, WxTechAPIError
+from src.data.location_manager import LocationManager
 from src.data.weather_data import WeatherForecast, WeatherForecastCollection
-from src.data.location_manager import LocationManager, Location
-
+from src.config.weather_config import get_config
 
 # ログ設定
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class WeatherForecastNode:
         self.api_key = api_key
         self.location_manager = LocationManager()
 
-    async def get_weather_forecast(self, state: Dict[str, Any]) -> Dict[str, Any]:
+    async def get_weather_forecast(self, state: dict[str, Any]) -> dict[str, Any]:
         """天気予報データを取得するノード
 
         Args:
@@ -68,7 +68,8 @@ class WeatherForecastNode:
 
             # 指定時間内の予報データをフィルタリング
             filtered_forecasts = self._filter_forecasts_by_hours(
-                weather_collection.forecasts, forecast_hours
+                weather_collection.forecasts,
+                forecast_hours,
             )
 
             # 天気概要を生成
@@ -87,12 +88,13 @@ class WeatherForecastNode:
             }
 
         except Exception as e:
-            logger.error(f"天気予報データ取得エラー: {str(e)}")
-            return {**state, "error_message": f"天気予報データの取得に失敗しました: {str(e)}"}
+            logger.error(f"天気予報データ取得エラー: {e!s}")
+            return {**state, "error_message": f"天気予報データの取得に失敗しました: {e!s}"}
 
     async def _fetch_weather_data(
-        self, location: Union[str, tuple]
-    ) -> Optional[WeatherForecastCollection]:
+        self,
+        location: str | tuple,
+    ) -> WeatherForecastCollection | None:
         """天気予報データを取得
 
         Args:
@@ -106,11 +108,7 @@ class WeatherForecastNode:
                 if isinstance(location, str):
                     # 地点名から座標を取得
                     location_obj = self.location_manager.find_exact_match(location)
-                    if (
-                        not location_obj
-                        or location_obj.latitude is None
-                        or location_obj.longitude is None
-                    ):
+                    if not location_obj or location_obj.latitude is None or location_obj.longitude is None:
                         # 地点検索を試行
                         search_results = self.location_manager.search_location(location)
                         if search_results:
@@ -119,27 +117,29 @@ class WeatherForecastNode:
                             raise ValueError(f"地点「{location}」が見つかりません")
 
                     return await client.get_forecast_async(
-                        location_obj.latitude, location_obj.longitude
+                        location_obj.latitude,
+                        location_obj.longitude,
                     )
 
-                elif isinstance(location, tuple) and len(location) == 2:
+                if isinstance(location, tuple) and len(location) == 2:
                     # 緯度経度から直接取得
                     lat, lon = location
                     return await client.get_forecast_async(lat, lon)
 
-                else:
-                    raise ValueError("無効な地点情報です")
+                raise ValueError("無効な地点情報です")
 
         except WxTechAPIError as e:
-            logger.error(f"WxTech API エラー: {str(e)}")
+            logger.error(f"WxTech API エラー: {e!s}")
             raise
         except Exception as e:
-            logger.error(f"天気予報データ取得エラー: {str(e)}")
+            logger.error(f"天気予報データ取得エラー: {e!s}")
             raise
 
     def _filter_forecasts_by_hours(
-        self, forecasts: List[WeatherForecast], hours: int
-    ) -> List[WeatherForecast]:
+        self,
+        forecasts: list[WeatherForecast],
+        hours: int,
+    ) -> list[WeatherForecast]:
         """指定時間内の予報データをフィルタリング
 
         Args:
@@ -157,7 +157,7 @@ class WeatherForecastNode:
 
         return [forecast for forecast in forecasts if forecast.datetime <= cutoff_time]
 
-    def _generate_weather_summary(self, forecasts: List[WeatherForecast]) -> Dict[str, Any]:
+    def _generate_weather_summary(self, forecasts: list[WeatherForecast]) -> dict[str, Any]:
         """天気概要を生成
 
         Args:
@@ -169,10 +169,16 @@ class WeatherForecastNode:
         if not forecasts:
             return {}
 
-        # 現在の天気
+        # 12時間後の天気
+        target_time = datetime.now() + timedelta(hours=12)
         current_forecast = min(
-            forecasts, key=lambda f: abs((f.datetime - datetime.now()).total_seconds())
+            forecasts,
+            key=lambda f: abs((f.datetime - target_time).total_seconds()),
         )
+        
+        # デバッグ情報
+        logger.info(f"_generate_weather_summary - ターゲット時刻: {target_time}, 選択された予報時刻: {current_forecast.datetime}")
+        logger.info(f"_generate_weather_summary - 選択された天気データ: {current_forecast.temperature}°C, {current_forecast.weather_description}")
 
         # 気温統計
         temperatures = [f.temperature for f in forecasts]
@@ -226,7 +232,7 @@ class WeatherForecastNode:
             "recommendations": self._generate_recommendations(forecasts),
         }
 
-    def _generate_recommendations(self, forecasts: List[WeatherForecast]) -> List[str]:
+    def _generate_recommendations(self, forecasts: list[WeatherForecast]) -> list[str]:
         """天気に基づく推奨事項を生成
 
         Args:
@@ -292,7 +298,7 @@ def create_weather_forecast_graph(api_key: str) -> StateGraph:
     weather_node = WeatherForecastNode(api_key)
 
     # グラフ定義
-    graph = StateGraph(Dict[str, Any])
+    graph = StateGraph(dict[str, Any])
 
     # ノード追加
     graph.add_node("get_weather", weather_node.get_weather_forecast)
@@ -306,8 +312,10 @@ def create_weather_forecast_graph(api_key: str) -> StateGraph:
 
 # 単体でも使用可能な関数
 async def get_weather_forecast_for_location(
-    location: Union[str, tuple], api_key: str, forecast_hours: int = 24
-) -> Dict[str, Any]:
+    location: str | tuple,
+    api_key: str,
+    forecast_hours: int = 24,
+) -> dict[str, Any]:
     """指定地点の天気予報を取得（単体使用可能）
 
     Args:
@@ -328,8 +336,10 @@ async def get_weather_forecast_for_location(
 
 # メッセージベースの統合関数
 async def integrate_weather_into_conversation(
-    messages: List[BaseMessage], location: Union[str, tuple], api_key: str
-) -> List[BaseMessage]:
+    messages: list[BaseMessage],
+    location: str | tuple,
+    api_key: str,
+) -> list[BaseMessage]:
     """会話に天気情報を統合
 
     Args:
@@ -355,13 +365,13 @@ async def integrate_weather_into_conversation(
 
         weather_message_content = f"""
 現在の天気情報:
-- 地点: {weather_data['weather_data']['location']}
-- 気温: {current_weather.get('temperature', 'N/A')}°C
-- 天気: {current_weather.get('description', 'N/A')}
-- 快適度: {current_weather.get('comfort_level', 'N/A')}
+- 地点: {weather_data["weather_data"]["location"]}
+- 気温: {current_weather.get("temperature", "N/A")}°C
+- 天気: {current_weather.get("description", "N/A")}
+- 快適度: {current_weather.get("comfort_level", "N/A")}
 
 推奨事項:
-{chr(10).join(f'- {rec}' for rec in recommendations) if recommendations else '- 特になし'}
+{chr(10).join(f"- {rec}" for rec in recommendations) if recommendations else "- 特になし"}
 """
 
         weather_message = AIMessage(
@@ -373,7 +383,7 @@ async def integrate_weather_into_conversation(
         return messages + [weather_message]
 
     except Exception as e:
-        logger.error(f"天気情報統合エラー: {str(e)}")
+        logger.error(f"天気情報統合エラー: {e!s}")
         # エラー時は元のメッセージをそのまま返す
         return messages
 
@@ -390,6 +400,7 @@ def fetch_weather_forecast_node(state):
     """
     import logging
     import os
+
     from src.data.location_manager import get_location_manager
 
     logger = logging.getLogger(__name__)
@@ -412,11 +423,11 @@ def fetch_weather_forecast_node(state):
                     provided_lat = float(parts[1].strip())
                     provided_lon = float(parts[2].strip())
                     logger.info(
-                        f"Extracted location name '{location_name}' with coordinates ({provided_lat}, {provided_lon})"
+                        f"Extracted location name '{location_name}' with coordinates ({provided_lat}, {provided_lon})",
                     )
                 except ValueError:
                     logger.warning(
-                        f"Invalid coordinates in '{location_name_raw}', will look up in LocationManager"
+                        f"Invalid coordinates in '{location_name_raw}', will look up in LocationManager",
                     )
             else:
                 logger.info(f"Extracted location name '{location_name}' from '{location_name_raw}'")
@@ -430,7 +441,7 @@ def fetch_weather_forecast_node(state):
         # LocationManagerで見つからない場合、提供された座標を使用
         if not location and provided_lat is not None and provided_lon is not None:
             logger.info(
-                f"Location '{location_name}' not found in LocationManager, using provided coordinates"
+                f"Location '{location_name}' not found in LocationManager, using provided coordinates",
             )
             # 疑似Locationオブジェクトを作成
             from src.data.location_manager import Location
@@ -458,10 +469,7 @@ def fetch_weather_forecast_node(state):
         # APIキーの取得
         api_key = os.getenv("WXTECH_API_KEY")
         if not api_key:
-            error_msg = (
-                "WXTECH_API_KEY環境変数が設定されていません。\n"
-                "設定方法: export WXTECH_API_KEY='your-api-key' または .envファイルに記載"
-            )
+            error_msg = "WXTECH_API_KEY環境変数が設定されていません。\n設定方法: export WXTECH_API_KEY='your-api-key' または .envファイルに記載"
             logger.error(error_msg)
             state.add_error(error_msg, "weather_forecast")
             raise ValueError(error_msg)
@@ -473,27 +481,29 @@ def fetch_weather_forecast_node(state):
         try:
             forecast_collection = client.get_forecast(lat, lon)
         except WxTechAPIError as e:
-            error_msg = f"気象API接続エラー: {str(e)}"
+            error_msg = f"気象API接続エラー: {e!s}"
             logger.error(error_msg)
             state.add_error(error_msg, "weather_forecast")
             # 具体的なエラーメッセージを含めて再発生
             if "401" in str(e) or "APIキーが無効" in str(e):
-                error_msg = (
-                    "気象APIキーが無効です。\n"
-                    "WXTECH_API_KEYが正しく設定されているか確認してください。"
-                )
+                error_msg = "気象APIキーが無効です。\nWXTECH_API_KEYが正しく設定されているか確認してください。"
             elif "429" in str(e) or "レート制限" in str(e):
-                error_msg = (
-                    "気象APIのレート制限に達しました。しばらく待ってから再試行してください。"
-                )
+                error_msg = "気象APIのレート制限に達しました。しばらく待ってから再試行してください。"
             elif "接続できません" in str(e):
                 error_msg = "気象APIサーバーに接続できません。ネットワーク接続を確認してください。"
             state.add_error(error_msg, "weather_forecast")
             raise WxTechAPIError(error_msg)
 
-        # 現在時刻に最も近い予報を選択
-        target_datetime = state.target_datetime if state.target_datetime else datetime.now()
+        # 設定から何時間後の予報を使用するか取得
+        config = get_config()
+        forecast_hours_ahead = config.weather.forecast_hours_ahead
+        target_datetime = datetime.now() + timedelta(hours=forecast_hours_ahead)
         nearest_forecast = forecast_collection.get_nearest_forecast(target_datetime)
+        
+        # デバッグ情報
+        logger.info(f"fetch_weather_forecast_node - ターゲット時刻: {target_datetime}, 選択された予報時刻: {nearest_forecast.datetime if nearest_forecast else 'None'}")
+        if nearest_forecast:
+            logger.info(f"fetch_weather_forecast_node - 選択された天気データ: {nearest_forecast.temperature}°C, {nearest_forecast.weather_description}")
 
         if not nearest_forecast:
             error_msg = "指定時刻の天気予報データが取得できませんでした"
@@ -507,14 +517,14 @@ def fetch_weather_forecast_node(state):
         state.update_metadata("location_coordinates", {"latitude": lat, "longitude": lon})
 
         logger.info(
-            f"Weather forecast fetched for {location_name}: {nearest_forecast.weather_description}"
+            f"Weather forecast fetched for {location_name}: {nearest_forecast.weather_description}",
         )
 
         return state
 
     except Exception as e:
-        logger.error(f"Failed to fetch weather forecast: {str(e)}")
-        state.add_error(f"天気予報の取得に失敗しました: {str(e)}", "weather_forecast")
+        logger.error(f"Failed to fetch weather forecast: {e!s}")
+        state.add_error(f"天気予報の取得に失敗しました: {e!s}", "weather_forecast")
         # エラーをそのまま再発生させて処理を停止
         raise
 
@@ -522,6 +532,7 @@ def fetch_weather_forecast_node(state):
 if __name__ == "__main__":
     # テスト用コード
     import os
+
     from dotenv import load_dotenv
 
     load_dotenv()

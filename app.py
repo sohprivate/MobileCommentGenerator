@@ -13,6 +13,7 @@ st.set_page_config(
 from datetime import datetime
 import logging
 import time
+import pytz
 from typing import Dict, Any, List
 
 from src.workflows.comment_generation_workflow import run_comment_generation
@@ -57,7 +58,21 @@ def display_single_result(result: Dict[str, Any]):
         if result.get('result') and result['result'].get('generation_metadata'):
             metadata = result['result']['generation_metadata']
             with st.expander(f"📊 {location}の詳細情報"):
-                # 天気データの表示（現在の気象情報）
+                # 天気予報時刻の表示
+                forecast_time = metadata.get('weather_forecast_time')
+                if forecast_time:
+                    try:
+                        # UTC時刻をパース
+                        dt = datetime.fromisoformat(forecast_time.replace('Z', '+00:00'))
+                        # JSTに変換
+                        jst = pytz.timezone('Asia/Tokyo')
+                        dt_jst = dt.astimezone(jst)
+                        st.info(f"⏰ 予報時刻: {dt_jst.strftime('%Y年%m月%d日 %H時')}")
+                    except Exception as e:
+                        logger.warning(f"予報時刻のパース失敗: {e}, forecast_time={forecast_time}")
+                        st.info(f"⏰ 予報時刻: {forecast_time}")
+                
+                # 天気データの表示
                 col1, col2 = st.columns(2)
                 with col1:
                     temp = metadata.get('temperature')

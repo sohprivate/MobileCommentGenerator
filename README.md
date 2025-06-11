@@ -207,6 +207,38 @@ AWS_ACCESS_KEY_ID=your_aws_access_key_id
 AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
 ```
 
+## ⚙️ 天気予報時刻の設定
+
+システムはデフォルトで**12時間後の天気予報データ**を使用してコメントを生成します。この設定は環境変数で簡単に変更できます。
+
+### 環境変数での設定
+
+`.env`ファイルに以下の環境変数を追加してください：
+
+```bash
+# 何時間後の予報を使用するか（デフォルト: 12）
+WEATHER_FORECAST_HOURS_AHEAD=12
+```
+
+### 設定例
+
+```bash
+# 6時間後の予報を使用する場合
+WEATHER_FORECAST_HOURS_AHEAD=6
+
+# 24時間後（翌日同時刻）の予報を使用する場合
+WEATHER_FORECAST_HOURS_AHEAD=24
+
+# 3時間後の予報を使用する場合
+WEATHER_FORECAST_HOURS_AHEAD=3
+```
+
+### 設定の確認
+
+設定した時刻は、UIの各地点詳細情報で「⏰ 予報時刻」として表示されます。表示される時刻は日本標準時（JST）に自動変換されます。
+
+**注意**: この設定により、すべてのコンポーネントで統一的に指定した時間後の予報が使用されます。
+
 ## 🚀 使用方法
 
 ### Streamlit UI（推奨）
