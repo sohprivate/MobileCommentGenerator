@@ -174,6 +174,10 @@ class WeatherForecastNode:
             forecasts,
             key=lambda f: abs((f.datetime - target_time).total_seconds()),
         )
+        
+        # デバッグ情報
+        logger.info(f"_generate_weather_summary - ターゲット時刻: {target_time}, 選択された予報時刻: {current_forecast.datetime}")
+        logger.info(f"_generate_weather_summary - 選択された天気データ: {current_forecast.temperature}°C, {current_forecast.weather_description}")
 
         # 気温統計
         temperatures = [f.temperature for f in forecasts]
@@ -494,9 +498,9 @@ def fetch_weather_forecast_node(state):
         nearest_forecast = forecast_collection.get_nearest_forecast(target_datetime)
         
         # デバッグ情報
-        logger.info(f"ターゲット時刻: {target_datetime}, 選択された予報時刻: {nearest_forecast.datetime if nearest_forecast else 'None'}")
+        logger.info(f"fetch_weather_forecast_node - ターゲット時刻: {target_datetime}, 選択された予報時刻: {nearest_forecast.datetime if nearest_forecast else 'None'}")
         if nearest_forecast:
-            logger.info(f"選択された天気データ: {nearest_forecast.temperature}°C, {nearest_forecast.weather_description}")
+            logger.info(f"fetch_weather_forecast_node - 選択された天気データ: {nearest_forecast.temperature}°C, {nearest_forecast.weather_description}")
 
         if not nearest_forecast:
             error_msg = "指定時刻の天気予報データが取得できませんでした"
