@@ -494,7 +494,8 @@ def fetch_weather_forecast_node(state):
             raise WxTechAPIError(error_msg)
 
         # 12時間後に最も近い予報を選択
-        target_datetime = state.target_datetime if state.target_datetime else datetime.now() + timedelta(hours=12)
+        # 常に12時間後の予報を使用
+        target_datetime = datetime.now() + timedelta(hours=12)
         nearest_forecast = forecast_collection.get_nearest_forecast(target_datetime)
         
         # デバッグ情報
