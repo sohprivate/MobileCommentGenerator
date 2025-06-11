@@ -57,7 +57,17 @@ def display_single_result(result: Dict[str, Any]):
         if result.get('result') and result['result'].get('generation_metadata'):
             metadata = result['result']['generation_metadata']
             with st.expander(f"📊 {location}の詳細情報"):
-                # 天気データの表示（現在の気象情報）
+                # 天気予報時刻の表示
+                forecast_time = metadata.get('weather_forecast_time')
+                if forecast_time:
+                    from datetime import datetime
+                    try:
+                        dt = datetime.fromisoformat(forecast_time.replace('Z', '+00:00'))
+                        st.info(f"⏰ 予報時刻: {dt.strftime('%Y年%m月%d日 %H時')}")
+                    except:
+                        st.info(f"⏰ 予報時刻: {forecast_time}")
+                
+                # 天気データの表示
                 col1, col2 = st.columns(2)
                 with col1:
                     temp = metadata.get('temperature')

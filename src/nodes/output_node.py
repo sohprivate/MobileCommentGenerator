@@ -171,6 +171,11 @@ def _create_generation_metadata(
         if wind_speed is not None:
             weather_info["wind_speed"] = wind_speed
         
+        # 天気データの時刻（予報時刻）
+        weather_datetime = getattr(weather_data, "datetime", None)
+        if weather_datetime is not None:
+            weather_info["weather_forecast_time"] = weather_datetime.isoformat()
+        
         # 有効な天気データがある場合のみ追加
         if weather_info:
             metadata.update(weather_info)
