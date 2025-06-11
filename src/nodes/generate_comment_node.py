@@ -63,9 +63,9 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
             selected_pair.advice_comment.comment_text if selected_pair.advice_comment else ""
         )
 
-        # 最終コメントは選択されたコメントをそのまま使用
+        # 最終コメントは選択されたコメントをそのまま使用（間に全角スペース）
         if weather_comment and advice_comment:
-            generated_comment = f"{weather_comment}{advice_comment}"
+            generated_comment = f"{weather_comment}　{advice_comment}"
         elif weather_comment:
             generated_comment = weather_comment
         elif advice_comment:
