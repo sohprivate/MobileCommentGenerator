@@ -209,44 +209,35 @@ AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
 
 ## ⚙️ 天気予報時刻の設定
 
-システムは現在、**12時間後の天気予報データ**を使用してコメントを生成します。この設定を変更したい場合は、以下の4箇所のファイルを修正してください：
+システムはデフォルトで**12時間後の天気予報データ**を使用してコメントを生成します。この設定は環境変数で簡単に変更できます。
 
-### 変更が必要なファイル
+### 環境変数での設定
 
-1. **`src/nodes/weather_forecast_node.py`** (172行目)
-   ```python
-   target_time = datetime.now() + timedelta(hours=12)  # hours=12を変更
-   ```
+`.env`ファイルに以下の環境変数を追加してください：
 
-2. **`src/nodes/weather_forecast_node.py`** (498行目)
-   ```python
-   target_datetime = datetime.now() + timedelta(hours=12)  # hours=12を変更
-   ```
-
-3. **`src/nodes/input_node.py`** (43行目)
-   ```python
-   target_datetime = datetime.now(jst) + timedelta(hours=12)  # hours=12を変更
-   ```
-
-4. **`src/workflows/comment_generation_workflow.py`** (176行目)
-   ```python
-   "target_datetime": target_datetime or (datetime.now() + timedelta(hours=12)),  # hours=12を変更
-   ```
+```bash
+# 何時間後の予報を使用するか（デフォルト: 12）
+WEATHER_FORECAST_HOURS_AHEAD=12
+```
 
 ### 設定例
 
-```python
+```bash
 # 6時間後の予報を使用する場合
-timedelta(hours=6)
+WEATHER_FORECAST_HOURS_AHEAD=6
 
 # 24時間後（翌日同時刻）の予報を使用する場合
-timedelta(hours=24)
+WEATHER_FORECAST_HOURS_AHEAD=24
 
 # 3時間後の予報を使用する場合
-timedelta(hours=3)
+WEATHER_FORECAST_HOURS_AHEAD=3
 ```
 
-**注意**: 一貫性を保つため、変更する際は4箇所すべてを同じ値に設定してください。
+### 設定の確認
+
+設定した時刻は、UIの各地点詳細情報で「⏰ 予報時刻」として表示されます。表示される時刻は日本標準時（JST）に自動変換されます。
+
+**注意**: この設定により、すべてのコンポーネントで統一的に指定した時間後の予報が使用されます。
 
 ## 🚀 使用方法
 

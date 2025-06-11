@@ -15,6 +15,7 @@ from langgraph.graph import END, START, StateGraph
 from src.apis.wxtech_client import WxTechAPIClient, WxTechAPIError
 from src.data.location_manager import LocationManager
 from src.data.weather_data import WeatherForecast, WeatherForecastCollection
+from src.config.weather_config import get_config
 
 # ログ設定
 logger = logging.getLogger(__name__)
@@ -493,9 +494,10 @@ def fetch_weather_forecast_node(state):
             state.add_error(error_msg, "weather_forecast")
             raise WxTechAPIError(error_msg)
 
-        # 12時間後に最も近い予報を選択
-        # 常に12時間後の予報を使用
-        target_datetime = datetime.now() + timedelta(hours=12)
+        # 設定から何時間後の予報を使用するか取得
+        config = get_config()
+        forecast_hours_ahead = config.weather.forecast_hours_ahead
+        target_datetime = datetime.now() + timedelta(hours=forecast_hours_ahead)
         nearest_forecast = forecast_collection.get_nearest_forecast(target_datetime)
         
         # デバッグ情報

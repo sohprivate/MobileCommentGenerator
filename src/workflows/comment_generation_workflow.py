@@ -17,6 +17,7 @@ from src.nodes.select_comment_pair_node import select_comment_pair_node
 from src.nodes.evaluate_candidate_node import evaluate_candidate_node
 from src.nodes.input_node import input_node
 from src.nodes.output_node import output_node
+from src.config.weather_config import get_config
 
 
 # 定数
@@ -171,9 +172,11 @@ def run_comment_generation(
     workflow = create_comment_generation_workflow()
 
     # 初期状態の準備
+    config = get_config()
+    forecast_hours_ahead = config.weather.forecast_hours_ahead
     initial_state = {
         "location_name": location_name,
-        "target_datetime": target_datetime or (datetime.now() + timedelta(hours=12)),
+        "target_datetime": target_datetime or (datetime.now() + timedelta(hours=forecast_hours_ahead)),
         "llm_provider": llm_provider,
         "retry_count": 0,
         "errors": [],
