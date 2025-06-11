@@ -169,8 +169,10 @@ class WeatherForecastNode:
         if not forecasts:
             return {}
 
-        # 12時間後の天気
-        target_time = datetime.now() + timedelta(hours=12)
+        # 指定時間後の天気
+        from src.config.weather_config import WeatherConfig
+        config = WeatherConfig()
+        target_time = datetime.now() + timedelta(hours=config.forecast_hours_ahead)
         current_forecast = min(
             forecasts,
             key=lambda f: abs((f.datetime - target_time).total_seconds()),
