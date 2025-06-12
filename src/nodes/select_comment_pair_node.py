@@ -130,9 +130,13 @@ def _select_best_comment(comments, weather_data, location_name, target_datetime,
         match = re.search(r"\d+", response)
         selected_index = int(match.group()) if match else 0
 
-        if 0 <= selected_index < len(comments):
+        if 0 <= selected_index < len(candidates):
             logger.info(f"LLMが{comment_type.value}を選択: index={selected_index}")
-            return comments[selected_index]
+            selected_candidate = candidates[selected_index]
+            # candidateのindexを使って元のcommentsから取得
+            original_index = selected_candidate.get('index', selected_index)
+            if 0 <= original_index < len(comments):
+                return comments[original_index]
             
         logger.warning(f"無効なインデックス: {selected_index}")
         return comments[0]
