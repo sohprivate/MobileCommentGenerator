@@ -5,8 +5,8 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 from enum import Enum
 
-from .weather_data import WeatherForecast, WeatherCondition
-from ..config.comment_config import get_comment_config
+from src.data.weather_data import WeatherForecast, WeatherCondition
+from src.config.comment_config import get_comment_config
 
 
 class TrendDirection(Enum):

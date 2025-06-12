@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import List
 from datetime import datetime
 
-from ..data.past_comment import PastComment, CommentType
-from ..data.weather_data import WeatherForecast
+from src.data.past_comment import PastComment, CommentType
+from src.data.weather_data import WeatherForecast
 
 logger = logging.getLogger(__name__)
 
@@ -104,9 +104,9 @@ class LocalCommentRepository:
         
         for season in seasons:
             weather_comments = [c for c in (self._comment_cache or [])
-                              if c.raw_data.get('season') == season and c.comment_type.value == 'weather_comment']
+                                if c.raw_data.get('season') == season and c.comment_type.value == 'weather_comment']
             advice_comments = [c for c in (self._comment_cache or [])
-                             if c.raw_data.get('season') == season and c.comment_type.value == 'advice']
+                               if c.raw_data.get('season') == season and c.comment_type.value == 'advice']
             
             filtered_comments.extend(weather_comments[:max_per_season_per_type])
             filtered_comments.extend(advice_comments[:max_per_season_per_type])

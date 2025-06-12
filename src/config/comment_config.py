@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Dict
 
-from ..data.weather_data import WeatherCondition
+from src.data.weather_data import WeatherCondition
 
 
 @dataclass
