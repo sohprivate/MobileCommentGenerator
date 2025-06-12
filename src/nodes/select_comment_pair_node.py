@@ -4,10 +4,11 @@ import json
 import logging
 import re
 from datetime import datetime
+from typing import Dict, Any, Optional, List
 
 from src.data.comment_generation_state import CommentGenerationState
 from src.data.comment_pair import CommentPair
-from src.data.past_comment import CommentType, PastCommentCollection
+from src.data.past_comment import CommentType, PastCommentCollection, PastComment
 from src.data.weather_data import WeatherForecast
 from src.llm.llm_manager import LLMManager
 
@@ -103,7 +104,7 @@ def _select_best_comment(comments, weather_data, location_name, target_datetime,
                 logger.info(f"天気条件不適合のためコメントを除外: {comment.comment_text} (天気: {weather_data.weather_description})")
                 continue
                 
-            candidate = _create_candidate_dict(i, comment)
+            candidate = _create_candidate_dict(len(weather_matched) + len(others), comment, original_index=i)
             
             if _is_weather_matched(comment.weather_condition, weather_data.weather_description):
                 weather_matched.append(candidate)
@@ -120,7 +121,7 @@ def _select_best_comment(comments, weather_data, location_name, target_datetime,
             if _should_exclude_advice_comment(comment.comment_text, weather_data):
                 logger.info(f"天気・気温条件不適合のためコメントを除外: {comment.comment_text}")
                 continue
-            candidates.append(_create_candidate_dict(i, comment))
+            candidates.append(_create_candidate_dict(len(candidates), comment, original_index=i))
 
     # プロンプト生成
     prompt = _generate_prompt(candidates, weather_data, location_name, target_datetime, comment_type)
@@ -130,31 +131,36 @@ def _select_best_comment(comments, weather_data, location_name, target_datetime,
         match = re.search(r"\d+", response)
         selected_index = int(match.group()) if match else 0
 
+        logger.debug(f"LLM応答: {response}, 選択インデックス: {selected_index}, 候補数: {len(candidates)}, コメント数: {len(comments)}")
+        
         if 0 <= selected_index < len(candidates):
-            logger.info(f"LLMが{comment_type.value}を選択: index={selected_index}")
             selected_candidate = candidates[selected_index]
-            # candidateのindexを使って元のcommentsから取得
-            original_index = selected_candidate.get('index', selected_index)
+            original_index = selected_candidate.get('original_index', selected_index)
+            logger.info(f"LLMが{comment_type.value}を選択: candidates[{selected_index}] -> comments[{original_index}]")
+            
             if 0 <= original_index < len(comments):
                 return comments[original_index]
-            
-        logger.warning(f"無効なインデックス: {selected_index}")
+            else:
+                logger.error(f"original_indexが範囲外: {original_index} (comments数: {len(comments)})")
+        else:
+            logger.warning(f"無効なインデックス: {selected_index} (候補数: {len(candidates)})")
         return comments[0]
 
     except Exception as e:
         raise ValueError(f"{comment_type.value}選択失敗: {e!s}")
 
 
-def _create_candidate_dict(index, comment):
+def _create_candidate_dict(index: int, comment: PastComment, original_index: Optional[int] = None) -> Dict[str, Any]:
     """候補辞書を作成"""
     return {
         "index": index,
+        "original_index": original_index if original_index is not None else index,
         "text": comment.comment_text,
         "season": comment.raw_data.get("season", "不明"),
     }
 
 
-def _should_exclude_weather_comment(comment_text: str, weather_data) -> bool:
+def _should_exclude_weather_comment(comment_text: str, weather_data: WeatherForecast) -> bool:
     """天気コメントを除外すべきかどうか判定"""
     current_weather = weather_data.weather_description.lower()
     comment_lower = comment_text.lower()
@@ -183,7 +189,7 @@ def _should_exclude_weather_comment(comment_text: str, weather_data) -> bool:
     return False
 
 
-def _should_exclude_advice_comment(comment_text: str, weather_data) -> bool:
+def _should_exclude_advice_comment(comment_text: str, weather_data: WeatherForecast) -> bool:
     """アドバイスコメントを除外すべきかどうか判定"""
     current_weather = weather_data.weather_description.lower()
     comment_lower = comment_text.lower()
@@ -215,14 +221,14 @@ def _should_exclude_advice_comment(comment_text: str, weather_data) -> bool:
     return False
 
 
-def _is_weather_matched(comment_weather, current_weather):
+def _is_weather_matched(comment_weather: str, current_weather: str) -> bool:
     """天気条件が一致するか判定"""
     if not comment_weather or not current_weather:
         return False
     return current_weather in comment_weather or comment_weather in current_weather
 
 
-def _generate_prompt(candidates, weather_data, location_name, target_datetime, comment_type):
+def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherForecast, location_name: str, target_datetime: datetime, comment_type: CommentType) -> str:
     """選択用プロンプトを生成"""
     base = f"""現在の天気条件に最も適した{comment_type.value}を選んでください。
 
