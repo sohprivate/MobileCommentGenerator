@@ -73,7 +73,7 @@ class LocalCommentRepository:
         
         for season in seasons:
             # Read weather comments for this season
-            weather_comment_file = self.output_dir / f"{season}_weather_comment_top30.csv"
+            weather_comment_file = self.output_dir / f"{season}_weather_comment_enhanced50.csv"
             weather_comments = self._read_csv_comments(weather_comment_file, "weather_comment")
             
             # Add season info to metadata
@@ -82,7 +82,7 @@ class LocalCommentRepository:
             all_comments.extend(weather_comments)
             
             # Read advice comments for this season
-            advice_file = self.output_dir / f"{season}_advice_top30.csv"
+            advice_file = self.output_dir / f"{season}_advice_enhanced50.csv"
             advice_comments = self._read_csv_comments(advice_file, "advice")
             
             # Add season info to metadata
