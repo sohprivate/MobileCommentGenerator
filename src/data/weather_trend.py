@@ -6,6 +6,7 @@ from typing import List, Optional, Tuple
 from enum import Enum
 
 from .weather_data import WeatherForecast, WeatherCondition
+from ..config.comment_config import get_comment_config
 
 
 class TrendDirection(Enum):
@@ -126,19 +127,9 @@ class WeatherTrend:
         start_condition = forecasts[0].weather_condition
         end_condition = forecasts[-1].weather_condition
         
-        # 天気の良し悪しをスコア化（簡易版）
-        condition_scores = {
-            WeatherCondition.CLEAR: 5,
-            WeatherCondition.PARTLY_CLOUDY: 4,
-            WeatherCondition.CLOUDY: 3,
-            WeatherCondition.RAIN: 2,
-            WeatherCondition.HEAVY_RAIN: 0,
-            WeatherCondition.SNOW: 1,
-            WeatherCondition.HEAVY_SNOW: 0,
-            WeatherCondition.STORM: 0,
-            WeatherCondition.FOG: 2,
-            WeatherCondition.UNKNOWN: 2,
-        }
+        # 設定から天気スコアを取得
+        config = get_comment_config()
+        condition_scores = config.weather_scores
         
         start_score = condition_scores.get(start_condition, 2)
         end_score = condition_scores.get(end_condition, 2)

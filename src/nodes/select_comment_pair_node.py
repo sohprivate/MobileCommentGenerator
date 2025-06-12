@@ -11,6 +11,7 @@ from src.data.comment_pair import CommentPair
 from src.data.past_comment import CommentType, PastCommentCollection, PastComment
 from src.data.weather_data import WeatherForecast
 from src.llm.llm_manager import LLMManager
+from src.config.comment_config import get_comment_config
 
 logger = logging.getLogger(__name__)
 
@@ -194,10 +195,15 @@ def _should_exclude_advice_comment(comment_text: str, weather_data: WeatherForec
     current_weather = weather_data.weather_description.lower()
     comment_lower = comment_text.lower()
     
-    # 気温による除外（従来の処理）
-    if weather_data.temperature < 30 and "熱中症" in comment_text:
+    # 設定から温度閾値を取得
+    config = get_comment_config()
+    heat_threshold = config.heat_warning_threshold
+    cold_threshold = config.cold_warning_threshold
+    
+    # 気温による除外
+    if weather_data.temperature < heat_threshold and "熱中症" in comment_text:
         return True
-    if weather_data.temperature >= 15 and any(word in comment_text for word in ["防寒", "暖かく", "寒さ"]):
+    if weather_data.temperature >= cold_threshold and any(word in comment_text for word in ["防寒", "暖かく", "寒さ"]):
         return True
     
     # 雨天時の不適切なアドバイス
@@ -283,16 +289,21 @@ def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherFore
             if weather_trend:
                 if weather_trend.weather_trend == "worsening" or weather_trend.precipitation_total > 10:
                     trend_advice = "\n4. 今後の悪天候に備えた準備系のアドバイスを優先"
-                elif weather_trend.temperature_trend == "worsening" and weather_trend.max_temperature > 30:
+                elif weather_trend.temperature_trend == "worsening" and weather_trend.max_temperature > config.heat_warning_threshold:
                     trend_advice = "\n4. 今後の高温に備えた熱中症対策系のアドバイスを優先"
                 
+        # 設定から温度閾値を取得
+        config = get_comment_config()
+        heat_threshold = config.heat_warning_threshold
+        cold_threshold = config.cold_warning_threshold
+        
         base += f"""選択基準:
 1. 気温による除外（{weather_data.temperature}°C）：
-   - 30°C未満で「熱中症」系は選択禁止
-   - 15°C以上で「防寒」系は選択禁止
+   - {heat_threshold}°C未満で「熱中症」系は選択禁止
+   - {cold_threshold}°C以上で「防寒」系は選択禁止
 2. 天気条件への適切性（雨なら濡れ対策等）
 3. 実用的で具体的なアドバイス{trend_advice}
 
-**重要**: 現在{weather_data.temperature}°Cなので、熱中症関連は{'選択禁止' if weather_data.temperature < 30 else '選択可能'}です。"""
+**重要**: 現在{weather_data.temperature}°Cなので、熱中症関連は{'選択禁止' if weather_data.temperature < heat_threshold else '選択可能'}です。"""
 
     return base + f"\n\n必ず候補から1つ選び、index (0〜{len(candidates)-1}) を半角数字のみで答えてください。"

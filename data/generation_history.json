@@ -8794,5 +8794,44 @@
       }
     },
     "error": null
+  },
+  {
+    "timestamp": "2025-06-12T15:55:16.117757",
+    "location": "高松",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空　ニワカ雨が心配",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2975,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-12T15:55:16.116441",
+      "location_name": "高松",
+      "target_datetime": "2025-06-12T15:55:13.069565",
+      "llm_provider": "openai",
+      "weather_condition": "雨",
+      "temperature": 19.0,
+      "humidity": 91.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-13T04:00:00+09:00",
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "ニワカ雨が心配",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空　ニワカ雨が心配\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2975,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-12T15:55:16.116441\",\n    \"location_name\": \"高松\",\n    \"target_datetime\": \"2025-06-12T15:55:13.069565\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 19.0,\n    \"humidity\": 91.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-13T04:00:00+09:00\",\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"ニワカ雨が心配\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.09083747863769531
+      }
+    },
+    "error": null
   }
 ]

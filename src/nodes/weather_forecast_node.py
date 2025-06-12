@@ -17,6 +17,7 @@ from src.data.location_manager import LocationManager
 from src.data.weather_data import WeatherForecast, WeatherForecastCollection
 from src.data.weather_trend import WeatherTrend
 from src.config.weather_config import get_config
+from src.config.comment_config import get_comment_config
 
 # ログ設定
 logger = logging.getLogger(__name__)
@@ -503,12 +504,16 @@ def fetch_weather_forecast_node(state):
         target_datetime = datetime.now() + timedelta(hours=forecast_hours_ahead)
         nearest_forecast = forecast_collection.get_nearest_forecast(target_datetime)
         
-        # 12時間後から24時間後までの予報を取得（3時間ごと）
+        # 設定から気象変化分析期間を取得
+        comment_config = get_comment_config()
+        trend_hours = comment_config.trend_hours_ahead
+        
+        # 指定時間後から更に先の予報を取得（3時間ごと）
         import pytz
         jst = pytz.timezone("Asia/Tokyo")
         now_jst = datetime.now(jst)
         trend_start = now_jst + timedelta(hours=forecast_hours_ahead)
-        trend_end = now_jst + timedelta(hours=forecast_hours_ahead + 12)
+        trend_end = now_jst + timedelta(hours=forecast_hours_ahead + trend_hours)
         
         # 期間内の予報を抽出
         trend_forecasts = []
