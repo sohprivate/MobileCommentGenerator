@@ -92,7 +92,7 @@ class LocalCommentRepository:
         
         return all_comments
     
-    def get_all_available_comments(self, max_per_season_per_type: int = 10) -> List[PastComment]:
+    def get_all_available_comments(self, max_per_season_per_type: int = 20) -> List[PastComment]:
         """Get all available comments from all seasons for LLM to choose from."""
         if self._comment_cache is None:
             logger.warning("Comment cache not initialized, loading now...")
@@ -116,7 +116,7 @@ class LocalCommentRepository:
     
     def get_recent_comments(self, limit: int = 100) -> List[PastComment]:
         """全季節からコメントを取得してLLMに選択させる"""
-        comments = self.get_all_available_comments(max_per_season_per_type=8)
+        comments = self.get_all_available_comments(max_per_season_per_type=15)
         # 人気順でソート
         comments.sort(key=lambda x: x.raw_data.get('count', 0), reverse=True)
         return comments[:limit]

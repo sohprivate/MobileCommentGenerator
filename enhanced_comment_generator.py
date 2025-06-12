@@ -1,12 +1,14 @@
 import json
 import os
 from collections import Counter, defaultdict
+from typing import Dict, List, Set, Optional
 
 import boto3
 import pandas as pd
 
-# 🔑 SSOログイン済みのプロファイルを指定
-session = boto3.Session(profile_name="dit-training")
+# 🔑 AWSプロファイル名を環境変数から取得（デフォルト: dit-training）
+aws_profile = os.getenv("AWS_PROFILE", "dit-training")
+session = boto3.Session(profile_name=aws_profile)
 s3 = session.client("s3")
 
 # 📂 S3バケット情報
@@ -15,7 +17,6 @@ PREFIX = "downloaded_jsonl_files_archive/"
 
 # 🗃 出力フォルダを作成
 os.makedirs("output", exist_ok=True)
-os.makedirs("output/analysis", exist_ok=True)
 
 
 # 🗓 カテゴリ分類関数
@@ -56,14 +57,14 @@ class WeatherPatternAnalyzer:
             "special": ["黄砂", "花粉", "紫外線", "UV", "オゾン", "PM2.5", "大気"],
         }
 
-    def analyze_comment(self, comment: str) -> dict[str, bool]:
+    def analyze_comment(self, comment: str) -> Dict[str, bool]:
         """コメントの天候パターンを分析"""
         result = {}
         for pattern, keywords in self.patterns.items():
             result[pattern] = any(keyword in comment for keyword in keywords)
         return result
 
-    def get_missing_patterns(self, current_top30: list[str]) -> list[str]:
+    def get_missing_patterns(self, current_top30: List[str]) -> List[str]:
         """現在のTOP30で不足しているパターンを特定"""
         pattern_counts = defaultdict(int)
 
@@ -127,7 +128,7 @@ class SmartCommentExtractor:
         self.analyzer = WeatherPatternAnalyzer()
         self.scorer = CommentQualityScorer()
 
-    def extract_enhanced_comments(self, all_comments: list[str], current_top30: list[str], target_count: int = 50) -> list[tuple[str, int, dict]]:
+    def extract_enhanced_comments(self, all_comments: List[str], current_top30: List[str], target_count: int = 50) -> List[tuple[str, int, Dict]]:
         """拡張コメントを抽出"""
         # 現在のTOP30を除外
         current_set = set(current_top30)
@@ -197,7 +198,7 @@ class SmartCommentExtractor:
 
 
 # 📊 分析レポート生成
-def generate_analysis_report(category: str, current_top30: list[str], enhanced_candidates: list[dict], comment_type: str) -> str:
+def generate_analysis_report(category: str, current_top30: List[str], enhanced_candidates: List[Dict], comment_type: str) -> str:
     """分析レポートを生成"""
     analyzer = WeatherPatternAnalyzer()
 
