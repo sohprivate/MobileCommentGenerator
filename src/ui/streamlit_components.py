@@ -205,21 +205,21 @@ def result_display(result: Dict[str, Any]):
             if success:
                 st.markdown(
                     f"""
-                <div style="background-color: #E3F2FD; border: 1px solid #1E88E5; border-radius: 5px; padding: 10px; margin: 5px 0;">
-                    <strong>📍 {location}</strong><br>
-                    💬 {comment}
-                </div>
-                """,
+                    <div style="background-color: #E3F2FD; border: 1px solid #1E88E5; border-radius: 5px; padding: 10px; margin: 5px 0;">
+                        <strong>🏍 {location}</strong><br>
+                        💬 {comment}
+                    </div>
+                    """,
                     unsafe_allow_html=True,
                 )
             else:
                 st.markdown(
                     f"""
-                <div style="background-color: #FFEBEE; border: 1px solid #F44336; border-radius: 5px; padding: 10px; margin: 5px 0;">
-                    <strong>📍 {location}</strong><br>
-                    ❌ 生成失敗
-                </div>
-                """,
+                    <div style="background-color: #FFEBEE; border: 1px solid #F44336; border-radius: 5px; padding: 10px; margin: 5px 0;">
+                        <strong>🏍 {location}</strong><br>
+                        ❌ 生成失敗
+                    </div>
+                    """,
                     unsafe_allow_html=True,
                 )
 
@@ -324,7 +324,7 @@ def generation_history_display(history: List[Dict[str, Any]]):
     # CSVダウンロードボタン
     csv = df.to_csv(index=False)
     st.download_button(
-        label="📅 履歴をダウンロード",
+        label="📥 履歴をダウンロード",
         data=csv,
         file_name=f"history_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
         mime="text/csv",
