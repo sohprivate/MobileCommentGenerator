@@ -558,7 +558,7 @@ def fetch_weather_forecast_node(state):
         state.update_metadata("location_coordinates", {"latitude": lat, "longitude": lon})
 
         logger.info(
-            f"Weather forecast fetched for {location_name}: {nearest_forecast.weather_description}",
+            f"Weather forecast fetched for {location_name}: {selected_forecast.weather_description}",
         )
 
         return state
