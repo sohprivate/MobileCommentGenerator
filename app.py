@@ -1,5 +1,11 @@
 """天気コメント生成システム - Streamlit UI"""
 
+import os
+from dotenv import load_dotenv
+
+# .envファイルから環境変数を読み込む（上書きモードで強制的に再読み込み）
+load_dotenv(override=True)
+
 import streamlit as st
 
 # ページ設定（最初に呼ぶ必要がある）
@@ -271,6 +277,12 @@ def generate_comment_with_progress(locations: List[str], llm_provider: str, resu
 
 def main():
     """メインアプリケーション"""
+    # APIキーの確認（デバッグ用）
+    if not os.getenv("OPENAI_API_KEY"):
+        st.error("⚠️ OPENAI_API_KEYが設定されていません。.envファイルを確認してください。")
+    if not os.getenv("WXTECH_API_KEY"):
+        st.error("⚠️ WXTECH_API_KEYが設定されていません。.envファイルを確認してください。")
+    
     # セッション状態の初期化
     initialize_session_state()
     
