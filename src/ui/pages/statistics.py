@@ -11,7 +11,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 
-from .streamlit_utils import get_statistics, load_history
+from src.ui.streamlit_utils import get_statistics, load_history
 
 
 def show_statistics_page():
@@ -121,7 +121,7 @@ def show_timeline_chart(df: pd.DataFrame):
 
 def show_location_chart(df: pd.DataFrame):
     """地点別チャート"""
-    st.subheader("📍 地点別分析")
+    st.subheader("🏍 地点別分析")
 
     if "location" not in df.columns or df.empty:
         st.info("地点データがありません")
