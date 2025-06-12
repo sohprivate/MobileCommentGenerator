@@ -131,12 +131,13 @@ class WeatherTrend:
             WeatherCondition.CLEAR: 5,
             WeatherCondition.PARTLY_CLOUDY: 4,
             WeatherCondition.CLOUDY: 3,
-            WeatherCondition.LIGHT_RAIN: 2,
-            WeatherCondition.RAIN: 1,
+            WeatherCondition.RAIN: 2,
             WeatherCondition.HEAVY_RAIN: 0,
             WeatherCondition.SNOW: 1,
             WeatherCondition.HEAVY_SNOW: 0,
             WeatherCondition.STORM: 0,
+            WeatherCondition.FOG: 2,
+            WeatherCondition.UNKNOWN: 2,
         }
         
         start_score = condition_scores.get(start_condition, 2)
