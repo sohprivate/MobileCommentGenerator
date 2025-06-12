@@ -6,51 +6,101 @@ LangGraphとLLMを活用した天気予報コメント自動生成システム�
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## 🏗️ プロジェクト構成
+## 🗂️ プロジェクト構成
 
 ```
 mobile-comment-generator/
-├── frontend/                    # Nuxt.js フロントエンドアプリケーション
-│   ├── components/              # Vue.js コンポーネント
-│   ├── pages/                   # ページルーティング
-│   ├── composables/             # Vue Composition API
-│   ├── types/                   # TypeScript型定義
-│   ├── server/                  # サーバーサイド機能
-│   ├── public/                  # 静的アセット
-│   ├── package.json             # フロントエンド依存関係
-│   ├── nuxt.config.ts           # Nuxt設定
-│   └── README.md                # フロントエンド説明ドキュメント
-├── src/                         # バックエンドPythonアプリケーション
-│   ├── data/                    # データクラス管理
-│   ├── apis/                    # 外部API連携
-│   ├── repositories/            # データリポジトリ
-│   ├── nodes/                   # LangGraphノード
-│   ├── workflows/               # ワークフロー実装
-│   ├── algorithms/              # 頻度選択アルゴリズム（新規）
-│   ├── llm/                     # LLM統合
-│   ├── ui/                      # Streamlit UI
-│   └── config/                  # 設定管理
-├── tests/                       # テストスイート
-├── scripts/                     # ユーティリティスクリプト
-├── docs/                        # ドキュメント
-└── examples/                    # 使用例
+├── src/                        # バックエンドPythonアプリケーション
+│   ├── data/                   # データクラス管理
+│   │   ├── comment_generation_state.py  # ワークフロー状態管理
+│   │   ├── comment_pair.py     # コメントペアデータモデル
+│   │   ├── evaluation_criteria.py      # 評価基準定義
+│   │   ├── location_manager.py # 地点データ管理
+│   │   ├── past_comment.py     # 過去コメント管理
+│   │   ├── weather_data.py     # 天気データモデル
+│   │   ├── weather_trend.py    # 天気傾向分析
+│   │   └── Chiten.csv          # 地点マスターデータ
+│   ├── apis/                   # 外部API連携
+│   │   └── wxtech_client.py    # WxTech天気API統合
+│   ├── algorithms/             # アルゴリズム実装
+│   │   ├── comment_evaluator.py        # コメント評価ロジック
+│   │   └── similarity_calculator.py    # 類似度計算
+│   ├── nodes/                  # LangGraphノード
+│   │   ├── input_node.py       # 入力ノード
+│   │   ├── weather_forecast_node.py    # 天気予報取得ノード
+│   │   ├── retrieve_past_comments_node.py # 過去コメント取得ノード
+│   │   ├── select_comment_pair_node.py  # コメント選択ノード
+│   │   ├── evaluate_candidate_node.py   # 候補評価ノード
+│   │   ├── generate_comment_node.py     # コメント生成ノード
+│   │   ├── output_node.py      # 出力ノード
+│   │   └── mock_nodes.py       # モックノード（テスト用）
+│   ├── workflows/              # ワークフロー実装
+│   │   └── comment_generation_workflow.py
+│   ├── llm/                    # LLM統合
+│   │   ├── llm_client.py       # LLMクライアント基底
+│   │   ├── llm_manager.py      # LLMマネージャー
+│   │   ├── prompt_builder.py   # プロンプト構築
+│   │   ├── prompt_templates.py # プロンプトテンプレート
+│   │   └── providers/          # LLMプロバイダー実装
+│   │       ├── base_provider.py        # 基底プロバイダー
+│   │       ├── openai_provider.py      # OpenAI統合
+│   │       ├── gemini_provider.py      # Google Gemini統合
+│   │       └── anthropic_provider.py   # Anthropic Claude統合
+│   ├── repositories/           # データリポジトリ
+│   │   ├── local_comment_repository.py # ローカルデータアクセス
+│   │   └── s3_comment_repository.py    # S3データアクセス
+│   ├── ui/                     # Streamlit UI
+│   │   ├── streamlit_components.py     # UIコンポーネント
+│   │   ├── streamlit_utils.py  # UIユーティリティ
+│   │   └── pages/              # マルチページ構成
+│   │       └── statistics.py   # 統計情報ページ
+│   └── config/                 # 設定管理
+│       ├── weather_config.py   # 天気予報設定
+│       └── comment_config.py   # コメント生成設定
+├── frontend/                   # Vue.js/Nuxt.jsプロジェクト（分離済み）
+├── tests/                      # テストスイート
+│   ├── integration/            # 統合テスト専用
+│   └── test_*.py               # 各種ユニットテスト
+├── scripts/                    # ユーティリティスクリプト
+├── data/                       # データファイル（CSV等）
+├── output/                     # 生成されたCSVファイル
+├── config/                     # 設定ファイル
+├── docs/                       # ドキュメント
+├── .env.example                # 環境変数例
+├── app.py                      # Streamlitメインエントリポイント
+├── enhanced_comment_generator.py # 拡張コメント生成器
+├── test_all_locations.py       # 全地点テスト
+├── test_connections.py         # 接続テスト
+├── test_rain_selection.py      # 雨天時選択テスト
+├── test_s3_access.py           # S3アクセステスト
+├── test_weather_flow.py        # 天気フローテスト
+├── requirements.txt            # Python依存関係
+├── requirements-dev.txt        # 開発用依存関係
+├── requirements-streamlit.txt  # Streamlit用依存関係
+├── pyproject.toml              # プロジェクト設定
+├── pytest.ini                  # pytest設定
+├── mypy.ini                    # mypy設定
+├── Makefile                    # ビルド・実行スクリプト
+├── setup.sh                    # セットアップスクリプト
+└── README.md                   # このファイル
 ```
 
-## 主な特徴
+## 🌟 主な特徴
 
-- **LangGraphワークフロー**: 状況と例外エラーハンドリングロジックを体系的に実装
+- **LangGraphワークフロー**: 状態とエラーハンドリングロジックを体系的に実装
 - **マルチLLMプロバイダー**: OpenAI/Gemini/Anthropic Claude対応  
 - **適応性ベース選択**: 過去コメントから最適なペアを選択
 - **表現ルール適用**: NGワード・文字数制限の自動チェック
-- **複合UI実装**: Streamlit（バックエンド）+ Nuxt.js（フロントエンド）
+- **12時間後天気予報**: デフォルトで12時間後の天気データを使用
+- **複合UI実装**: Streamlit（バックエンド）+ Nuxt.js（フロントエンド・分離済み）
 
-## 現在の進捗状況（2025/6/8時点）
+## 📊 現在の進捗状況
 
-### ✅ Phase 1: 基礎構築（100%完了）
-- [x] **地点データ管理システム**: CSV読込み・更新検証・位置情報取得機能
-- [x] **天気予報統合機能**: WxTech API統合
-- [x] **過去コメント取得**: CSV解析・頻度選択検証
-- [x] **LLM統合**: マルチプロバイダー対応
+### ✅ Phase 1: 基礎機能（100%完了）
+- [x] **地点データ管理システム**: CSV読み込み・更新検証・位置情報取得機能
+- [x] **天気予報統合機能**: WxTech API統合（12時間後データ対応）
+- [x] **過去コメント取得**: enhanced50.csvベースのデータ解析・頻度選択検証
+- [x] **LLM統合**: マルチプロバイダー対応（OpenAI/Gemini/Anthropic）
 
 ### ✅ Phase 2: LangGraphワークフロー（100%完了）
 - [x] **SelectCommentPairNode**: コメント頻度選択ベースによる選択
@@ -61,16 +111,28 @@ mobile-comment-generator/
 - [x] **統合テスト**: エンドtoエンドテスト実装
 - [x] **ワークフロー可視化**: 実行トレース記録ツール
 
-### ✅ Phase 3: フロントエンド分離（完了）
+### ✅ Phase 3: Streamlit UI（100%完了）
+- [x] **基本UI実装**: 地点選択・LLMプロバイダー選択・コメント生成
+- [x] **詳細情報表示**: 天気情報・過去コメント・評価結果表示
+- [x] **バッチ処理**: 複数地点一括処理機能
+- [x] **CSV出力**: 生成結果のエクスポート機能
+- [x] **エラーハンドリング**: ユーザーフレンドリーなエラー表示
+
+### 🔧 Phase 4: フロントエンド分離（部分完了）
 - [x] **フロントエンド分離**: Vue.js/Nuxt.jsを独立プロジェクトに移行
 - [x] **プロジェクト構造の明確化**: frontend/とsrc/の責任分離
 - [ ] **API実装**: RESTful APIエンドポイント
 - [ ] **統合ドキュメント**: フロントエンド・バックエンド連携ガイド
 
-### 🔧 Phase 4: デプロイメント（0%完了）
+### 🚀 Phase 5: デプロイメント（0%完了）
 - [ ] **AWSデプロイメント**: Lambda/ECS・CloudWatch統合
 
-## セットアップ
+## 🔧 セットアップ
+
+### 環境要件
+- Python 3.10以上
+- uv（推奨）またはpip
+- Node.js 18以上（フロントエンド用）
 
 ### バックエンド
 
@@ -117,8 +179,8 @@ uv venv --python 3.11
 source .venv/bin/activate
 
 # 2. 依存関係インストール
-uv pip install -r requirements.txt           # 基本版
-uv pip install -r requirements-dev.txt       # 開発版
+uv pip install -r requirements.txt              # 基本版
+uv pip install -r requirements-dev.txt          # 開発版
 
 # 3. 環境変数設定
 cp .env.example .env
@@ -142,47 +204,6 @@ npm run dev
 ```
 
 ブラウザで http://localhost:3000 を開いてください
-
-## 🖥️ よく使うコマンド
-
-```bash
-# アプリ起動
-make run-streamlit                 # Streamlit UI
-make run-frontend                  # Vue.js フロントエンド
-
-# 開発ツール
-make test                          # テスト実行
-make lint                          # コード品質チェック
-make format                        # コードフォーマット
-
-# メンテナンス
-make clean                         # 一時ファイル削除
-make update-deps                   # 依存関係更新
-```
-
-## 📦 パッケージ管理
-
-### 依存関係の分類
-- `requirements.txt` - 本番環境用の基本依存関係
-- `requirements-dev.txt` - 開発環境用の追加依存関係
-
-### uvの活用
-- 高速インストール: `uv pip install -r requirements.txt`
-- プロジェクト管理: `uv sync`
-- Python管理: `uv python install 3.11`
-
-## 🔐 トラブルシューティング
-
-### よくある問題
-1. **依存関係の競合**: `langchain-core>=0.1.42`で解決済み
-2. **Python バージョン**: 3.10以上が必要
-3. **uvが未インストール**: セットアップスクリプトが自動インストール
-
-### 完全リセット
-```bash
-make clean-venv                    # 仮想環境削除
-make setup                         # 再セットアップ
-```
 
 ## 🔑 API キー設定
 
@@ -277,6 +298,23 @@ result = run_comment_generation(
 print(f"生成コメント: {result['final_comment']}")
 ```
 
+## 🖥️ よく使うコマンド
+
+```bash
+# アプリ起動
+make run-streamlit                      # Streamlit UI
+make run-frontend                       # Vue.js フロントエンド
+
+# 開発ツール
+make test                               # テスト実行
+make lint                               # コード品質チェック
+make format                             # コードフォーマット
+
+# メンテナンス
+make clean                              # 一時ファイル削除
+make update-deps                        # 依存関係更新
+```
+
 ## 🧪 テスト
 
 ```bash
@@ -297,9 +335,9 @@ make quick-test
 
 ### コード品質
 ```bash
-make lint                          # コード品質チェック
-make format                        # コードフォーマット
-make type-check                    # 型チェック
+make lint                               # コード品質チェック
+make format                             # コードフォーマット
+make type-check                         # 型チェック
 ```
 
 ### 設定済みツール
@@ -337,10 +375,10 @@ make type-check                    # 型チェック
 ### メタデータ
 - **バージョン**: 1.0.0
 - **ライセンス**: MIT
-- **最終更新**: 2025-06-08
+- **最終更新**: 2025-06-12
 - **開発チーム**: WNI Team
 
-## 📈 パフォーマンス
+## 🎯 パフォーマンス
 
 - **応答時間**: 平均3-5秒（地点あたり）
 - **精度**: 過去データベースとの適合性90%+
@@ -349,7 +387,7 @@ make type-check                    # 型チェック
 
 ## 🔄 更新履歴
 
-- **v1.0.0** (2025-06-08): Phase 3完了 - フロントエンド分離
+- **v1.0.0** (2025-06-12): Phase 3完了 - Streamlit UI実装・README.md更新
 - **v0.3.0** (2025-06-06): Phase 2完了 - LangGraphワークフロー実装
 - **v0.2.0** (2025-06-04): Phase 1完了 - 基礎機能実装
 - **v0.1.0** (2025-06-01): プロジェクト開始
@@ -359,6 +397,29 @@ make type-check                    # 型チェック
 1. Issue作成で問題報告・機能要望
 2. Fork & Pull Request での貢献
 3. [開発ガイドライン](docs/CONTRIBUTING.md)に従った開発
+
+## 🔧 トラブルシューティング
+
+### よくある問題
+
+**依存関係の競合**
+```bash
+# 環境をリセット
+make clean-venv
+make setup
+```
+
+**APIキーエラー**
+- `.env`ファイルにAPIキーが正しく設定されているか確認
+- 環境変数が読み込まれているか確認: `echo $OPENAI_API_KEY`
+
+**天気データ取得エラー**
+- WXTECH_API_KEYが正しく設定されているか確認
+- ネットワーク接続を確認
+
+**LLMプロバイダーエラー**
+- 選択したプロバイダーのAPIキーが設定されているか確認
+- APIの利用制限に達していないか確認
 
 ## 📞 サポート
 
