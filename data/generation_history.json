@@ -8833,5 +8833,83 @@
       }
     },
     "error": null
+  },
+  {
+    "timestamp": "2025-06-12T16:21:34.563218",
+    "location": "神戸",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空　過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 4520,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-12T16:21:34.558263",
+      "location_name": "神戸",
+      "target_datetime": "2025-06-12T16:21:29.934124",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 21.0,
+      "humidity": 72.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-13T04:00:00+09:00",
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 4520,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-12T16:21:34.558263\",\n    \"location_name\": \"神戸\",\n    \"target_datetime\": \"2025-06-12T16:21:29.934124\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 21.0,\n    \"humidity\": 72.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-13T04:00:00+09:00\",\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.14281272888183594
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-12T19:08:07.529162",
+    "location": "神戸",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空　過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 4468,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-12T19:08:07.523849",
+      "location_name": "神戸",
+      "target_datetime": "2025-06-12T19:08:03.033519",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 20.0,
+      "humidity": 73.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-13T07:00:00+09:00",
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 4468,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-12T19:08:07.523849\",\n    \"location_name\": \"神戸\",\n    \"target_datetime\": \"2025-06-12T19:08:03.033519\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 20.0,\n    \"humidity\": 73.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-13T07:00:00+09:00\",\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 0.15687942504882812
+      }
+    },
+    "error": null
   }
 ]

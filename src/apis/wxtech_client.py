@@ -299,28 +299,133 @@ class WxTechAPIClient:
         Returns:
             標準化された天気状況
         """
-        # WxTech APIの天気コードマッピング（例）
-        # 実際のマッピングは既存の translate_weather_code.py を参照
+        # WxTech APIの天気コードマッピング（完全版）
         code_mapping = {
+            # 晴れ系
             "100": WeatherCondition.CLEAR,
-            "101": WeatherCondition.CLEAR,
+            "101": WeatherCondition.PARTLY_CLOUDY,  # 晴れ時々くもり
+            "102": WeatherCondition.RAIN,           # 晴れ一時雨
+            "103": WeatherCondition.RAIN,           # 晴れ時々雨
+            "104": WeatherCondition.SNOW,           # 晴れ一時雪
+            "105": WeatherCondition.SNOW,           # 晴れ時々雪
             "110": WeatherCondition.PARTLY_CLOUDY,
-            "111": WeatherCondition.PARTLY_CLOUDY,
+            "111": WeatherCondition.CLOUDY,         # 晴れのちくもり
+            "112": WeatherCondition.RAIN,           # 晴れのち一時雨
+            "113": WeatherCondition.RAIN,           # 晴れのち時々雨
+            "114": WeatherCondition.RAIN,           # 晴れのち雨
+            "115": WeatherCondition.SNOW,           # 晴れのち一時雪
+            "116": WeatherCondition.SNOW,           # 晴れのち時々雪
+            "117": WeatherCondition.SNOW,           # 晴れのち雪
+            "119": WeatherCondition.THUNDER,        # 晴れのち雨か雷雨
+            "123": WeatherCondition.THUNDER,        # 晴れ山沿い雷雨
+            "125": WeatherCondition.THUNDER,        # 晴れ午後は雷雨
+            "126": WeatherCondition.RAIN,           # 晴れ昼頃から雨
+            "127": WeatherCondition.RAIN,           # 晴れ夕方から雨
+            "128": WeatherCondition.RAIN,           # 晴れ夜は雨
+            "129": WeatherCondition.RAIN,           # 晴れ夜半から雨
+            "130": WeatherCondition.FOG,            # 朝の内霧のち晴れ
+            "131": WeatherCondition.FOG,            # 晴れ朝方霧
+            "132": WeatherCondition.PARTLY_CLOUDY,  # 晴れ時々くもり
+            "140": WeatherCondition.RAIN,           # 晴れ時々雨
+            
+            # 曇り系
             "200": WeatherCondition.CLOUDY,
-            "201": WeatherCondition.CLOUDY,
+            "201": WeatherCondition.PARTLY_CLOUDY,  # くもり時々晴れ
+            "202": WeatherCondition.RAIN,           # くもり一時雨
+            "203": WeatherCondition.RAIN,           # くもり時々雨
+            "204": WeatherCondition.SNOW,           # くもり一時雪
+            "205": WeatherCondition.SNOW,           # くもり時々雪
+            "208": WeatherCondition.THUNDER,        # くもり一時雨か雷雨
+            "209": WeatherCondition.FOG,            # 霧
+            "210": WeatherCondition.PARTLY_CLOUDY,  # くもりのち時々晴れ
+            "211": WeatherCondition.CLEAR,          # くもりのち晴れ
+            "212": WeatherCondition.RAIN,           # くもりのち一時雨
+            "213": WeatherCondition.RAIN,           # くもりのち時々雨
+            "214": WeatherCondition.RAIN,           # くもりのち雨
+            "219": WeatherCondition.THUNDER,        # くもりのち雨か雷雨
+            "224": WeatherCondition.RAIN,           # くもり昼頃から雨
+            "225": WeatherCondition.RAIN,           # くもり夕方から雨
+            "226": WeatherCondition.RAIN,           # くもり夜は雨
+            "227": WeatherCondition.RAIN,           # くもり夜半から雨
+            "231": WeatherCondition.FOG,            # くもり海上海岸は霧か霧雨
+            "240": WeatherCondition.THUNDER,        # くもり時々雨で雷を伴う
+            "250": WeatherCondition.THUNDER,        # くもり時々雪で雷を伴う
+            
+            # 雨系
             "300": WeatherCondition.RAIN,
-            "301": WeatherCondition.RAIN,
-            "302": WeatherCondition.HEAVY_RAIN,
+            "301": WeatherCondition.RAIN,           # 雨時々晴れ
+            "302": WeatherCondition.RAIN,           # 雨時々止む
+            "303": WeatherCondition.RAIN,           # 雨時々雪
+            "306": WeatherCondition.HEAVY_RAIN,     # 大雨
+            "308": WeatherCondition.SEVERE_STORM,   # 雨で暴風を伴う
+            "309": WeatherCondition.RAIN,           # 雨一時雪
+            "311": WeatherCondition.RAIN,           # 雨のち晴れ
+            "313": WeatherCondition.RAIN,           # 雨のちくもり
+            "314": WeatherCondition.RAIN,           # 雨のち時々雪
+            "315": WeatherCondition.RAIN,           # 雨のち雪
+            "320": WeatherCondition.RAIN,           # 朝の内雨のち晴れ
+            "321": WeatherCondition.RAIN,           # 朝の内雨のちくもり
+            "323": WeatherCondition.RAIN,           # 雨昼頃から晴れ
+            "324": WeatherCondition.RAIN,           # 雨夕方から晴れ
+            "325": WeatherCondition.RAIN,           # 雨夜は晴れ
+            "328": WeatherCondition.HEAVY_RAIN,     # 雨一時強く降る
+            
+            # 雪系
             "400": WeatherCondition.SNOW,
-            "401": WeatherCondition.SNOW,
-            "402": WeatherCondition.HEAVY_SNOW,
-            "500": WeatherCondition.STORM,
+            "401": WeatherCondition.SNOW,           # 雪時々晴れ
+            "402": WeatherCondition.SNOW,           # 雪時々止む
+            "403": WeatherCondition.SNOW,           # 雪時々雨
+            "405": WeatherCondition.HEAVY_SNOW,     # 大雪
+            "406": WeatherCondition.SEVERE_STORM,   # 風雪強い
+            "407": WeatherCondition.SEVERE_STORM,   # 暴風雪
+            "409": WeatherCondition.SNOW,           # 雪一時雨
+            "411": WeatherCondition.SNOW,           # 雪のち晴れ
+            "413": WeatherCondition.SNOW,           # 雪のちくもり
+            "414": WeatherCondition.SNOW,           # 雪のち雨
+            "420": WeatherCondition.SNOW,           # 朝の内雪のち晴れ
+            "421": WeatherCondition.SNOW,           # 朝の内雪のちくもり
+            "422": WeatherCondition.SNOW,           # 雪昼頃から雨
+            "423": WeatherCondition.SNOW,           # 雪夕方から雨
+            "424": WeatherCondition.SNOW,           # 雪夜半から雨
+            "425": WeatherCondition.HEAVY_SNOW,     # 雪一時強く降る
+            "450": WeatherCondition.THUNDER,        # 雪で雷を伴う
+            
+            # 特殊系
+            "350": WeatherCondition.THUNDER,        # 雷
+            "500": WeatherCondition.CLEAR,          # 快晴
+            "550": WeatherCondition.EXTREME_HEAT,   # 猫暮
+            "552": WeatherCondition.EXTREME_HEAT,   # 猫暮時々曇り
+            "553": WeatherCondition.EXTREME_HEAT,   # 猫暮時々雨
+            "558": WeatherCondition.SEVERE_STORM,   # 猫暮時々大雨・嵐
+            "562": WeatherCondition.EXTREME_HEAT,   # 猫暮のち曇り
+            "563": WeatherCondition.EXTREME_HEAT,   # 猫暮のち雨
+            "568": WeatherCondition.SEVERE_STORM,   # 猫暮のち大雨・嵐
+            "572": WeatherCondition.EXTREME_HEAT,   # 曇り時々猫暮
+            "573": WeatherCondition.EXTREME_HEAT,   # 雨時々猫暮
+            "582": WeatherCondition.EXTREME_HEAT,   # 曇りのち猫暮
+            "583": WeatherCondition.EXTREME_HEAT,   # 雨のち猫暮
+            "600": WeatherCondition.CLOUDY,         # うすぐもり
+            "650": WeatherCondition.RAIN,           # 小雨
+            "800": WeatherCondition.THUNDER,        # 雷
+            "850": WeatherCondition.SEVERE_STORM,   # 大雨・嵐
+            "851": WeatherCondition.SEVERE_STORM,   # 大雨・嵐時々晴れ
+            "852": WeatherCondition.SEVERE_STORM,   # 大雨・嵐時々曇り
+            "853": WeatherCondition.SEVERE_STORM,   # 大雨・嵐時々雨
+            "854": WeatherCondition.SEVERE_STORM,   # 大雨・嵐時々雪
+            "855": WeatherCondition.SEVERE_STORM,   # 大雨・嵐時々猫暮
+            "859": WeatherCondition.SEVERE_STORM,   # 大雨・嵐のち曇り
+            "860": WeatherCondition.SEVERE_STORM,   # 大雨・嵐のち雪
+            "861": WeatherCondition.SEVERE_STORM,   # 大雨・嵐のち雨
+            "862": WeatherCondition.SEVERE_STORM,   # 大雨・嵐のち雪
+            "863": WeatherCondition.SEVERE_STORM,   # 大雨・嵐のち猫暮
         }
 
         return code_mapping.get(weather_code, WeatherCondition.UNKNOWN)
 
     def _get_weather_description(self, weather_code: str) -> str:
         """天気コードから日本語説明を取得
+        
+        特殊気象条件（雷、霧）を含む完全版マッピング
 
         Args:
             weather_code: WxTech API の天気コード

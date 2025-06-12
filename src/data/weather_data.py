@@ -22,7 +22,38 @@ class WeatherCondition(Enum):
     HEAVY_SNOW = "heavy_snow"  # 大雪
     STORM = "storm"  # 嵐
     FOG = "fog"  # 霧
+    THUNDER = "thunder"  # 雷
+    EXTREME_HEAT = "extreme_heat"  # 猫暮
+    SEVERE_STORM = "severe_storm"  # 大雨・嵐
     UNKNOWN = "unknown"  # 不明
+    
+    @property
+    def priority(self) -> int:
+        """天気状況の優先度を返す（数値が大きいほど優先度が高い）
+        
+        特殊な気象状況（雷、濃霧、嵐など）を優先的に扱うための優先度設定
+        """
+        priority_map = {
+            "severe_storm": 12,  # 大雨・嵐 - 最高優先
+            "thunder": 11,       # 雷
+            "extreme_heat": 10,  # 猫暮
+            "storm": 9,          # 嵐
+            "fog": 8,            # 霧
+            "heavy_snow": 7,     # 大雪
+            "heavy_rain": 6,     # 大雨
+            "snow": 5,           # 雪
+            "rain": 4,           # 雨
+            "cloudy": 3,         # 曇り
+            "partly_cloudy": 2,  # 曇り時々晴れ
+            "clear": 1,          # 晴れ
+            "unknown": 0         # 不明
+        }
+        return priority_map.get(self.value, 0)
+    
+    @property
+    def is_special_condition(self) -> bool:
+        """特殊な気象状況かどうかを判定"""
+        return self.priority >= 8  # 霧、嵐、雷、猫暮、大雨・嵐を特殊気象とする
 
 
 class WindDirection(Enum):
@@ -172,6 +203,8 @@ class WeatherForecast:
             WeatherCondition.HEAVY_RAIN,
             WeatherCondition.HEAVY_SNOW,
             WeatherCondition.STORM,
+            WeatherCondition.THUNDER,      # 雷を追加
+            WeatherCondition.SEVERE_STORM, # 大雨・嵐を追加
         }
         return (
             self.weather_condition in severe_conditions
