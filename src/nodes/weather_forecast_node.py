@@ -15,6 +15,7 @@ from langgraph.graph import END, START, StateGraph
 from src.apis.wxtech_client import WxTechAPIClient, WxTechAPIError
 from src.data.location_manager import LocationManager
 from src.data.weather_data import WeatherForecast, WeatherForecastCollection
+from src.data.weather_trend import WeatherTrend
 from src.config.weather_config import get_config
 
 # ログ設定
@@ -502,6 +503,24 @@ def fetch_weather_forecast_node(state):
         target_datetime = datetime.now() + timedelta(hours=forecast_hours_ahead)
         nearest_forecast = forecast_collection.get_nearest_forecast(target_datetime)
         
+        # 12時間後から24時間後までの予報を取得（3時間ごと）
+        trend_start = datetime.now() + timedelta(hours=forecast_hours_ahead)
+        trend_end = datetime.now() + timedelta(hours=forecast_hours_ahead + 12)
+        
+        # 期間内の予報を抽出
+        trend_forecasts = []
+        for forecast in forecast_collection.forecasts:
+            if trend_start <= forecast.datetime <= trend_end:
+                trend_forecasts.append(forecast)
+        
+        # 最低2つの予報が必要
+        if len(trend_forecasts) >= 2:
+            weather_trend = WeatherTrend.from_forecasts(trend_forecasts)
+            state.update_metadata("weather_trend", weather_trend)
+            logger.info(f"気象変化傾向: {weather_trend.get_summary()}")
+        else:
+            logger.warning(f"気象変化分析に十分な予報データがありません: {len(trend_forecasts)}件")
+        
         # デバッグ情報
         logger.info(f"fetch_weather_forecast_node - ターゲット時刻: {target_datetime}, 選択された予報時刻: {nearest_forecast.datetime if nearest_forecast else 'None'}")
         if nearest_forecast:
@@ -515,6 +534,7 @@ def fetch_weather_forecast_node(state):
 
         # 状態に追加
         state.weather_data = nearest_forecast
+        state.update_metadata("forecast_collection", forecast_collection)
         state.location = location
         state.update_metadata("location_coordinates", {"latitude": lat, "longitude": lon})
 
