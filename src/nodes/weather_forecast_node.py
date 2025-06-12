@@ -504,13 +504,21 @@ def fetch_weather_forecast_node(state):
         nearest_forecast = forecast_collection.get_nearest_forecast(target_datetime)
         
         # 12時間後から24時間後までの予報を取得（3時間ごと）
-        trend_start = datetime.now() + timedelta(hours=forecast_hours_ahead)
-        trend_end = datetime.now() + timedelta(hours=forecast_hours_ahead + 12)
+        import pytz
+        jst = pytz.timezone("Asia/Tokyo")
+        now_jst = datetime.now(jst)
+        trend_start = now_jst + timedelta(hours=forecast_hours_ahead)
+        trend_end = now_jst + timedelta(hours=forecast_hours_ahead + 12)
         
         # 期間内の予報を抽出
         trend_forecasts = []
         for forecast in forecast_collection.forecasts:
-            if trend_start <= forecast.datetime <= trend_end:
+            # forecastのdatetimeがnaiveな場合はJSTとして扱う
+            forecast_dt = forecast.datetime
+            if forecast_dt.tzinfo is None:
+                forecast_dt = jst.localize(forecast_dt)
+            
+            if trend_start <= forecast_dt <= trend_end:
                 trend_forecasts.append(forecast)
         
         # 最低2つの予報が必要
