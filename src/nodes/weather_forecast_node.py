@@ -16,6 +16,7 @@ from src.apis.wxtech_client import WxTechAPIClient, WxTechAPIError
 from src.data.location_manager import LocationManager
 from src.data.weather_data import WeatherForecast, WeatherForecastCollection
 from src.data.weather_trend import WeatherTrend
+from src.data.forecast_cache import save_forecast_to_cache, get_temperature_differences
 from src.config.weather_config import get_config
 from src.config.comment_config import get_comment_config
 
@@ -551,11 +552,34 @@ def fetch_weather_forecast_node(state):
             state.add_error(error_msg, "weather_forecast")
             raise ValueError(error_msg)
 
+        # 予報データをキャッシュに保存
+        try:
+            save_forecast_to_cache(selected_forecast, location_name)
+            logger.info(f"予報データをキャッシュに保存: {location_name}")
+        except Exception as e:
+            logger.warning(f"キャッシュ保存に失敗: {e}")
+            # キャッシュ保存の失敗は致命的エラーではないので続行
+
+        # 気温差の計算（前日との比較、12時間前との比較）
+        temperature_differences = {}
+        try:
+            temperature_differences = get_temperature_differences(selected_forecast, location_name)
+            if temperature_differences.get("previous_day_diff") is not None:
+                logger.info(f"前日との気温差: {temperature_differences['previous_day_diff']:.1f}℃")
+            if temperature_differences.get("twelve_hours_ago_diff") is not None:
+                logger.info(f"12時間前との気温差: {temperature_differences['twelve_hours_ago_diff']:.1f}℃")
+            if temperature_differences.get("daily_range") is not None:
+                logger.info(f"日較差: {temperature_differences['daily_range']:.1f}℃")
+        except Exception as e:
+            logger.warning(f"気温差の計算に失敗: {e}")
+            # 気温差計算の失敗も致命的エラーではないので続行
+
         # 状態に追加
         state.weather_data = selected_forecast
         state.update_metadata("forecast_collection", forecast_collection)
         state.location = location
         state.update_metadata("location_coordinates", {"latitude": lat, "longitude": lon})
+        state.update_metadata("temperature_differences", temperature_differences)
 
         logger.info(
             f"Weather forecast fetched for {location_name}: {selected_forecast.weather_description}",

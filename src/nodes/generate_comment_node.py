@@ -97,6 +97,17 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
             state.update_metadata("weather_condition", weather_data.weather_description)
             state.update_metadata("humidity", weather_data.humidity)
             state.update_metadata("wind_speed", weather_data.wind_speed)
+            
+            # 気温差情報をメタデータに追加
+            temperature_differences = state.generation_metadata.get("temperature_differences", {})
+            if temperature_differences:
+                state.update_metadata("previous_day_temperature_diff", temperature_differences.get("previous_day_diff"))
+                state.update_metadata("twelve_hours_ago_temperature_diff", temperature_differences.get("twelve_hours_ago_diff"))
+                state.update_metadata("daily_temperature_range", temperature_differences.get("daily_range"))
+                
+                # 気温差の特徴を分析
+                temp_diff_analysis = _analyze_temperature_differences(temperature_differences, weather_data.temperature)
+                state.update_metadata("temperature_analysis", temp_diff_analysis)
 
         return state
 
@@ -200,6 +211,77 @@ def _get_fallback_comment(weather_data: Optional[WeatherForecast]) -> str:
             return comment
 
     return "今日も良い一日を"
+
+
+def _analyze_temperature_differences(temperature_differences: Dict[str, Optional[float]], current_temp: float) -> Dict[str, Any]:
+    """気温差を分析して特徴を抽出
+    
+    Args:
+        temperature_differences: 気温差の辞書
+        current_temp: 現在の気温
+        
+    Returns:
+        気温差の分析結果
+    """
+    analysis = {
+        "has_significant_change": False,
+        "change_type": None,
+        "change_magnitude": None,
+        "commentary": []
+    }
+    
+    try:
+        # 前日との比較
+        prev_day_diff = temperature_differences.get("previous_day_diff")
+        if prev_day_diff is not None:
+            if abs(prev_day_diff) >= 5.0:  # 5℃以上の差
+                analysis["has_significant_change"] = True
+                if prev_day_diff > 0:
+                    analysis["change_type"] = "warmer_than_yesterday"
+                    analysis["commentary"].append(f"前日より{prev_day_diff:.1f}℃高い")
+                else:
+                    analysis["change_type"] = "cooler_than_yesterday"
+                    analysis["commentary"].append(f"前日より{abs(prev_day_diff):.1f}℃低い")
+                
+                # 変化の程度を分類
+                if abs(prev_day_diff) >= 10.0:
+                    analysis["change_magnitude"] = "large"
+                elif abs(prev_day_diff) >= 7.0:
+                    analysis["change_magnitude"] = "moderate"
+                else:
+                    analysis["change_magnitude"] = "small"
+        
+        # 12時間前との比較
+        twelve_hours_diff = temperature_differences.get("twelve_hours_ago_diff")
+        if twelve_hours_diff is not None:
+            if abs(twelve_hours_diff) >= 3.0:  # 3℃以上の差
+                if twelve_hours_diff > 0:
+                    analysis["commentary"].append(f"12時間前より{twelve_hours_diff:.1f}℃上昇")
+                else:
+                    analysis["commentary"].append(f"12時間前より{abs(twelve_hours_diff):.1f}℃下降")
+        
+        # 日較差の分析
+        daily_range = temperature_differences.get("daily_range")
+        if daily_range is not None:
+            if daily_range >= 15.0:
+                analysis["commentary"].append(f"日較差が大きい（{daily_range:.1f}℃）")
+            elif daily_range >= 10.0:
+                analysis["commentary"].append(f"やや日較差あり（{daily_range:.1f}℃）")
+        
+        # 現在の気温レベルに応じたコメント
+        if current_temp >= 30.0:
+            analysis["commentary"].append("暑い気温")
+        elif current_temp >= 25.0:
+            analysis["commentary"].append("暖かい気温")
+        elif current_temp <= 5.0:
+            analysis["commentary"].append("寒い気温")
+        elif current_temp <= 10.0:
+            analysis["commentary"].append("涼しい気温")
+        
+    except Exception as e:
+        logger.warning(f"気温差分析中にエラー: {e}")
+    
+    return analysis
 
 
 # エクスポート
