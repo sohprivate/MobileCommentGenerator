@@ -11,6 +11,7 @@ from src.data.comment_pair import CommentPair
 from src.data.past_comment import CommentType, PastCommentCollection, PastComment
 from src.data.weather_data import WeatherForecast
 from src.llm.llm_manager import LLMManager
+from src.config.comment_config import get_comment_config
 
 logger = logging.getLogger(__name__)
 
@@ -45,14 +46,14 @@ def select_comment_pair_node(state: CommentGenerationState) -> CommentGeneration
         # LLMマネージャーの初期化
         llm_manager = LLMManager(provider=llm_provider)
 
-        # 最適なコメントを選択
+        # 最適なコメントを選択（stateを渡す）
         best_weather = _select_best_comment(
             weather_comments, weather_data, location_name, target_datetime, 
-            llm_manager, CommentType.WEATHER_COMMENT
+            llm_manager, CommentType.WEATHER_COMMENT, state
         )
         best_advice = _select_best_comment(
             advice_comments, weather_data, location_name, target_datetime,
-            llm_manager, CommentType.ADVICE
+            llm_manager, CommentType.ADVICE, state
         )
 
         # ペアを作成
@@ -86,8 +87,8 @@ def select_comment_pair_node(state: CommentGenerationState) -> CommentGeneration
     return state
 
 
-def _select_best_comment(comments, weather_data, location_name, target_datetime, 
-                        llm_manager, comment_type):
+def _select_best_comment(comments: List[PastComment], weather_data: WeatherForecast, location_name: str, target_datetime: datetime, 
+                        llm_manager: LLMManager, comment_type: CommentType, state: Optional[CommentGenerationState] = None) -> Optional[PastComment]:
     """LLMを使用して最適なコメントを選択"""
     if not comments:
         return None
@@ -123,8 +124,8 @@ def _select_best_comment(comments, weather_data, location_name, target_datetime,
                 continue
             candidates.append(_create_candidate_dict(len(candidates), comment, original_index=i))
 
-    # プロンプト生成
-    prompt = _generate_prompt(candidates, weather_data, location_name, target_datetime, comment_type)
+    # プロンプト生成（stateを渡す）
+    prompt = _generate_prompt(candidates, weather_data, location_name, target_datetime, comment_type, state)
 
     try:
         response = llm_manager.generate(prompt)
@@ -194,10 +195,15 @@ def _should_exclude_advice_comment(comment_text: str, weather_data: WeatherForec
     current_weather = weather_data.weather_description.lower()
     comment_lower = comment_text.lower()
     
-    # 気温による除外（従来の処理）
-    if weather_data.temperature < 30 and "熱中症" in comment_text:
+    # 設定から温度閾値を取得
+    config = get_comment_config()
+    heat_threshold = config.heat_warning_threshold
+    cold_threshold = config.cold_warning_threshold
+    
+    # 気温による除外
+    if weather_data.temperature < heat_threshold and "熱中症" in comment_text:
         return True
-    if weather_data.temperature >= 15 and any(word in comment_text for word in ["防寒", "暖かく", "寒さ"]):
+    if weather_data.temperature >= cold_threshold and any(word in comment_text for word in ["防寒", "暖かく", "寒さ"]):
         return True
     
     # 雨天時の不適切なアドバイス
@@ -228,8 +234,20 @@ def _is_weather_matched(comment_weather: str, current_weather: str) -> bool:
     return current_weather in comment_weather or comment_weather in current_weather
 
 
-def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherForecast, location_name: str, target_datetime: datetime, comment_type: CommentType) -> str:
+def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherForecast, location_name: str, target_datetime: datetime, comment_type: CommentType, state: Optional[CommentGenerationState] = None) -> str:
     """選択用プロンプトを生成"""
+    # WeatherTrendの取得
+    weather_trend_info = ""
+    if state and hasattr(state, 'generation_metadata'):
+        weather_trend = state.generation_metadata.get('weather_trend')
+        if weather_trend:
+                weather_trend_info = f"""
+                
+今後12時間の気象変化:
+- 気温変化: {weather_trend.temperature_change:+.1f}°C ({weather_trend.min_temperature:.1f}°C〜{weather_trend.max_temperature:.1f}°C)
+- 天気変化: {weather_trend.get_summary()}
+- 傾向: 天気は{weather_trend.weather_trend.value}、気温は{weather_trend.temperature_trend.value}"""
+    
     base = f"""現在の天気条件に最も適した{comment_type.value}を選んでください。
 
 現在の条件:
@@ -239,7 +257,7 @@ def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherFore
 - 湿度: {weather_data.humidity}%
 - 風速: {weather_data.wind_speed}m/s
 - 降水量: {weather_data.precipitation}mm
-- 日時: {target_datetime.strftime("%Y年%m月%d日 %H時")}
+- 日時: {target_datetime.strftime("%Y年%m月%d日 %H時")}{weather_trend_info}
 
 候補:
 {json.dumps(candidates, ensure_ascii=False, indent=2)}
@@ -247,20 +265,81 @@ def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherFore
 """
 
     if comment_type == CommentType.WEATHER_COMMENT:
-        base += f"""選択基準:
+        # 気象変化を考慮した追加基準
+        trend_criteria = ""
+        if state and hasattr(state, 'generation_metadata'):
+            weather_trend = state.generation_metadata.get('weather_trend')
+            if weather_trend:
+                if weather_trend.has_weather_change:
+                    trend_criteria = "\n4. 気象変化の考慮：今後天気が変わるため、変化を示唆する表現を優先"
+                if abs(weather_trend.temperature_change) >= 5:
+                    trend_criteria += f"\n5. 気温変化の考慮：{weather_trend.temperature_change:+.1f}°Cの変化があるため、それを反映した表現を優先"
+        
+        # 特殊気象条件の優先基準（天気コメント用）
+        special_criteria = ""
+        if weather_data.weather_condition.is_special_condition:
+            special_criteria = f"\n\n【最優先】{weather_data.weather_condition.value}に関連するコメントを選択："
+            if weather_data.weather_condition.value == "thunder":
+                special_criteria += "\n   - 「雷」「雷雨」「ゴロゴロ」「急な雷雨」などの表現を含むコメント"
+            elif weather_data.weather_condition.value == "fog":
+                special_criteria += "\n   - 「霧」「かすむ」「視界」「霧の可能性」などの表現を含むコメント"
+            elif weather_data.weather_condition.value == "storm":
+                special_criteria += "\n   - 「嵐」「暴風」「荒れる」「嵐の可能性」などの表現を含むコメント"
+            elif weather_data.weather_condition.value == "extreme_heat":
+                special_criteria += "\n   - 「猛暑」「酷暑」「熱中症」「暑さ対策」などの表現を含むコメント"
+            elif weather_data.weather_condition.value == "severe_storm":
+                special_criteria += "\n   - 「大雨」「嵐」「暴風」「危険」「警戒」などの表現を含むコメント"
+        
+        base += f"""{special_criteria}
+
+選択基準:
 1. 天気条件の一致（雨なら「スッキリしない空」等）
 2. 気温表現の適合性（{weather_data.temperature}°Cに適した表現）
-3. 絶対禁止：雨天+「晴れ」系、22°C+「猛暑」系
+3. 絶対禁止：雨天+「晴れ」系、22°C+「猛暑」系{trend_criteria}
 
 現在は{weather_data.weather_description}・{weather_data.temperature}°Cです。適切な表現を選んでください。"""
     else:
-        base += f"""選択基準:
-1. 気温による除外（{weather_data.temperature}°C）：
-   - 30°C未満で「熱中症」系は選択禁止
-   - 15°C以上で「防寒」系は選択禁止
-2. 天気条件への適切性（雨なら濡れ対策等）
-3. 実用的で具体的なアドバイス
+        # アドバイスも気象変化を考慮
+        trend_advice = ""
+        if state and hasattr(state, 'generation_metadata'):
+            weather_trend = state.generation_metadata.get('weather_trend')
+            if weather_trend:
+                if weather_trend.weather_trend == "worsening" or weather_trend.precipitation_total > 10:
+                    trend_advice = "\n4. 今後の悪天候に備えた準備系のアドバイスを優先"
+                elif weather_trend.temperature_trend == "worsening":
+                    config = get_comment_config()
+                    if weather_trend.max_temperature > config.heat_warning_threshold:
+                        trend_advice = "\n4. 今後の高温に備えた熱中症対策系のアドバイスを優先"
+                
+        # 設定から温度閾値を取得
+        config = get_comment_config()
+        heat_threshold = config.heat_warning_threshold
+        cold_threshold = config.cold_warning_threshold
+        
+        # 特殊気象条件の優先基準（アドバイス用）
+        special_criteria = ""
+        if weather_data.weather_condition.is_special_condition:
+            special_criteria = f"\n\n【最優先】{weather_data.weather_condition.value}に関連するアドバイスを選択："
+            if weather_data.weather_condition.value == "thunder":
+                special_criteria += "\n   - 「雷雨に注意」「屋内へ避難」「急な雷雨に注意」などの安全対策"
+            elif weather_data.weather_condition.value == "fog":
+                special_criteria += "\n   - 「視界不良に注意」「運転注意」「霧の可能性」などの安全対策"
+            elif weather_data.weather_condition.value == "storm":
+                special_criteria += "\n   - 「強風に注意」「外出を控える」「嵐の可能性」などの安全対策"
+            elif weather_data.weather_condition.value == "extreme_heat":
+                special_criteria += "\n   - 「熱中症に注意」「水分補給」「猛暑に警戒」などの安全対策"
+            elif weather_data.weather_condition.value == "severe_storm":
+                special_criteria += "\n   - 「大雨に警戒」「外出危険」「嵐に備える」などの安全対策"
+        
+        base += f"""{special_criteria}
 
-**重要**: 現在{weather_data.temperature}°Cなので、熱中症関連は{'選択禁止' if weather_data.temperature < 30 else '選択可能'}です。"""
+選択基準:
+1. 気温による除外（{weather_data.temperature}°C）：
+   - {heat_threshold}°C未満で「熱中症」系は選択禁止
+   - {cold_threshold}°C以上で「防寒」系は選択禁止
+2. 天気条件への適切性（雨なら濡れ対策等）
+3. 実用的で具体的なアドバイス{trend_advice}
+
+**重要**: 現在{weather_data.temperature}°Cなので、熱中症関連は{'選択禁止' if weather_data.temperature < heat_threshold else '選択可能'}です。"""
 
     return base + f"\n\n必ず候補から1つ選び、index (0〜{len(candidates)-1}) を半角数字のみで答えてください。"

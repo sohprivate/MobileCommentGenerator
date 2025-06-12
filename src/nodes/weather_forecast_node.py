@@ -15,7 +15,9 @@ from langgraph.graph import END, START, StateGraph
 from src.apis.wxtech_client import WxTechAPIClient, WxTechAPIError
 from src.data.location_manager import LocationManager
 from src.data.weather_data import WeatherForecast, WeatherForecastCollection
+from src.data.weather_trend import WeatherTrend
 from src.config.weather_config import get_config
+from src.config.comment_config import get_comment_config
 
 # ログ設定
 logger = logging.getLogger(__name__)
@@ -500,26 +502,63 @@ def fetch_weather_forecast_node(state):
         config = get_config()
         forecast_hours_ahead = config.weather.forecast_hours_ahead
         target_datetime = datetime.now() + timedelta(hours=forecast_hours_ahead)
-        nearest_forecast = forecast_collection.get_nearest_forecast(target_datetime)
+        
+        # 設定から気象変化分析期間を取得
+        comment_config = get_comment_config()
+        trend_hours = comment_config.trend_hours_ahead
+        
+        # 指定時間後から更に先の予報を取得（3時間ごと）
+        import pytz
+        jst = pytz.timezone("Asia/Tokyo")
+        now_jst = datetime.now(jst)
+        
+        # 12-24時間の期間で予報を取得（3時間ごと）
+        forecast_start = now_jst + timedelta(hours=forecast_hours_ahead)
+        forecast_end = now_jst + timedelta(hours=forecast_hours_ahead + trend_hours)
+        
+        # 期間内の予報を抽出（3時間ごと）
+        period_forecasts = []
+        for forecast in forecast_collection.forecasts:
+            # forecastのdatetimeがnaiveな場合はJSTとして扱う
+            forecast_dt = forecast.datetime
+            if forecast_dt.tzinfo is None:
+                forecast_dt = jst.localize(forecast_dt)
+            
+            if forecast_start <= forecast_dt <= forecast_end:
+                period_forecasts.append(forecast)
+        
+        # 期間内の予報から最も重要な天気条件を選択
+        selected_forecast = _select_priority_forecast(period_forecasts, target_datetime)
+        
+        # 気象変化傾向の分析
+        if len(period_forecasts) >= 2:
+            weather_trend = WeatherTrend.from_forecasts(period_forecasts)
+            state.update_metadata("weather_trend", weather_trend)
+            logger.info(f"気象変化傾向: {weather_trend.get_summary()}")
+        else:
+            logger.warning(f"気象変化分析に十分な予報データがありません: {len(period_forecasts)}件")
         
         # デバッグ情報
-        logger.info(f"fetch_weather_forecast_node - ターゲット時刻: {target_datetime}, 選択された予報時刻: {nearest_forecast.datetime if nearest_forecast else 'None'}")
-        if nearest_forecast:
-            logger.info(f"fetch_weather_forecast_node - 選択された天気データ: {nearest_forecast.temperature}°C, {nearest_forecast.weather_description}")
+        logger.info(f"fetch_weather_forecast_node - ターゲット時刻: {target_datetime}, 選択された予報時刻: {selected_forecast.datetime if selected_forecast else 'None'}")
+        if selected_forecast:
+            logger.info(f"fetch_weather_forecast_node - 選択された天気データ: {selected_forecast.temperature}°C, {selected_forecast.weather_description}")
+            if selected_forecast.weather_condition.is_special_condition:
+                logger.info(f"特殊気象条件が選択されました: {selected_forecast.weather_condition.value} (優先度: {selected_forecast.weather_condition.priority})")
 
-        if not nearest_forecast:
+        if not selected_forecast:
             error_msg = "指定時刻の天気予報データが取得できませんでした"
             logger.error(error_msg)
             state.add_error(error_msg, "weather_forecast")
             raise ValueError(error_msg)
 
         # 状態に追加
-        state.weather_data = nearest_forecast
+        state.weather_data = selected_forecast
+        state.update_metadata("forecast_collection", forecast_collection)
         state.location = location
         state.update_metadata("location_coordinates", {"latitude": lat, "longitude": lon})
 
         logger.info(
-            f"Weather forecast fetched for {location_name}: {nearest_forecast.weather_description}",
+            f"Weather forecast fetched for {location_name}: {selected_forecast.weather_description}",
         )
 
         return state
@@ -529,6 +568,61 @@ def fetch_weather_forecast_node(state):
         state.add_error(f"天気予報の取得に失敗しました: {e!s}", "weather_forecast")
         # エラーをそのまま再発生させて処理を停止
         raise
+
+
+def _select_priority_forecast(forecasts, target_datetime):
+    """期間内の予報から最も重要な気象条件を選択
+    
+    Args:
+        forecasts: 期間内の予報リスト
+        target_datetime: 基準となる目標日時
+        
+    Returns:
+        選択された予報（特殊気象条件を優先）
+    """
+    if not forecasts:
+        return None
+    
+    # 単一の予報の場合はそのまま返す
+    if len(forecasts) == 1:
+        return forecasts[0]
+    
+    # 特殊気象条件（雷、霧、嵐）を優先
+    special_conditions = [f for f in forecasts if f.weather_condition.is_special_condition]
+    if special_conditions:
+        # 特殊気象条件の中で最も優先度が高いものを選択
+        selected = max(special_conditions, key=lambda f: f.weather_condition.priority)
+        logger.info(f"特殊気象条件を優先選択: {selected.weather_condition.value} ({selected.datetime})")
+        return selected
+    
+    # 特殊気象条件がない場合、悪天候を優先
+    severe_weather = [f for f in forecasts if f.is_severe_weather()]
+    if severe_weather:
+        # 悪天候の中で最も降水量が多いものを選択
+        selected = max(severe_weather, key=lambda f: f.precipitation)
+        logger.info(f"悪天候を優先選択: {selected.weather_description} ({selected.datetime})")
+        return selected
+    
+    # 雨天を優先
+    rainy_forecasts = [f for f in forecasts if f.precipitation > 0.1]
+    if rainy_forecasts:
+        # 雨天の中で最も降水量が多いものを選択
+        selected = max(rainy_forecasts, key=lambda f: f.precipitation)
+        logger.info(f"雨天を優先選択: {selected.weather_description} ({selected.datetime})")
+        return selected
+    
+    # 晴れ以外の条件を優先
+    non_clear_forecasts = [f for f in forecasts if f.weather_condition.value != "clear"]
+    if non_clear_forecasts:
+        # 晴れ以外の中で最も優先度が高いものを選択
+        selected = max(non_clear_forecasts, key=lambda f: f.weather_condition.priority)
+        logger.info(f"晴れ以外の条件を優先選択: {selected.weather_description} ({selected.datetime})")
+        return selected
+    
+    # 全て晴れの場合は、目標時刻に最も近いものを選択
+    selected = min(forecasts, key=lambda f: abs((f.datetime - target_datetime).total_seconds()))
+    logger.info(f"目標時刻に最も近い予報を選択: {selected.weather_description} ({selected.datetime})")
+    return selected
 
 
 if __name__ == "__main__":

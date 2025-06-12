@@ -51,6 +51,9 @@ class LLMManager:
                 "OPENAI_API_KEY環境変数が設定されていません。\n"
                 "設定方法: export OPENAI_API_KEY='your-api-key' または .envファイルに記載"
             )
+        
+        # APIキーのプレフィックスをログに記録（デバッグ用）
+        logger.info(f"Using OpenAI API key: {api_key[:20]}...")
 
         model = os.getenv("OPENAI_MODEL", "gpt-4")
         return OpenAIProvider(api_key=api_key, model=model)
