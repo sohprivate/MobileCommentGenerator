@@ -27,10 +27,13 @@ mobile-comment-generator/
 │   │   └── similarity_calculator.py    # 類似度計算
 │   ├── nodes/                  # LangGraphノード
 │   │   ├── input_node.py       # 入力ノード
+│   │   ├── weather_forecast_node.py    # 天気予報取得ノード
+│   │   ├── retrieve_past_comments_node.py # 過去コメント取得ノード
 │   │   ├── select_comment_pair_node.py  # コメント選択ノード
 │   │   ├── evaluate_candidate_node.py   # 候補評価ノード
 │   │   ├── generate_comment_node.py     # コメント生成ノード
-│   │   └── output_node.py      # 出力ノード
+│   │   ├── output_node.py      # 出力ノード
+│   │   └── mock_nodes.py       # モックノード（テスト用）
 │   ├── workflows/              # ワークフロー実装
 │   │   └── comment_generation_workflow.py
 │   ├── llm/                    # LLM統合
@@ -44,13 +47,16 @@ mobile-comment-generator/
 │   │       ├── gemini_provider.py      # Google Gemini統合
 │   │       └── anthropic_provider.py   # Anthropic Claude統合
 │   ├── repositories/           # データリポジトリ
+│   │   ├── local_comment_repository.py # ローカルデータアクセス
 │   │   └── s3_comment_repository.py    # S3データアクセス
 │   ├── ui/                     # Streamlit UI
 │   │   ├── streamlit_components.py     # UIコンポーネント
 │   │   ├── streamlit_utils.py  # UIユーティリティ
 │   │   └── pages/              # マルチページ構成
+│   │       └── statistics.py   # 統計情報ページ
 │   └── config/                 # 設定管理
-│       └── weather_config.py   # 天気予報設定
+│       ├── weather_config.py   # 天気予報設定
+│       └── comment_config.py   # コメント生成設定
 ├── frontend/                   # Vue.js/Nuxt.jsプロジェクト（分離済み）
 ├── tests/                      # テストスイート
 │   ├── integration/            # 統合テスト専用
@@ -62,6 +68,12 @@ mobile-comment-generator/
 ├── docs/                       # ドキュメント
 ├── .env.example                # 環境変数例
 ├── app.py                      # Streamlitメインエントリポイント
+├── enhanced_comment_generator.py # 拡張コメント生成器
+├── test_all_locations.py       # 全地点テスト
+├── test_connections.py         # 接続テスト
+├── test_rain_selection.py      # 雨天時選択テスト
+├── test_s3_access.py           # S3アクセステスト
+├── test_weather_flow.py        # 天気フローテスト
 ├── requirements.txt            # Python依存関係
 ├── requirements-dev.txt        # 開発用依存関係
 ├── requirements-streamlit.txt  # Streamlit用依存関係
