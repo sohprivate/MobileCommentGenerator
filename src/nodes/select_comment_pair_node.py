@@ -216,10 +216,9 @@ def _should_exclude_weather_comment(comment_text: str, weather_data: WeatherFore
         # 外出推奨系コメントを除外
         if any(outdoor_word in comment_lower for outdoor_word in ["お出かけ", "外出", "散歩", "ピクニック", "日和"]):
             return True
-        # 軽い雨以外では穏やかなコメントも除外
-        if any(heavy_rain in current_weather for heavy_rain in ["大雨", "豪雨"]):
-            if any(calm_word in comment_lower for calm_word in ["穏やか", "過ごしやすい"]):
-                return True
+        # 雨天時は穏やかなコメントも除外（雨の強さに関係なく）
+        if any(calm_word in comment_lower for calm_word in ["穏やか", "過ごしやすい", "快適", "爽やか", "心地良い"]):
+            return True
     
     # 晴天時の不適切なコメント  
     if any(sunny_word in current_weather for sunny_word in ["晴れ", "快晴"]):
