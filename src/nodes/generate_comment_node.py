@@ -281,18 +281,27 @@ def _analyze_temperature_differences(temperature_differences: Dict[str, Optional
             elif daily_range >= threshold_daily_medium:
                 analysis["commentary"].append(f"やや日較差あり（{daily_range:.1f}℃）")
         
+        # 設定から温度閾値を取得
+        config = get_config()
+        temp_hot = config.weather.temp_threshold_hot
+        temp_warm = config.weather.temp_threshold_warm  
+        temp_cool = config.weather.temp_threshold_cool
+        temp_cold = config.weather.temp_threshold_cold
+        
         # 現在の気温レベルに応じたコメント
-        if current_temp >= 30.0:
+        if current_temp >= temp_hot:
             analysis["commentary"].append("暑い気温")
-        elif current_temp >= 25.0:
+        elif current_temp >= temp_warm:
             analysis["commentary"].append("暖かい気温")
-        elif current_temp <= 5.0:
+        elif current_temp <= temp_cold:
             analysis["commentary"].append("寒い気温")
-        elif current_temp <= 10.0:
+        elif current_temp <= temp_cool:
             analysis["commentary"].append("涼しい気温")
         
+    except (ValueError, TypeError, AttributeError) as e:
+        logger.warning(f"気温差分析中にエラー: {type(e).__name__}: {e}")
     except Exception as e:
-        logger.warning(f"気温差分析中にエラー: {e}")
+        logger.error(f"気温差分析中に予期しないエラー: {type(e).__name__}: {e}", exc_info=True)
     
     return analysis
 

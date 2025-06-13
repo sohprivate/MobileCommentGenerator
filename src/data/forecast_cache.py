@@ -5,6 +5,7 @@
 前日との気温差や日較差の比較を可能にする
 """
 
+import ast
 import csv
 import os
 import re
@@ -22,6 +23,26 @@ logger = logging.getLogger(__name__)
 
 # タイムゾーン定義
 JST = ZoneInfo("Asia/Tokyo")
+
+
+def ensure_jst(dt: datetime) -> datetime:
+    """datetimeオブジェクトをJSTとして確実に扱う
+    
+    Args:
+        dt: datetime オブジェクト
+        
+    Returns:
+        JSTタイムゾーン付きのdatetime
+    """
+    if dt.tzinfo is None:
+        # naiveな場合はJSTとして扱う
+        return dt.replace(tzinfo=JST)
+    elif dt.tzinfo != JST:
+        # 他のタイムゾーンの場合はJSTに変換
+        return dt.astimezone(JST)
+    else:
+        # 既にJSTの場合はそのまま返す
+        return dt
 
 
 @dataclass
@@ -81,13 +102,8 @@ class ForecastCacheEntry:
             location_name = row[0]
             
             # datetimeのタイムゾーン処理
-            forecast_datetime = datetime.fromisoformat(row[1])
-            if forecast_datetime.tzinfo is None:
-                forecast_datetime = forecast_datetime.replace(tzinfo=JST)
-                
-            cached_at = datetime.fromisoformat(row[2])
-            if cached_at.tzinfo is None:
-                cached_at = cached_at.replace(tzinfo=JST)
+            forecast_datetime = ensure_jst(datetime.fromisoformat(row[1]))
+            cached_at = ensure_jst(datetime.fromisoformat(row[2]))
                 
             temperature = float(row[3])
             
@@ -104,10 +120,11 @@ class ForecastCacheEntry:
             metadata = {}
             if len(row) > 11 and row[11]:
                 try:
-                    metadata = eval(row[11])  # 簡単な辞書の場合
+                    metadata = ast.literal_eval(row[11])  # 安全な評価関数を使用
                     if not isinstance(metadata, dict):
                         metadata = {}
-                except:
+                except (ValueError, SyntaxError) as e:
+                    logger.warning(f"メタデータの解析に失敗: {e}")
                     metadata = {}
             
             return cls(
@@ -135,8 +152,7 @@ class ForecastCacheEntry:
         
         # forecast_datetimeがnaiveの場合はJSTとして扱う
         forecast_dt = weather_forecast.datetime
-        if forecast_dt.tzinfo is None:
-            forecast_dt = forecast_dt.replace(tzinfo=JST)
+        forecast_dt = ensure_jst(forecast_dt)
         
         return cls(
             location_name=location_name,
@@ -352,8 +368,7 @@ class ForecastCache:
         # フィルタリング用の日時を計算
         cutoff_date = None
         if date_filter:
-            if date_filter.tzinfo is None:
-                date_filter = date_filter.replace(tzinfo=JST)
+            date_filter = ensure_jst(date_filter)
             cutoff_date = date_filter - timedelta(days=days_range)
         
         try:
@@ -367,8 +382,7 @@ class ForecastCache:
                             # 日時フィールドを先に確認（パフォーマンス最適化）
                             if cutoff_date and len(row) > 1:
                                 forecast_dt = datetime.fromisoformat(row[1])
-                                if forecast_dt.tzinfo is None:
-                                    forecast_dt = forecast_dt.replace(tzinfo=JST)
+                                forecast_dt = ensure_jst(forecast_dt)
                                 if forecast_dt < cutoff_date:
                                     continue
                             
@@ -399,10 +413,8 @@ class ForecastCache:
             # 期限内のエントリのみを残す（タイムゾーンを考慮）
             valid_entries = []
             for entry in entries:
-                # エントリのcached_atがnaiveの場合はJSTとして扱う
-                cached_at = entry.cached_at
-                if cached_at.tzinfo is None:
-                    cached_at = cached_at.replace(tzinfo=JST)
+                # エントリのcached_atをJSTとして確実に扱う
+                cached_at = ensure_jst(entry.cached_at)
                 if cached_at >= cutoff_date:
                     valid_entries.append(entry)
             

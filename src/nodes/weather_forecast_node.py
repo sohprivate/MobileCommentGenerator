@@ -486,18 +486,23 @@ def fetch_weather_forecast_node(state):
         try:
             forecast_collection = client.get_forecast(lat, lon)
         except WxTechAPIError as e:
-            error_msg = f"気象API接続エラー: {e!s}"
-            logger.error(error_msg)
-            state.add_error(error_msg, "weather_forecast")
-            # 具体的なエラーメッセージを含めて再発生
-            if "401" in str(e) or "APIキーが無効" in str(e):
+            # エラータイプに基づいて適切なエラーメッセージを設定
+            if e.error_type == 'api_key_invalid':
                 error_msg = "気象APIキーが無効です。\nWXTECH_API_KEYが正しく設定されているか確認してください。"
-            elif "429" in str(e) or "レート制限" in str(e):
+            elif e.error_type == 'rate_limit':
                 error_msg = "気象APIのレート制限に達しました。しばらく待ってから再試行してください。"
-            elif "接続できません" in str(e):
+            elif e.error_type == 'network_error':
                 error_msg = "気象APIサーバーに接続できません。ネットワーク接続を確認してください。"
+            elif e.error_type == 'timeout':
+                error_msg = f"気象APIへのリクエストがタイムアウトしました: {e}"
+            elif e.error_type == 'server_error':
+                error_msg = "気象APIサーバーでエラーが発生しました。しばらく待ってから再試行してください。"
+            else:
+                error_msg = f"気象API接続エラー: {e}"
+            
+            logger.error(f"気象APIエラー (type: {e.error_type}, status: {e.status_code}): {error_msg}")
             state.add_error(error_msg, "weather_forecast")
-            raise WxTechAPIError(error_msg)
+            raise
 
         # 設定から何時間後の予報を使用するか取得
         config = get_config()
