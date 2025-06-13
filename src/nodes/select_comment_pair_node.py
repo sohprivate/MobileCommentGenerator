@@ -13,6 +13,8 @@ from src.data.weather_data import WeatherForecast
 from src.llm.llm_manager import LLMManager
 from src.config.comment_config import get_comment_config
 from src.config.severe_weather_config import get_severe_weather_config
+from src.data.forecast_cache import ForecastCache
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -344,17 +346,33 @@ def _is_severe_weather_advice_appropriate(comment_text: str, weather_data: Weath
 def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherForecast, location_name: str, target_datetime: datetime, comment_type: CommentType, state: Optional[CommentGenerationState] = None) -> str:
     """選択用プロンプトを生成"""
     
-    # 時系列データの取得と分析
+    # 時系列データの取得と分析（直接ForecastCacheから取得）
     timeline_info = ""
     severe_future_warning = ""
-    if state and state.generation_metadata:
-        weather_timeline = state.generation_metadata.get('weather_timeline')
-        if weather_timeline:
-            future_forecasts = weather_timeline.get('future_forecasts', [])
-            summary = weather_timeline.get('summary', {})
+    
+    location_name_param = state.location_name if state else None
+    if location_name_param and weather_data and weather_data.datetime:
+        try:
+            cache = ForecastCache()
+            future_forecasts = []
             
+            # 未来の予報を直接取得（3, 6, 9時間後）
+            for hours in [3, 6, 9]:
+                future_time = weather_data.datetime + timedelta(hours=hours)
+                try:
+                    forecast = cache.get_forecast_at_time(location_name_param, future_time)
+                    if forecast:
+                        future_forecasts.append({
+                            'label': f'+{hours}h',
+                            'weather': forecast.weather_description,
+                            'temperature': forecast.temperature,
+                            'precipitation': forecast.precipitation
+                        })
+                except Exception as e:
+                    logger.debug(f"未来予報取得エラー (+{hours}h): {e}")
+            
+            # 未来の悪天候を検出
             if future_forecasts:
-                # 未来の悪天候を検出
                 severe_future = []
                 for forecast in future_forecasts:
                     weather_desc = forecast.get('weather', '')
@@ -370,10 +388,11 @@ def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherFore
                 timeline_info = f"""
                 
 【時系列予報情報】
-- 天気パターン: {summary.get('weather_pattern', '不明')}
-- 気温範囲: {summary.get('temperature_range', '不明')}
-- 最大降水量: {summary.get('max_precipitation', '不明')}
-- 今後の変化: {len(future_forecasts)}時点の予報あり"""
+- 今後の変化: {len(future_forecasts)}時点の予報あり
+- 悪天候検出: {len(severe_future)}件の警告"""
+        
+        except Exception as e:
+            logger.warning(f"時系列データ取得エラー: {e}")
     
     # WeatherTrendの取得（既存）
     weather_trend_info = ""
