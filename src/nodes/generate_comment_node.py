@@ -15,6 +15,7 @@ from src.data.comment_generation_state import CommentGenerationState
 from src.llm.llm_manager import LLMManager
 from src.data.weather_data import WeatherForecast
 from src.data.comment_pair import CommentPair
+from src.config.weather_config import get_config
 
 logger = logging.getLogger(__name__)
 
@@ -216,6 +217,11 @@ def _get_fallback_comment(weather_data: Optional[WeatherForecast]) -> str:
 def _analyze_temperature_differences(temperature_differences: Dict[str, Optional[float]], current_temp: float) -> Dict[str, Any]:
     """気温差を分析して特徴を抽出
     
+    温度差の閾値について：
+    - 前日との差 5.0℃: 人体が明確に体感できる温度差として設定。気象学的に「顕著な変化」とされる基準
+    - 12時間前との差 3.0℃: 半日での変化として、体調管理に影響する可能性がある基準値
+    - 日較差 15.0℃（大）/10.0℃（中）: 健康影響の観点から、15℃以上は要注意、10℃以上は留意すべき差として設定
+    
     Args:
         temperature_differences: 気温差の辞書
         current_temp: 現在の気温
@@ -223,6 +229,13 @@ def _analyze_temperature_differences(temperature_differences: Dict[str, Optional
     Returns:
         気温差の分析結果
     """
+    # 設定から閾値を取得
+    config = get_config()
+    threshold_previous_day = config.weather.temp_diff_threshold_previous_day
+    threshold_12hours = config.weather.temp_diff_threshold_12hours
+    threshold_daily_large = config.weather.daily_temp_range_threshold_large
+    threshold_daily_medium = config.weather.daily_temp_range_threshold_medium
+    
     analysis = {
         "has_significant_change": False,
         "change_type": None,
@@ -234,7 +247,7 @@ def _analyze_temperature_differences(temperature_differences: Dict[str, Optional
         # 前日との比較
         prev_day_diff = temperature_differences.get("previous_day_diff")
         if prev_day_diff is not None:
-            if abs(prev_day_diff) >= 5.0:  # 5℃以上の差
+            if abs(prev_day_diff) >= threshold_previous_day:
                 analysis["has_significant_change"] = True
                 if prev_day_diff > 0:
                     analysis["change_type"] = "warmer_than_yesterday"
@@ -254,7 +267,7 @@ def _analyze_temperature_differences(temperature_differences: Dict[str, Optional
         # 12時間前との比較
         twelve_hours_diff = temperature_differences.get("twelve_hours_ago_diff")
         if twelve_hours_diff is not None:
-            if abs(twelve_hours_diff) >= 3.0:  # 3℃以上の差
+            if abs(twelve_hours_diff) >= threshold_12hours:
                 if twelve_hours_diff > 0:
                     analysis["commentary"].append(f"12時間前より{twelve_hours_diff:.1f}℃上昇")
                 else:
@@ -263,9 +276,9 @@ def _analyze_temperature_differences(temperature_differences: Dict[str, Optional
         # 日較差の分析
         daily_range = temperature_differences.get("daily_range")
         if daily_range is not None:
-            if daily_range >= 15.0:
+            if daily_range >= threshold_daily_large:
                 analysis["commentary"].append(f"日較差が大きい（{daily_range:.1f}℃）")
-            elif daily_range >= 10.0:
+            elif daily_range >= threshold_daily_medium:
                 analysis["commentary"].append(f"やや日較差あり（{daily_range:.1f}℃）")
         
         # 現在の気温レベルに応じたコメント

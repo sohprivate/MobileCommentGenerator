@@ -24,6 +24,11 @@ class WeatherConfig:
         rate_limit_delay: レート制限回避遅延（秒）
         cache_ttl: キャッシュTTL（秒）
         enable_caching: キャッシュ有効化フラグ
+        forecast_cache_retention_days: 予報キャッシュ保持日数
+        temp_diff_threshold_previous_day: 前日との有意な温度差閾値（℃）
+        temp_diff_threshold_12hours: 12時間前との有意な温度差閾値（℃）
+        daily_temp_range_threshold_large: 大きな日較差閾値（℃）
+        daily_temp_range_threshold_medium: 中程度の日較差閾値（℃）
     """
 
     wxtech_api_key: str = field(default_factory=lambda: os.getenv("WXTECH_API_KEY", ""))
@@ -46,6 +51,23 @@ class WeatherConfig:
     )  # 5分
     enable_caching: bool = field(
         default_factory=lambda: os.getenv("WEATHER_ENABLE_CACHING", "true").lower() == "true"
+    )
+    # 予報キャッシュ設定
+    forecast_cache_retention_days: int = field(
+        default_factory=lambda: int(os.getenv("FORECAST_CACHE_RETENTION_DAYS", "7"))
+    )
+    # 温度差閾値設定
+    temp_diff_threshold_previous_day: float = field(
+        default_factory=lambda: float(os.getenv("TEMP_DIFF_THRESHOLD_PREVIOUS_DAY", "5.0"))
+    )
+    temp_diff_threshold_12hours: float = field(
+        default_factory=lambda: float(os.getenv("TEMP_DIFF_THRESHOLD_12HOURS", "3.0"))
+    )
+    daily_temp_range_threshold_large: float = field(
+        default_factory=lambda: float(os.getenv("DAILY_TEMP_RANGE_THRESHOLD_LARGE", "15.0"))
+    )
+    daily_temp_range_threshold_medium: float = field(
+        default_factory=lambda: float(os.getenv("DAILY_TEMP_RANGE_THRESHOLD_MEDIUM", "10.0"))
     )
 
     def __post_init__(self):
@@ -75,6 +97,11 @@ class WeatherConfig:
             "rate_limit_delay": self.rate_limit_delay,
             "cache_ttl": self.cache_ttl,
             "enable_caching": self.enable_caching,
+            "forecast_cache_retention_days": self.forecast_cache_retention_days,
+            "temp_diff_threshold_previous_day": self.temp_diff_threshold_previous_day,
+            "temp_diff_threshold_12hours": self.temp_diff_threshold_12hours,
+            "daily_temp_range_threshold_large": self.daily_temp_range_threshold_large,
+            "daily_temp_range_threshold_medium": self.daily_temp_range_threshold_medium,
         }
 
 
@@ -239,6 +266,11 @@ def setup_environment_defaults():
         "WEATHER_API_RATE_LIMIT_DELAY": "0.1",
         "WEATHER_CACHE_TTL": "300",
         "WEATHER_ENABLE_CACHING": "true",
+        "FORECAST_CACHE_RETENTION_DAYS": "7",
+        "TEMP_DIFF_THRESHOLD_PREVIOUS_DAY": "5.0",
+        "TEMP_DIFF_THRESHOLD_12HOURS": "3.0",
+        "DAILY_TEMP_RANGE_THRESHOLD_LARGE": "15.0",
+        "DAILY_TEMP_RANGE_THRESHOLD_MEDIUM": "10.0",
         "LANGGRAPH_ENABLE_WEATHER": "true",
         "LANGGRAPH_AUTO_LOCATION": "false",
         "LANGGRAPH_WEATHER_CONTEXT_WINDOW": "24",

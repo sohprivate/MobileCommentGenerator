@@ -7,15 +7,21 @@
 
 import csv
 import os
+import re
 import logging
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Iterator
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from src.data.weather_data import WeatherForecast
+from src.config.weather_config import get_config
 
 logger = logging.getLogger(__name__)
+
+# タイムゾーン定義
+JST = ZoneInfo("Asia/Tokyo")
 
 
 @dataclass
@@ -73,8 +79,16 @@ class ForecastCacheEntry:
         try:
             # 必須フィールドの解析
             location_name = row[0]
+            
+            # datetimeのタイムゾーン処理
             forecast_datetime = datetime.fromisoformat(row[1])
+            if forecast_datetime.tzinfo is None:
+                forecast_datetime = forecast_datetime.replace(tzinfo=JST)
+                
             cached_at = datetime.fromisoformat(row[2])
+            if cached_at.tzinfo is None:
+                cached_at = cached_at.replace(tzinfo=JST)
+                
             temperature = float(row[3])
             
             # オプショナルフィールドの解析
@@ -116,10 +130,18 @@ class ForecastCacheEntry:
     @classmethod
     def from_weather_forecast(cls, weather_forecast: WeatherForecast, location_name: str) -> "ForecastCacheEntry":
         """WeatherForecastオブジェクトから作成"""
+        # 現在時刻をJSTで取得
+        cached_at = datetime.now(JST)
+        
+        # forecast_datetimeがnaiveの場合はJSTとして扱う
+        forecast_dt = weather_forecast.datetime
+        if forecast_dt.tzinfo is None:
+            forecast_dt = forecast_dt.replace(tzinfo=JST)
+        
         return cls(
             location_name=location_name,
-            forecast_datetime=weather_forecast.datetime,
-            cached_at=datetime.now(),
+            forecast_datetime=forecast_dt,
+            cached_at=cached_at,
             temperature=weather_forecast.temperature,
             weather_condition=weather_forecast.weather_condition.value,
             weather_description=weather_forecast.weather_description,
@@ -167,8 +189,9 @@ class ForecastCache:
     
     def get_cache_file_path(self, location_name: str) -> Path:
         """地点名からキャッシュファイルのパスを取得"""
-        # ファイル名に使えない文字を置換
-        safe_name = "".join(c for c in location_name if c.isalnum() or c in "-_")
+        # ファイルシステムで安全な文字のみを使用
+        safe_name = re.sub(r'[^\w\s-]', '', location_name)
+        safe_name = re.sub(r'[-\s]+', '-', safe_name)
         return self.cache_dir / f"forecast_cache_{safe_name}.csv"
     
     def save_forecast(self, weather_forecast: WeatherForecast, location_name: str) -> None:
@@ -190,8 +213,10 @@ class ForecastCache:
             
             logger.info(f"予報データをキャッシュに保存: {location_name} at {weather_forecast.datetime}")
             
-            # 古いデータのクリーンアップ（7日以上前のデータを削除）
-            self._cleanup_old_data(location_name, days=7)
+            # 古いデータのクリーンアップ（設定から保持日数を取得）
+            config = get_config()
+            retention_days = config.weather.forecast_cache_retention_days
+            self._cleanup_old_data(location_name, days=retention_days)
             
         except Exception as e:
             logger.error(f"予報データの保存に失敗: {e}")
@@ -214,7 +239,8 @@ class ForecastCache:
             if not cache_file.exists():
                 return None
             
-            entries = self._load_cache_entries(location_name)
+            # パフォーマンス最適化: 対象日時の前後数日分のみ読み込み
+            entries = self._load_cache_entries(location_name, date_filter=target_datetime, days_range=7)
             
             # 指定時刻に最も近いエントリを検索
             best_entry = None
@@ -307,10 +333,28 @@ class ForecastCache:
         
         return result
     
-    def _load_cache_entries(self, location_name: str) -> List[ForecastCacheEntry]:
-        """キャッシュエントリを読み込み"""
+    def _load_cache_entries(self, location_name: str, 
+                           date_filter: Optional[datetime] = None,
+                           days_range: int = 7) -> List[ForecastCacheEntry]:
+        """キャッシュエントリを読み込み
+        
+        Args:
+            location_name: 地点名
+            date_filter: フィルタリング基準日時（指定した場合、この日時から過去days_range日分のみ読み込み）
+            days_range: 読み込む日数範囲
+            
+        Returns:
+            キャッシュエントリのリスト
+        """
         cache_file = self.get_cache_file_path(location_name)
         entries = []
+        
+        # フィルタリング用の日時を計算
+        cutoff_date = None
+        if date_filter:
+            if date_filter.tzinfo is None:
+                date_filter = date_filter.replace(tzinfo=JST)
+            cutoff_date = date_filter - timedelta(days=days_range)
         
         try:
             with open(cache_file, "r", encoding="utf-8") as f:
@@ -320,6 +364,14 @@ class ForecastCache:
                 for row in reader:
                     if len(row) >= 4:  # 最低限のフィールドがある行のみ
                         try:
+                            # 日時フィールドを先に確認（パフォーマンス最適化）
+                            if cutoff_date and len(row) > 1:
+                                forecast_dt = datetime.fromisoformat(row[1])
+                                if forecast_dt.tzinfo is None:
+                                    forecast_dt = forecast_dt.replace(tzinfo=JST)
+                                if forecast_dt < cutoff_date:
+                                    continue
+                            
                             entry = ForecastCacheEntry.from_csv_row(row)
                             entries.append(entry)
                         except ValueError as e:
@@ -342,10 +394,17 @@ class ForecastCache:
         """古いキャッシュデータを削除"""
         try:
             entries = self._load_cache_entries(location_name)
-            cutoff_date = datetime.now() - timedelta(days=days)
+            cutoff_date = datetime.now(JST) - timedelta(days=days)
             
-            # 期限内のエントリのみを残す
-            valid_entries = [entry for entry in entries if entry.cached_at >= cutoff_date]
+            # 期限内のエントリのみを残す（タイムゾーンを考慮）
+            valid_entries = []
+            for entry in entries:
+                # エントリのcached_atがnaiveの場合はJSTとして扱う
+                cached_at = entry.cached_at
+                if cached_at.tzinfo is None:
+                    cached_at = cached_at.replace(tzinfo=JST)
+                if cached_at >= cutoff_date:
+                    valid_entries.append(entry)
             
             if len(valid_entries) < len(entries):
                 # ファイルを再作成
