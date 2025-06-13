@@ -6,12 +6,123 @@
 
 from typing import Dict, Any, List, Optional
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 from src.data.comment_generation_state import CommentGenerationState
+from src.data.forecast_cache import ForecastCache
 
 logger = logging.getLogger(__name__)
+
+
+def _get_weather_timeline(location_name: str, base_datetime: datetime) -> Dict[str, Any]:
+    """予報基準時刻の前後の天気データを取得
+    
+    Args:
+        location_name: 地点名
+        base_datetime: 予報基準時刻
+        
+    Returns:
+        時系列の天気データ
+    """
+    timeline_data: Dict[str, Any] = {
+        "future_forecasts": [],
+        "past_forecasts": [],
+        "base_time": base_datetime.isoformat()
+    }
+    
+    try:
+        cache = ForecastCache()
+        
+        # 未来の予報データ（3時間ごと、12時間後まで）
+        future_times = []
+        for hours in range(3, 13, 3):  # 3, 6, 9, 12時間後
+            future_time = base_datetime + timedelta(hours=hours)
+            future_times.append((future_time, f"+{hours}h"))
+        
+        for future_time, label in future_times:
+            try:
+                forecast = cache.get_forecast_at_time(location_name, future_time)
+                if forecast:
+                    timeline_data["future_forecasts"].append({
+                        "time": future_time.strftime("%m/%d %H:%M"),
+                        "label": label,
+                        "weather": forecast.weather_description,
+                        "temperature": forecast.temperature,
+                        "precipitation": forecast.precipitation
+                    })
+            except Exception as e:
+                logger.warning(f"未来の予報取得エラー ({label}): {e}")
+        
+        # 過去の予報データ（12時間前から現在まで、3時間ごと）
+        past_times = []
+        for hours in range(-12, 1, 3):  # -12, -9, -6, -3, 0時間
+            past_time = base_datetime + timedelta(hours=hours)
+            label = f"{hours:+d}h" if hours != 0 else "基準時刻"
+            past_times.append((past_time, label))
+        
+        for past_time, label in past_times:
+            try:
+                forecast = cache.get_forecast_at_time(location_name, past_time)
+                if forecast:
+                    timeline_data["past_forecasts"].append({
+                        "time": past_time.strftime("%m/%d %H:%M"),
+                        "label": label,
+                        "weather": forecast.weather_description,
+                        "temperature": forecast.temperature,
+                        "precipitation": forecast.precipitation
+                    })
+            except Exception as e:
+                logger.warning(f"過去の予報取得エラー ({label}): {e}")
+        
+        # データが取得できた場合のみ統計情報を追加
+        all_forecasts = timeline_data["future_forecasts"] + timeline_data["past_forecasts"]
+        if all_forecasts:
+            temps = [f["temperature"] for f in all_forecasts if f["temperature"] is not None]
+            precipitations = [f["precipitation"] for f in all_forecasts if f["precipitation"] is not None]
+            
+            timeline_data["summary"] = {
+                "temperature_range": f"{min(temps):.1f}°C〜{max(temps):.1f}°C" if temps else "データなし",
+                "max_precipitation": f"{max(precipitations):.1f}mm" if precipitations else "0mm",
+                "weather_pattern": _analyze_weather_pattern(all_forecasts)
+            }
+    
+    except Exception as e:
+        logger.error(f"天気タイムライン取得エラー: {e}")
+        timeline_data["error"] = str(e)
+    
+    return timeline_data
+
+
+def _analyze_weather_pattern(forecasts: List[Dict[str, Any]]) -> str:
+    """天気パターンを分析
+    
+    Args:
+        forecasts: 予報データのリスト
+        
+    Returns:
+        天気パターンの説明
+    """
+    if not forecasts:
+        return "データなし"
+    
+    weather_conditions = [f["weather"] for f in forecasts if f["weather"]]
+    
+    # 悪天候の検出
+    severe_conditions = ["大雨", "嵐", "雷", "豪雨", "暴風", "台風"]
+    rain_conditions = ["雨", "小雨", "中雨"]
+    
+    has_severe = any(any(severe in weather for severe in severe_conditions) for weather in weather_conditions)
+    has_rain = any(any(rain in weather for rain in rain_conditions) for weather in weather_conditions)
+    
+    if has_severe:
+        return "悪天候注意"
+    elif has_rain:
+        return "雨天続く"
+    elif len(set(weather_conditions)) <= 2:
+        return "安定した天気"
+    else:
+        return "変わりやすい天気"
 
 
 def output_node(state: CommentGenerationState) -> CommentGenerationState:
@@ -175,6 +286,17 @@ def _create_generation_metadata(
         weather_datetime = getattr(weather_data, "datetime", None)
         if weather_datetime is not None:
             weather_info["weather_forecast_time"] = weather_datetime.isoformat()
+            
+            # 時系列の天気データを追加
+            location_name = state.location_name
+            if location_name:
+                try:
+                    timeline_data = _get_weather_timeline(location_name, weather_datetime)
+                    weather_info["weather_timeline"] = timeline_data
+                    logger.info(f"時系列データを追加: 過去{len(timeline_data.get('past_forecasts', []))}件、未来{len(timeline_data.get('future_forecasts', []))}件")
+                except Exception as e:
+                    logger.warning(f"時系列データ取得エラー: {e}")
+                    weather_info["weather_timeline"] = {"error": str(e)}
         
         # 有効な天気データがある場合のみ追加
         if weather_info:

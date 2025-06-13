@@ -331,6 +331,56 @@
                             </div>
                           </div>
 
+                          <!-- Weather Timeline -->
+                          <div v-if="result.metadata.weather_timeline" class="mb-4">
+                            <div class="text-sm font-medium text-gray-700 mb-3">時系列予報データ</div>
+                            
+                            <!-- Summary -->
+                            <div v-if="result.metadata.weather_timeline.summary" class="p-3 bg-gray-50 rounded mb-3">
+                              <div class="text-xs font-medium text-gray-600 mb-1">概要</div>
+                              <div class="text-sm text-gray-700">
+                                {{ result.metadata.weather_timeline.summary.weather_pattern }} | 
+                                気温範囲: {{ result.metadata.weather_timeline.summary.temperature_range }} | 
+                                最大降水量: {{ result.metadata.weather_timeline.summary.max_precipitation }}
+                              </div>
+                            </div>
+
+                            <!-- Past Forecasts -->
+                            <div v-if="result.metadata.weather_timeline.past_forecasts && result.metadata.weather_timeline.past_forecasts.length > 0" class="mb-3">
+                              <div class="text-xs font-medium text-gray-600 mb-2">過去の推移（12時間前〜基準時刻）</div>
+                              <div class="grid grid-cols-1 gap-1">
+                                <div v-for="forecast in result.metadata.weather_timeline.past_forecasts" :key="forecast.time" 
+                                     class="flex justify-between items-center py-1 px-2 bg-orange-50 rounded text-xs">
+                                  <span class="font-mono">{{ forecast.label }}</span>
+                                  <span>{{ forecast.time }}</span>
+                                  <span class="font-medium">{{ forecast.weather }}</span>
+                                  <span>{{ forecast.temperature }}°C</span>
+                                  <span v-if="forecast.precipitation > 0" class="text-blue-600">{{ forecast.precipitation }}mm</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Future Forecasts -->
+                            <div v-if="result.metadata.weather_timeline.future_forecasts && result.metadata.weather_timeline.future_forecasts.length > 0">
+                              <div class="text-xs font-medium text-gray-600 mb-2">今後の予報（3〜12時間後）</div>
+                              <div class="grid grid-cols-1 gap-1">
+                                <div v-for="forecast in result.metadata.weather_timeline.future_forecasts" :key="forecast.time" 
+                                     class="flex justify-between items-center py-1 px-2 bg-green-50 rounded text-xs">
+                                  <span class="font-mono">{{ forecast.label }}</span>
+                                  <span>{{ forecast.time }}</span>
+                                  <span class="font-medium">{{ forecast.weather }}</span>
+                                  <span>{{ forecast.temperature }}°C</span>
+                                  <span v-if="forecast.precipitation > 0" class="text-blue-600">{{ forecast.precipitation }}mm</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Error Display -->
+                            <div v-if="result.metadata.weather_timeline.error" class="p-2 bg-red-50 rounded text-xs text-red-600">
+                              時系列データ取得エラー: {{ result.metadata.weather_timeline.error }}
+                            </div>
+                          </div>
+
                           <!-- Selected Comments -->
                           <div v-if="result.metadata.selected_weather_comment || result.metadata.selected_advice_comment" class="border-t pt-4">
                             <div class="text-sm font-medium text-gray-700 mb-2">選択されたコメント:</div>
