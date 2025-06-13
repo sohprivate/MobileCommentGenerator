@@ -343,7 +343,39 @@ def _is_severe_weather_advice_appropriate(comment_text: str, weather_data: Weath
 
 def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherForecast, location_name: str, target_datetime: datetime, comment_type: CommentType, state: Optional[CommentGenerationState] = None) -> str:
     """選択用プロンプトを生成"""
-    # WeatherTrendの取得
+    
+    # 時系列データの取得と分析
+    timeline_info = ""
+    severe_future_warning = ""
+    if state and state.generation_metadata:
+        weather_timeline = state.generation_metadata.get('weather_timeline')
+        if weather_timeline:
+            future_forecasts = weather_timeline.get('future_forecasts', [])
+            summary = weather_timeline.get('summary', {})
+            
+            if future_forecasts:
+                # 未来の悪天候を検出
+                severe_future = []
+                for forecast in future_forecasts:
+                    weather_desc = forecast.get('weather', '')
+                    if any(severe in weather_desc for severe in ['大雨', '嵐', '暴風', '台風', '雷', '豪雨']):
+                        severe_future.append(f"{forecast['label']}: {weather_desc}")
+                
+                if severe_future:
+                    severe_future_warning = f"""
+【重要警告】今後悪天候が予想されています:
+{chr(10).join(f'- {warning}' for warning in severe_future)}
+→ より強い警戒コメントを優先してください！"""
+                
+                timeline_info = f"""
+                
+【時系列予報情報】
+- 天気パターン: {summary.get('weather_pattern', '不明')}
+- 気温範囲: {summary.get('temperature_range', '不明')}
+- 最大降水量: {summary.get('max_precipitation', '不明')}
+- 今後の変化: {len(future_forecasts)}時点の予報あり"""
+    
+    # WeatherTrendの取得（既存）
     weather_trend_info = ""
     if state and hasattr(state, 'generation_metadata'):
         weather_trend = state.generation_metadata.get('weather_trend')
@@ -364,7 +396,7 @@ def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherFore
 - 湿度: {weather_data.humidity}%
 - 風速: {weather_data.wind_speed}m/s
 - 降水量: {weather_data.precipitation}mm
-- 日時: {target_datetime.strftime("%Y年%m月%d日 %H時")}{weather_trend_info}
+- 日時: {target_datetime.strftime("%Y年%m月%d日 %H時")}{timeline_info}{weather_trend_info}{severe_future_warning}
 
 候補:
 {json.dumps(candidates, ensure_ascii=False, indent=2)}
@@ -375,14 +407,23 @@ def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherFore
         # 悪天候時の特別な指示
         severe_config = get_severe_weather_config()
         severe_instruction = ""
-        if severe_config.is_severe_weather(weather_data.weather_condition):
+        
+        # 現在または未来の悪天候チェック
+        current_severe = severe_config.is_severe_weather(weather_data.weather_condition)
+        future_severe = bool(severe_future_warning)
+        
+        if current_severe or future_severe:
+            current_desc = f"現在は{weather_data.weather_description}" if current_severe else "現在は軽微な天候"
+            future_desc = "、さらに今後悪天候が予想されています" if future_severe else ""
+            
             severe_instruction = f"""
-【重要】現在は{weather_data.weather_description}という悪天候です。
+【重要】{current_desc}{future_desc}。
 以下の点を最優先で考慮してください：
-1. 安全性を重視したコメントを選ぶ
+1. 安全性を重視したコメントを選ぶ（特に未来の悪天候を考慮）
 2. 警戒や注意を促す表現を優先
 3. 穏やかさや快適さを表現するコメントは避ける
-4. 現在の厳しい気象状況を的確に表現する
+4. 現在～未来の厳しい気象状況を的確に表現する
+5. 【特に重要】今後悪天候が予想される場合は強い警戒コメントを選択
 """
         
         # 気象変化を考慮した追加基準
@@ -421,27 +462,41 @@ def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherFore
 - 「荒れる」「注意」「気をつけて」などの警戒を促す表現を優先
 - 悪天候の状況を適切に表現するコメントを選択"""
 
+        # 未来の悪天候による基準強化
+        future_criteria = ""
+        if future_severe:
+            future_criteria = "\n6. 【最重要】今後の悪天候を考慮し、より強い警戒コメントを選択（「大荒れ」「激しい」「警戒」等）"
+        
         base += f"""{severe_instruction}{special_criteria}{severe_weather_criteria}
 
 選択基準:
 1. 【最優先】悪天候時は危険性や注意を促すコメント
 2. 天気条件の一致（雨なら「スッキリしない空」等、嵐なら「荒れる」等）
 3. 気温表現の適合性（{weather_data.temperature}°Cに適した表現）
-4. 絶対禁止：悪天候時+「穏やか」系、雨天+「晴れ」系、気温不一致{trend_criteria}
+4. 絶対禁止：悪天候時+「穏やか」系、雨天+「晴れ」系、気温不一致{trend_criteria}{future_criteria}
 
 現在は{weather_data.weather_description}・{weather_data.temperature}°Cです。安全で適切な表現を選んでください。"""
     else:
         # 悪天候時の特別な指示（アドバイス用）
         severe_config = get_severe_weather_config()
         severe_instruction = ""
-        if severe_config.is_severe_weather(weather_data.weather_condition):
+        
+        # 現在または未来の悪天候チェック（アドバイス用）
+        current_severe = severe_config.is_severe_weather(weather_data.weather_condition)
+        future_severe = bool(severe_future_warning)
+        
+        if current_severe or future_severe:
+            current_desc = f"現在は{weather_data.weather_description}" if current_severe else "現在は軽微な天候"
+            future_desc = "、さらに今後悪天候が予想されています" if future_severe else ""
+            
             severe_instruction = f"""
-【重要】現在は{weather_data.weather_description}という悪天候です。
+【重要】{current_desc}{future_desc}。
 以下の点を最優先で考慮してください：
-1. 安全確保を最優先としたアドバイスを選ぶ
+1. 安全確保を最優先としたアドバイスを選ぶ（特に未来の悪天候を考慮）
 2. 室内での過ごし方や安全対策を推奨
 3. 外出を推奨するようなアドバイスは避ける
 4. 悪天候に対する適切な準備を促す
+5. 【特に重要】今後悪天候が予想される場合は強い安全対策アドバイスを選択
 """
         
         # アドバイスも気象変化を考慮
