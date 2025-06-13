@@ -15,8 +15,10 @@ class SevereWeatherConfig:
         WeatherCondition.STORM,         # 嵐
         WeatherCondition.THUNDER,       # 雷
         WeatherCondition.HEAVY_RAIN,    # 大雨
+        WeatherCondition.RAIN,          # 雨
         WeatherCondition.FOG,           # 霧
         WeatherCondition.HEAVY_SNOW,    # 大雪
+        WeatherCondition.SNOW,          # 雪
     })
     
     # 悪天候時に推奨される天気コメント
@@ -27,6 +29,13 @@ class SevereWeatherConfig:
             "外出は控えめに",
             "安全第一の一日",
             "荒天に要注意"
+        ],
+        "雨": [
+            "スッキリしない空",
+            "ニワカ雨が心配",
+            "傘がお守り",
+            "変わりやすい空",
+            "雨が降ったり止んだり"
         ],
         "雷": [
             "雷に注意",
@@ -59,6 +68,13 @@ class SevereWeatherConfig:
             "最新情報をチェック",
             "早めの帰宅を",
             "安全確保を優先"
+        ],
+        "雨": [
+            "傘がお守り",
+            "足元に注意を",
+            "濡れ対策を忘れずに",
+            "室内で過ごすのも",
+            "雨具の準備を"
         ],
         "雷": [
             "建物内で待機を",
@@ -97,8 +113,10 @@ class SevereWeatherConfig:
         WeatherCondition.STORM: "嵐",
         WeatherCondition.THUNDER: "雷",
         WeatherCondition.HEAVY_RAIN: "大雨",
+        WeatherCondition.RAIN: "雨",
         WeatherCondition.FOG: "霧",
         WeatherCondition.HEAVY_SNOW: "大雪",
+        WeatherCondition.SNOW: "雪",
     })
     
     def is_severe_weather(self, condition: WeatherCondition) -> bool:
