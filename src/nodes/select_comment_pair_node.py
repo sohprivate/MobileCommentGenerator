@@ -166,10 +166,23 @@ def _should_exclude_weather_comment(comment_text: str, weather_data: WeatherFore
     current_weather = weather_data.weather_description.lower()
     comment_lower = comment_text.lower()
     
+    # 激しい悪天候時の不適切なコメント（最優先）
+    if any(severe_word in current_weather for severe_word in ["大雨", "豪雨", "嵐", "暴風", "台風", "雷"]):
+        # 穏やかさや過ごしやすさを表現するコメントを除外
+        if any(calm_word in comment_lower for calm_word in ["穏やか", "過ごしやすい", "快適", "爽やか", "心地良い", "のどか", "静か"]):
+            return True
+        # 晴天関連のコメントを除外
+        if any(sunny_word in comment_lower for sunny_word in ["青空", "晴れ", "快晴", "日差し", "太陽", "陽射し", "眩しい"]):
+            return True
+    
     # 雨天時の不適切なコメント
-    if any(rain_word in current_weather for rain_word in ["雨", "小雨", "大雨", "豪雨"]):
+    if any(rain_word in current_weather for rain_word in ["雨", "小雨", "中雨", "大雨", "豪雨"]):
         if any(sunny_word in comment_lower for sunny_word in ["青空", "晴れ", "快晴", "日差し", "太陽", "陽射し"]):
             return True
+        # 軽い雨以外では穏やかなコメントも除外
+        if any(heavy_rain in current_weather for heavy_rain in ["大雨", "豪雨"]):
+            if any(calm_word in comment_lower for calm_word in ["穏やか", "過ごしやすい"]):
+                return True
     
     # 晴天時の不適切なコメント  
     if any(sunny_word in current_weather for sunny_word in ["晴れ", "快晴"]):
@@ -200,6 +213,15 @@ def _should_exclude_advice_comment(comment_text: str, weather_data: WeatherForec
     heat_threshold = config.heat_warning_threshold
     cold_threshold = config.cold_warning_threshold
     
+    # 激しい悪天候時は適切なアドバイスを優先
+    if any(severe_word in current_weather for severe_word in ["大雨", "豪雨", "嵐", "暴風", "台風", "雷"]):
+        # 悪天候時の不適切なアドバイスを除外
+        if any(good_weather_advice in comment_lower for good_weather_advice in ["散歩", "外出", "お出かけ", "ピクニック", "日光浴"]):
+            return True
+        # 晴天向けアドバイスを除外
+        if any(sunny_advice in comment_lower for sunny_advice in ["日焼け止め", "帽子", "サングラス", "日傘"]):
+            return True
+    
     # 気温による除外
     if weather_data.temperature < heat_threshold and "熱中症" in comment_text:
         return True
@@ -207,7 +229,7 @@ def _should_exclude_advice_comment(comment_text: str, weather_data: WeatherForec
         return True
     
     # 雨天時の不適切なアドバイス
-    if any(rain_word in current_weather for rain_word in ["雨", "小雨", "大雨"]):
+    if any(rain_word in current_weather for rain_word in ["雨", "小雨", "中雨", "大雨", "豪雨"]):
         if any(sunny_advice in comment_lower for sunny_advice in ["日焼け止め", "帽子", "サングラス", "日傘"]):
             return True
     
@@ -290,14 +312,26 @@ def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherFore
             elif weather_data.weather_condition.value == "severe_storm":
                 special_criteria += "\n   - 「大雨」「嵐」「暴風」「危険」「警戒」などの表現を含むコメント"
         
-        base += f"""{special_criteria}
+        # 悪天候時の特別な基準を追加
+        severe_weather_criteria = ""
+        if any(severe in weather_data.weather_description.lower() for severe in ["大雨", "豪雨", "嵐", "暴風", "台風", "雷"]):
+            severe_weather_criteria = f"""
+
+【重要】悪天候時の選択基準:
+⚠️ 現在は「{weather_data.weather_description}」という激しい天候です
+- 「穏やか」「過ごしやすい」「快適」などの表現は絶対に避ける
+- 「荒れる」「注意」「気をつけて」などの警戒を促す表現を優先
+- 悪天候の状況を適切に表現するコメントを選択"""
+
+        base += f"""{special_criteria}{severe_weather_criteria}
 
 選択基準:
-1. 天気条件の一致（雨なら「スッキリしない空」等）
-2. 気温表現の適合性（{weather_data.temperature}°Cに適した表現）
-3. 絶対禁止：雨天+「晴れ」系、22°C+「猛暑」系{trend_criteria}
+1. 【最優先】悪天候時は危険性や注意を促すコメント
+2. 天気条件の一致（雨なら「スッキリしない空」等、嵐なら「荒れる」等）
+3. 気温表現の適合性（{weather_data.temperature}°Cに適した表現）
+4. 絶対禁止：悪天候時+「穏やか」系、雨天+「晴れ」系、気温不一致{trend_criteria}
 
-現在は{weather_data.weather_description}・{weather_data.temperature}°Cです。適切な表現を選んでください。"""
+現在は{weather_data.weather_description}・{weather_data.temperature}°Cです。安全で適切な表現を選んでください。"""
     else:
         # アドバイスも気象変化を考慮
         trend_advice = ""
@@ -331,14 +365,26 @@ def _generate_prompt(candidates: List[Dict[str, Any]], weather_data: WeatherFore
             elif weather_data.weather_condition.value == "severe_storm":
                 special_criteria += "\n   - 「大雨に警戒」「外出危険」「嵐に備える」などの安全対策"
         
-        base += f"""{special_criteria}
+        # 悪天候時のアドバイス基準を追加
+        severe_weather_advice = ""
+        if any(severe in weather_data.weather_description.lower() for severe in ["大雨", "豪雨", "嵐", "暴風", "台風", "雷"]):
+            severe_weather_advice = f"""
+
+【重要】悪天候時のアドバイス基準:
+⚠️ 現在は「{weather_data.weather_description}」という危険な天候です
+- 「外出注意」「安全第一」「傘必携」などの安全対策を最優先
+- 「散歩」「お出かけ」「ピクニック」などの外出推奨は絶対に避ける
+- 悪天候に適した準備・対策のアドバイスを選択"""
+
+        base += f"""{special_criteria}{severe_weather_advice}
 
 選択基準:
-1. 気温による除外（{weather_data.temperature}°C）：
+1. 【最優先】悪天候時は安全対策・注意喚起のアドバイス
+2. 気温による除外（{weather_data.temperature}°C）：
    - {heat_threshold}°C未満で「熱中症」系は選択禁止
    - {cold_threshold}°C以上で「防寒」系は選択禁止
-2. 天気条件への適切性（雨なら濡れ対策等）
-3. 実用的で具体的なアドバイス{trend_advice}
+3. 天気条件への適切性（雨なら濡れ対策等、嵐なら外出控える等）
+4. 実用的で具体的なアドバイス{trend_advice}
 
 **重要**: 現在{weather_data.temperature}°Cなので、熱中症関連は{'選択禁止' if weather_data.temperature < heat_threshold else '選択可能'}です。"""
 

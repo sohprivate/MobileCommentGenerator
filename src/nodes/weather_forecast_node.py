@@ -649,7 +649,23 @@ def _select_priority_forecast(forecasts, target_datetime):
         return selected
     
     # 全て晴れの場合は、目標時刻に最も近いものを選択
-    selected = min(forecasts, key=lambda f: abs((f.datetime - target_datetime).total_seconds()))
+    # タイムゾーンの違いを解決するため、両方をnaive datetimeに統一
+    if target_datetime.tzinfo is not None:
+        # target_datetimeがタイムゾーン付きの場合、ナイーブに変換
+        target_naive = target_datetime.replace(tzinfo=None)
+    else:
+        target_naive = target_datetime
+    
+    def get_time_diff(f) -> float:
+        forecast_time = f.datetime
+        if forecast_time.tzinfo is not None:
+            # 予報時刻もナイーブに変換
+            forecast_naive = forecast_time.replace(tzinfo=None)
+        else:
+            forecast_naive = forecast_time
+        return abs((forecast_naive - target_naive).total_seconds())
+    
+    selected = min(forecasts, key=get_time_diff)
     logger.info(f"目標時刻に最も近い予報を選択: {selected.weather_description} ({selected.datetime})")
     return selected
 
