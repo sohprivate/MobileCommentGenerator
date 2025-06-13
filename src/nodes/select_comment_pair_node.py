@@ -210,7 +210,11 @@ def _should_exclude_weather_comment(comment_text: str, weather_data: WeatherFore
     
     # 雨天時の不適切なコメント
     if any(rain_word in current_weather for rain_word in ["雨", "小雨", "中雨", "大雨", "豪雨"]):
+        # 晴天関連のコメントを除外
         if any(sunny_word in comment_lower for sunny_word in ["青空", "晴れ", "快晴", "日差し", "太陽", "陽射し"]):
+            return True
+        # 外出推奨系コメントを除外
+        if any(outdoor_word in comment_lower for outdoor_word in ["お出かけ", "外出", "散歩", "ピクニック", "日和"]):
             return True
         # 軽い雨以外では穏やかなコメントも除外
         if any(heavy_rain in current_weather for heavy_rain in ["大雨", "豪雨"]):
@@ -263,7 +267,11 @@ def _should_exclude_advice_comment(comment_text: str, weather_data: WeatherForec
     
     # 雨天時の不適切なアドバイス
     if any(rain_word in current_weather for rain_word in ["雨", "小雨", "中雨", "大雨", "豪雨"]):
+        # 晴天向けアドバイスを除外
         if any(sunny_advice in comment_lower for sunny_advice in ["日焼け止め", "帽子", "サングラス", "日傘"]):
+            return True
+        # 外出推奨系アドバイスを除外
+        if any(outdoor_advice in comment_lower for outdoor_advice in ["お出かけ", "外出", "散歩", "ピクニック", "日和"]):
             return True
     
     # 晴天時の不適切なアドバイス
@@ -298,7 +306,8 @@ def _is_severe_weather_appropriate(comment_text: str, weather_data: WeatherForec
     severe_keywords = [
         "荒れ", "激し", "警戒", "注意", "不安定", "変わりやすい", 
         "スッキリしない", "崩れ", "悪化", "心配", "必須", "警報",
-        "視界", "慎重", "安全", "控えめ", "様子"
+        "視界", "慎重", "安全", "控えめ", "様子", "傘", "雨",
+        "ニワカ", "どんより", "じめじめ", "湿った"
     ]
     
     # 悪天候キーワードが含まれているか
@@ -319,7 +328,8 @@ def _is_severe_weather_advice_appropriate(comment_text: str, weather_data: Weath
     severe_advice_keywords = [
         "室内", "屋内", "安全", "慎重", "警戒", "注意",
         "早め", "備え", "確認", "中止", "延期", "控え",
-        "無理", "避け", "気をつけ", "余裕", "ゆっくり"
+        "無理", "避け", "気をつけ", "余裕", "ゆっくり",
+        "傘", "雨具", "濡れ", "心配", "必須", "お守り"
     ]
     
     # 悪天候アドバイスキーワードが含まれているか
