@@ -137,6 +137,7 @@ def generate_comment(request: CommentGenerationRequest):
                 'weather_condition': gen_metadata.get('weather_condition'),
                 'wind_speed': gen_metadata.get('wind_speed'),
                 'humidity': gen_metadata.get('humidity'),
+                'weather_timeline': gen_metadata.get('weather_timeline'),
                 'llm_provider': request.llm_provider
             }
             
