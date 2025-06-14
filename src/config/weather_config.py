@@ -34,7 +34,7 @@ class WeatherConfig:
     wxtech_api_key: str = field(default="")
     default_location: str = field(default="東京")
     forecast_hours: int = field(default=24)
-    forecast_hours_ahead: int = field(default=12)
+    forecast_hours_ahead: int = field(default=0)  # 現在時刻から予報を取得
     api_timeout: int = field(default=30)
     max_retries: int = field(default=3)
     rate_limit_delay: float = field(default=0.1)

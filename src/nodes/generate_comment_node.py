@@ -31,6 +31,8 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
         更新された状態（generated_comment追加）
     """
     try:
+        print("🔥🔥🔥 GENERATE_COMMENT_NODE CALLED 🔥🔥🔥")
+        logger.critical("🔥🔥🔥 GENERATE_COMMENT_NODE CALLED 🔥🔥🔥")
         logger.info("Starting comment generation")
 
         # 必要なデータの確認
@@ -64,7 +66,23 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
             selected_pair.advice_comment.comment_text if selected_pair.advice_comment else ""
         )
 
-        # 最終コメントは選択されたコメントをそのまま使用（間に全角スペース）
+        # 緊急安全チェック：完全に不適切な組み合わせを強制修正
+        logger.critical(f"🚨 最終安全チェック開始: 天気='{weather_data.weather_description}', 気温={weather_data.temperature}°C")
+        logger.critical(f"🚨 選択されたコメント: 天気='{weather_comment}', アドバイス='{advice_comment}'")
+        
+        # 雨天で熱中症警告は絶対に不適切
+        if "雨" in weather_data.weather_description and weather_data.temperature < 30.0 and advice_comment and "熱中症" in advice_comment:
+            logger.critical(f"🚨 緊急修正: 雨天+低温で熱中症警告を除外")
+            advice_comment = "雨にご注意を"
+            logger.critical(f"🚨 アドバイス修正完了: '{advice_comment}'")
+        
+        # 大雨・嵐でムシムシ暑いは不適切
+        if ("大雨" in weather_data.weather_description or "嵐" in weather_data.weather_description) and weather_comment and "ムシムシ" in weather_comment:
+            logger.critical(f"🚨 緊急修正: 悪天候でムシムシコメントを除外")
+            weather_comment = "荒れた天気"
+            logger.critical(f"🚨 天気コメント修正完了: '{weather_comment}'")
+
+        # 最終コメント構成
         if weather_comment and advice_comment:
             generated_comment = f"{weather_comment}　{advice_comment}"
         elif weather_comment:
