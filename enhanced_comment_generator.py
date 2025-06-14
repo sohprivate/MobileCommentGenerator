@@ -1,13 +1,21 @@
 import json
+import logging
 import os
 from collections import Counter, defaultdict
 
 import boto3
 import pandas as pd
 
-# 🔑 AWSプロファイル名を環境変数から取得（デフォルト: dit-training）
-aws_profile = os.getenv("AWS_PROFILE", "dit-training")
-session = boto3.Session(profile_name=aws_profile)
+# ロガー設定
+logger = logging.getLogger(__name__)
+
+# 🔑 AWSプロファイル名を環境変数から取得（デフォルトなし）
+aws_profile = os.getenv("AWS_PROFILE")
+if aws_profile:
+    session = boto3.Session(profile_name=aws_profile)
+else:
+    # デフォルト認証情報を使用
+    session = boto3.Session()
 s3 = session.client("s3")
 
 # 📂 S3バケット情報
@@ -181,7 +189,8 @@ def main():
                     weather_by_cat[cat].append(wc)
                 if adv:
                     advice_by_cat[cat].append(adv)
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                logger.warning(f"JSONDecodeError in line: {line[:50]}... Error: {e}")
                 continue
 
     extractor = SmartCommentExtractor()
