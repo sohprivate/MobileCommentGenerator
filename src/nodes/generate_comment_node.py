@@ -3,10 +3,9 @@
 LLMを使用して天気情報と過去コメントを基にコメントを生成する。
 """
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 import logging
 from datetime import datetime
-import yaml
 import os
 
 # langgraph nodeデコレータは新バージョンでは不要
@@ -16,6 +15,7 @@ from src.llm.llm_manager import LLMManager
 from src.data.weather_data import WeatherForecast
 from src.data.comment_pair import CommentPair
 from src.config.weather_config import get_config
+from src.utils.common_utils import get_season_from_month, get_time_period_from_hour
 
 logger = logging.getLogger(__name__)
 
@@ -183,53 +183,16 @@ def _get_time_period(target_datetime: Optional[datetime]) -> str:
     """時間帯を判定"""
     if not target_datetime:
         target_datetime = datetime.now()
-
-    hour = target_datetime.hour
-    if 5 <= hour < 10:
-        return "朝"
-    elif 10 <= hour < 17:
-        return "昼"
-    elif 17 <= hour < 21:
-        return "夕方"
-    else:
-        return "夜"
+    return get_time_period_from_hour(target_datetime.hour)
 
 
 def _get_season(target_datetime: Optional[datetime]) -> str:
     """季節を判定"""
     if not target_datetime:
         target_datetime = datetime.now()
-
-    month = target_datetime.month
-    if month in [3, 4, 5]:
-        return "春"
-    elif month in [6, 7, 8]:
-        return "夏"
-    elif month in [9, 10, 11]:
-        return "秋"
-    else:
-        return "冬"
+    return get_season_from_month(target_datetime.month)
 
 
-def _get_fallback_comment(weather_data: Optional[WeatherForecast]) -> str:
-    """フォールバックコメントを生成"""
-    if not weather_data:
-        return "今日も一日頑張ろう"
-
-    # シンプルな天気ベースのコメント
-    weather_comments = {
-        "晴れ": "晴れて気持ちいい",
-        "曇り": "曇り空ですね",
-        "雨": "傘をお忘れなく",
-        "雪": "雪に注意です",
-    }
-
-    weather_condition = weather_data.weather_description
-    for key, comment in weather_comments.items():
-        if key in weather_condition:
-            return comment
-
-    return "今日も良い一日を"
 
 
 def _analyze_temperature_differences(temperature_differences: Dict[str, Optional[float]], current_temp: float) -> Dict[str, Any]:
@@ -330,5 +293,4 @@ __all__ = [
     "_get_ng_words",
     "_get_time_period",
     "_get_season",
-    "_get_fallback_comment",
 ]

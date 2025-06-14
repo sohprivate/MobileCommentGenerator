@@ -1,9 +1,7 @@
 """コメントペア選択ノード - LLMを使用して適切なコメントペアを選択"""
 
-import json
 import logging
-import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 
 from src.data.comment_generation_state import CommentGenerationState
@@ -15,7 +13,7 @@ from src.config.comment_config import get_comment_config
 from src.config.severe_weather_config import get_severe_weather_config
 from src.data.forecast_cache import ForecastCache
 from src.utils.weather_comment_validator import WeatherCommentValidator
-from datetime import timedelta
+from src.utils.common_utils import SEVERE_WEATHER_PATTERNS, FORBIDDEN_PHRASES
 
 logger = logging.getLogger(__name__)
 
