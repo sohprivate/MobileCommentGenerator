@@ -56,6 +56,8 @@ dependencies = [
     "loguru>=0.7.2",
     "uvicorn[standard]>=0.34.3",
     "orjson>=3.10.18",
+    # Web Framework
+    "fastapi>=0.104.0",
 ]
 
 # オプション依存関係 - 用途別グループ化

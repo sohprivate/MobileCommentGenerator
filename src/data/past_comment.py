@@ -50,6 +50,7 @@ class PastComment:
     precipitation: Optional[float] = None
     source_file: Optional[str] = None
     raw_data: Dict[str, Any] = field(default_factory=dict)
+    usage_count: Optional[int] = None
 
     def __post_init__(self):
         """データクラス初期化後の検証処理"""
@@ -102,6 +103,7 @@ class PastComment:
             "wind_speed": self.wind_speed,
             "precipitation": self.precipitation,
             "source_file": self.source_file,
+            "usage_count": self.usage_count,
         }
 
     @classmethod
@@ -144,6 +146,7 @@ class PastComment:
             precipitation=data.get("precipitation"),
             source_file=source_file,
             raw_data=data.copy(),
+            usage_count=data.get("usage_count"),
         )
 
     def matches_weather_condition(self, target_condition: str, fuzzy: bool = True) -> bool:

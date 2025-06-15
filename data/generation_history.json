@@ -14707,5 +14707,289 @@
       }
     },
     "error": null
+  },
+  {
+    "timestamp": "2025-06-15T12:33:57.435384",
+    "location": "千葉",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空　紫外線対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1854,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-15T12:33:57.241889",
+      "location_name": "千葉",
+      "target_datetime": "2025-06-15T12:33:55.353545",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 24.0,
+      "humidity": 95.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-16T01:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/16 04:00",
+            "label": "+3h",
+            "weather": "くもり",
+            "temperature": 23.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 07:00",
+            "label": "+6h",
+            "weather": "くもり",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 10:00",
+            "label": "+9h",
+            "weather": "くもり",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 13:00",
+            "label": "+12h",
+            "weather": "くもり",
+            "temperature": 30.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 16:00",
+            "label": "+15h",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 19:00",
+            "label": "+18h",
+            "weather": "晴れ",
+            "temperature": 26.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 22:00",
+            "label": "+21h",
+            "weather": "晴れ",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/17 01:00",
+            "label": "+24h",
+            "weather": "晴れ",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [
+          {
+            "time": "06/15 13:00",
+            "label": "-12h",
+            "weather": "くもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/15 16:00",
+            "label": "-9h",
+            "weather": "うすぐもり",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/15 19:00",
+            "label": "-6h",
+            "weather": "くもり",
+            "temperature": 26.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/15 22:00",
+            "label": "-3h",
+            "weather": "くもり",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 01:00",
+            "label": "基準時刻",
+            "weather": "くもり",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          }
+        ],
+        "base_time": "2025-06-16T01:00:00+09:00",
+        "summary": {
+          "temperature_range": "23.0°C〜30.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "変わりやすい天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "紫外線対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空　紫外線対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1854,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-15T12:33:57.241889\",\n    \"location_name\": \"千葉\",\n    \"target_datetime\": \"2025-06-15T12:33:55.353545\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 24.0,\n    \"humidity\": 95.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-16T01:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/16 04:00\",\n          \"label\": \"+3h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 23.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 07:00\",\n          \"label\": \"+6h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 10:00\",\n          \"label\": \"+9h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 13:00\",\n          \"label\": \"+12h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 30.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 16:00\",\n          \"label\": \"+15h\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 19:00\",\n          \"label\": \"+18h\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 26.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 22:00\",\n          \"label\": \"+21h\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/17 01:00\",\n          \"label\": \"+24h\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [\n        {\n          \"time\": \"06/15 13:00\",\n          \"label\": \"-12h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/15 16:00\",\n          \"label\": \"-9h\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/15 19:00\",\n          \"label\": \"-6h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 26.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/15 22:00\",\n          \"label\": \"-3h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 01:00\",\n          \"label\": \"基準時刻\",\n          \"weather\": \"くもり\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"base_time\": \"2025-06-16T01:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"23.0°C〜30.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"変わりやすい天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"紫外線対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 193.30310821533203
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-15T12:53:20.117081",
+    "location": "千葉",
+    "llm_provider": "openai",
+    "final_comment": "スッキリしない空　紫外線対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 4536,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-15T12:53:19.904891",
+      "location_name": "千葉",
+      "target_datetime": "2025-06-15T12:53:14.988046",
+      "llm_provider": "openai",
+      "weather_condition": "くもり",
+      "temperature": 24.0,
+      "humidity": 95.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-16T01:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/16 04:00",
+            "label": "+3h",
+            "weather": "くもり",
+            "temperature": 23.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 07:00",
+            "label": "+6h",
+            "weather": "くもり",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 10:00",
+            "label": "+9h",
+            "weather": "くもり",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 13:00",
+            "label": "+12h",
+            "weather": "くもり",
+            "temperature": 30.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 16:00",
+            "label": "+15h",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 19:00",
+            "label": "+18h",
+            "weather": "晴れ",
+            "temperature": 26.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 22:00",
+            "label": "+21h",
+            "weather": "晴れ",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/17 01:00",
+            "label": "+24h",
+            "weather": "晴れ",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [
+          {
+            "time": "06/15 13:00",
+            "label": "-12h",
+            "weather": "くもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/15 16:00",
+            "label": "-9h",
+            "weather": "うすぐもり",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/15 19:00",
+            "label": "-6h",
+            "weather": "くもり",
+            "temperature": 26.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/15 22:00",
+            "label": "-3h",
+            "weather": "くもり",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/16 01:00",
+            "label": "基準時刻",
+            "weather": "くもり",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          }
+        ],
+        "base_time": "2025-06-16T01:00:00+09:00",
+        "summary": {
+          "temperature_range": "23.0°C〜30.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "変わりやすい天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "紫外線対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空　紫外線対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 4536,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-15T12:53:19.904891\",\n    \"location_name\": \"千葉\",\n    \"target_datetime\": \"2025-06-15T12:53:14.988046\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 24.0,\n    \"humidity\": 95.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-16T01:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/16 04:00\",\n          \"label\": \"+3h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 23.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 07:00\",\n          \"label\": \"+6h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 10:00\",\n          \"label\": \"+9h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 13:00\",\n          \"label\": \"+12h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 30.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 16:00\",\n          \"label\": \"+15h\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 19:00\",\n          \"label\": \"+18h\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 26.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 22:00\",\n          \"label\": \"+21h\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/17 01:00\",\n          \"label\": \"+24h\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [\n        {\n          \"time\": \"06/15 13:00\",\n          \"label\": \"-12h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/15 16:00\",\n          \"label\": \"-9h\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/15 19:00\",\n          \"label\": \"-6h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 26.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/15 22:00\",\n          \"label\": \"-3h\",\n          \"weather\": \"くもり\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/16 01:00\",\n          \"label\": \"基準時刻\",\n          \"weather\": \"くもり\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"base_time\": \"2025-06-16T01:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"23.0°C〜30.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"変わりやすい天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"紫外線対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 211.67516708374023
+      }
+    },
+    "error": null
   }
 ]

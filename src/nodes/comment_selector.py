@@ -280,7 +280,8 @@ class CommentSelector:
             'comment': comment.comment_text,
             'weather_condition': comment.weather_condition or "不明",
             'original_index': original_index,
-            'usage_count': comment.usage_count or 0
+            'usage_count': comment.usage_count or 0,
+            'comment_object': comment  # 元のcommentオブジェクトを保持
         }
     
     def _llm_select_comment(
@@ -299,15 +300,8 @@ class CommentSelector:
         # 簡易実装：最初の候補を返す（本来はLLMで選択）
         try:
             selected_candidate = candidates[0]
-            comment_text = selected_candidate['comment']
-            
-            # PastCommentオブジェクトを作成
-            return PastComment(
-                comment_text=comment_text,
-                comment_type=comment_type,
-                weather_condition=selected_candidate.get('weather_condition'),
-                usage_count=selected_candidate.get('usage_count', 0)
-            )
+            # 元のPastCommentオブジェクトを返す
+            return selected_candidate['comment_object']
         except (IndexError, KeyError) as e:
             logger.error(f"コメント選択エラー: {e}")
             return None
