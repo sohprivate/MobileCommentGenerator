@@ -9,12 +9,13 @@ LangGraphとLLMを活用した天気予報コメント自動生成システム�
 ## 🗂️ プロジェクト構成
 
 ```
-mobile-comment-generator/
+MobileCommentGenerator/
 ├── src/                        # バックエンドPythonアプリケーション
-│   ├── data/                   # データクラス管理
+│   ├── data/                   # データクラス・管理
 │   │   ├── comment_generation_state.py  # ワークフロー状態管理
 │   │   ├── comment_pair.py     # コメントペアデータモデル
 │   │   ├── evaluation_criteria.py      # 評価基準定義
+│   │   ├── forecast_cache.py   # 天気予報キャッシュ管理
 │   │   ├── location_manager.py # 地点データ管理
 │   │   ├── past_comment.py     # 過去コメント管理
 │   │   ├── weather_data.py     # 天気データモデル
@@ -30,6 +31,7 @@ mobile-comment-generator/
 │   │   ├── weather_forecast_node.py    # 天気予報取得ノード
 │   │   ├── retrieve_past_comments_node.py # 過去コメント取得ノード
 │   │   ├── select_comment_pair_node.py  # コメント選択ノード
+│   │   ├── comment_selector.py # コメント選択ロジック
 │   │   ├── evaluate_candidate_node.py   # 候補評価ノード
 │   │   ├── generate_comment_node.py     # コメント生成ノード
 │   │   ├── output_node.py      # 出力ノード
@@ -49,6 +51,9 @@ mobile-comment-generator/
 │   ├── repositories/           # データリポジトリ
 │   │   ├── local_comment_repository.py # ローカルデータアクセス
 │   │   └── s3_comment_repository.py    # S3データアクセス
+│   ├── utils/                  # ユーティリティ
+│   │   ├── common_utils.py     # 共通ユーティリティ
+│   │   └── weather_comment_validator.py # 天気コメント検証
 │   ├── ui/                     # Streamlit UI
 │   │   ├── streamlit_components.py     # UIコンポーネント
 │   │   ├── streamlit_utils.py  # UIユーティリティ
@@ -56,28 +61,50 @@ mobile-comment-generator/
 │   │       └── statistics.py   # 統計情報ページ
 │   └── config/                 # 設定管理
 │       ├── weather_config.py   # 天気予報設定
-│       └── comment_config.py   # コメント生成設定
-├── frontend/                   # Vue.js/Nuxt.jsプロジェクト（分離済み）
-├── tests/                      # テストスイート
-│   ├── integration/            # 統合テスト専用
-│   └── test_*.py               # 各種ユニットテスト
-├── scripts/                    # ユーティリティスクリプト
-├── data/                       # データファイル（CSV等）
-├── output/                     # 生成されたCSVファイル
-├── config/                     # 設定ファイル
-├── docs/                       # ドキュメント
-├── .env.example                # 環境変数例
+│       ├── comment_config.py   # コメント生成設定
+│       ├── config_loader.py    # 設定ローダー
+│       └── severe_weather_config.py # 悪天候設定
+├── frontend/                   # Vue.js/Nuxt.jsフロントエンド（完全分離）
+│   ├── pages/                  # ページコンポーネント
+│   │   └── index.vue           # メインページ（全体レイアウト・状態管理）
+│   ├── components/             # UIコンポーネント
+│   │   ├── LocationSelection.vue    # 地点選択（地域別リスト・検索機能）
+│   │   ├── GenerateSettings.vue     # 生成設定（LLMプロバイダー選択）
+│   │   ├── GeneratedComment.vue     # 生成結果表示（コメント・履歴）
+│   │   └── WeatherData.vue          # 天気データ表示（予報情報・詳細）
+│   ├── composables/            # Composition API
+│   │   └── useApi.ts           # API呼び出し（REST通信・エラーハンドリング）
+│   ├── constants/              # 定数定義
+│   │   ├── locations.ts        # 地点データ（全国地点リスト）
+│   │   └── regions.ts          # 地域データ（地域分類・表示順）
+│   ├── types/                  # TypeScript型定義
+│   │   └── index.ts           # API・UIの型定義
+│   ├── app.vue                 # アプリ全体のレイアウト
+│   ├── nuxt.config.ts          # Nuxt設定（UI・モジュール設定）
+│   ├── package.json            # Node.js依存関係
+│   └── start_frontend.sh       # フロントエンド起動スクリプト
+├── api_server.py               # FastAPI APIサーバー
 ├── app.py                      # Streamlitメインエントリポイント
-├── enhanced_comment_generator.py # 拡張コメント生成器
-├── tests/                      # テストファイル
-│   ├── unit/                  # 単体テスト
-│   └── integration/           # 統合テスト
-│       └── test_weather_validation_system.py  # 天気検証システム統合テスト
-├── requirements.txt            # Python依存関係
-├── requirements-dev.txt        # 開発用依存関係
-├── requirements-streamlit.txt  # Streamlit用依存関係
-├── pyproject.toml              # プロジェクト設定
-├── pytest.ini                  # pytest設定
+├── start_api.sh                # APIサーバー起動スクリプト
+├── data/                       # データファイル
+│   ├── forecast_cache/         # 天気予報キャッシュ
+│   └── generation_history.json # 生成履歴
+├── config/                     # 設定ファイル（YAML）
+│   ├── weather_thresholds.yaml # 天気閾値設定
+│   ├── expression_rules.yaml   # 表現ルール
+│   ├── ng_words.yaml           # NGワード
+│   └── llm_config.yaml         # LLM設定
+├── output/                     # 生成されたCSVファイル・分析結果
+├── tests/                      # テストスイート
+│   ├── integration/            # 統合テスト
+│   └── test_*.py               # 各種ユニットテスト
+├── docs/                       # ドキュメント
+├── scripts/                    # ユーティリティスクリプト
+├── examples/                   # サンプルコード
+├── pyproject.toml              # プロジェクト設定・依存関係
+├── uv.lock                     # uvロックファイル
+├── requirements*.txt           # 従来の依存関係ファイル
+├── pytest.ini                 # pytest設定
 ├── mypy.ini                    # mypy設定
 ├── Makefile                    # ビルド・実行スクリプト
 ├── setup.sh                    # セットアップスクリプト
@@ -91,7 +118,9 @@ mobile-comment-generator/
 - **適応性ベース選択**: 過去コメントから最適なペアを選択
 - **表現ルール適用**: NGワード・文字数制限の自動チェック
 - **12時間後天気予報**: デフォルトで12時間後の天気データを使用
-- **複合UI実装**: Streamlit（バックエンド）+ Nuxt.js（フロントエンド・分離済み）
+- **デュアルUI実装**: Streamlit（開発用）+ Vue.js/Nuxt.js（本番用）
+- **FastAPI統合**: RESTful APIでフロントエンドとバックエンドを分離
+- **天気予報キャッシュ**: 効率的な天気データ管理とキャッシュ機能
 
 ## 📊 現在の進捗状況
 
@@ -117,11 +146,12 @@ mobile-comment-generator/
 - [x] **CSV出力**: 生成結果のエクスポート機能
 - [x] **エラーハンドリング**: ユーザーフレンドリーなエラー表示
 
-### 🔧 Phase 4: フロントエンド分離（部分完了）
+### ✅ Phase 4: フロントエンド分離（100%完了）
 - [x] **フロントエンド分離**: Vue.js/Nuxt.jsを独立プロジェクトに移行
 - [x] **プロジェクト構造の明確化**: frontend/とsrc/の責任分離
-- [ ] **API実装**: RESTful APIエンドポイント
-- [ ] **統合ドキュメント**: フロントエンド・バックエンド連携ガイド
+- [x] **API実装**: FastAPI RESTful APIエンドポイント完成
+- [x] **統合ドキュメント**: フロントエンド・バックエンド連携ガイド
+- [x] **UIコンポーネント**: 地点選択・設定・結果表示の完全実装
 
 ### 🚀 Phase 5: デプロイメント（0%完了）
 - [ ] **AWSデプロイメント**: Lambda/ECS・CloudWatch統合
@@ -162,57 +192,26 @@ npm run dev
 - API: http://localhost:8000
 - APIドキュメント: http://localhost:8000/docs
 
-### その他のセットアップ方法
+### 代替セットアップ方法
 
-#### Method 1: 自動セットアップスクリプト
+#### Streamlit版（開発・デバッグ用）
 
 ```bash
-# 1. リポジトリクローン
-git clone https://github.com/sakamo-wni/MobileCommentGenerator.git
-cd MobileCommentGenerator
+# 仮想環境がすでに作成されている場合
+uv run streamlit run app.py
+```
 
-# 2. ワンコマンドセットアップ
+#### その他のスクリプト
+
+```bash
+# セットアップスクリプト使用
 chmod +x setup.sh
 ./setup.sh dev
 
-# 3. 仮想環境有効化
-source .venv/bin/activate
-
-# 4. 動作確認
-python -c "import langgraph; print('✅ Setup successful!')"
-```
-
-#### Method 2: Makefileを使用
-
-```bash
-# 1. リポジトリクローン
-git clone https://github.com/sakamo-wni/MobileCommentGenerator.git
-cd MobileCommentGenerator
-
-# 2. ワンコマンドセットアップ
+# Makefile使用
 make setup
-
-# 3. 仮想環境有効化
-source .venv/bin/activate
-
-# 4. 利用可能なコマンド確認
 make help
 ```
-
-### フロントエンド
-
-```bash
-# フロントエンドディレクトリへ移動
-cd frontend
-
-# 依存関係インストール
-npm install
-
-# 開発サーバー起動
-npm run dev
-```
-
-ブラウザで http://localhost:3000 を開いてください
 
 ## 🔑 API キー設定
 
@@ -269,27 +268,98 @@ WEATHER_FORECAST_HOURS_AHEAD=3
 
 **注意**: この設定により、すべてのコンポーネントで統一的に指定した時間後の予報が使用されます。
 
+## 🎨 フロントエンド詳細
+
+### 📁 ファイル構成と役割
+
+| ファイル | 役割 | 主な機能 |
+|---------|------|----------|
+| **pages/index.vue** | メインページ | 全体レイアウト・状態管理・ページ全体の制御 |
+| **app.vue** | アプリケーションルート | グローバルスタイル・共通レイアウト |
+| **components/LocationSelection.vue** | 地点選択コンポーネント | 地域別地点リスト・検索・フィルタリング機能 |
+| **components/GenerateSettings.vue** | 設定コンポーネント | LLMプロバイダー選択・生成オプション設定 |
+| **components/GeneratedComment.vue** | 結果表示コンポーネント | 生成コメント表示・履歴・コピー機能 |
+| **components/WeatherData.vue** | 天気情報コンポーネント | 現在・予報天気データ・詳細情報表示 |
+| **composables/useApi.ts** | API通信層 | REST API呼び出し・エラーハンドリング・ローディング状態 |
+| **constants/locations.ts** | 地点データ | 全国地点の座標・名称・地域分類 |
+| **constants/regions.ts** | 地域データ | 地域別表示順・カテゴリ分類 |
+| **types/index.ts** | 型定義 | TypeScript型・API仕様・UI状態の型定義 |
+
+### 🔄 状態管理
+
+```typescript
+// pages/index.vue での主要な状態
+const selectedLocation = ref<Location | null>(null)
+const generatedComment = ref<GeneratedComment | null>(null)
+const isGenerating = ref(false)
+const error = ref<string | null>(null)
+```
+
+### 🌐 API通信
+
+```typescript
+// composables/useApi.ts
+export const useApi = () => {
+  // 地点一覧取得
+  const getLocations = async (): Promise<Location[]>
+  
+  // コメント生成
+  const generateComment = async (params: GenerateSettings): Promise<GeneratedComment>
+  
+  // 生成履歴取得
+  const getHistory = async (): Promise<GeneratedComment[]>
+}
+```
+
+### 🎯 UI機能詳細
+
+#### LocationSelection.vue
+- **地域フィルタ**: 北海道、東北、関東等の地域別表示
+- **検索機能**: 地点名による絞り込み検索
+- **お気に入り**: よく使う地点の保存・優先表示
+- **レスポンシブ**: モバイル・タブレット対応
+
+#### GenerateSettings.vue
+- **LLMプロバイダー選択**: OpenAI・Gemini・Anthropic
+- **APIキー状態表示**: 設定済みプロバイダーのアイコン表示
+- **生成オプション**: 詳細設定（将来拡張用）
+
+#### GeneratedComment.vue
+- **コメント表示**: 天気コメント・アドバイス両方表示
+- **コピー機能**: ワンクリックでクリップボードにコピー
+- **生成履歴**: 過去の生成結果を時系列表示
+- **エクスポート**: CSV形式でのダウンロード
+
+#### WeatherData.vue
+- **現在天気**: リアルタイム天気情報
+- **12時間予報**: デフォルト予報時刻の詳細表示
+- **気温推移**: グラフィカルな温度変化表示
+- **警報情報**: 悪天候時の注意喚起表示
+
 ## 🚀 使用方法
 
-### Streamlit UI（推奨）
+### Vue.js フロントエンド（推奨）
 
 ```bash
-make run-streamlit
+uv run ./start_api.sh
+```
+
+1. ブラウザで http://localhost:3000 を開く
+2. 地点選択から目的の地点を選択
+3. LLMプロバイダーを選択
+4. 「コメント生成」ボタンをクリック
+5. 生成されたコメントと天気情報を確認
+
+### Streamlit UI（開発・デバッグ用）
+
+```bash
+uv run streamlit run app.py
 ```
 
 1. ブラウザで http://localhost:8501 を開く
 2. 左パネルから地点とLLMプロバイダーを選択
 3. 「コメント生成」ボタンをクリック
 4. 生成されたコメントと詳細情報を確認
-
-### フロントエンド（Vue.js）
-
-```bash
-make run-frontend
-```
-
-1. ブラウザで http://localhost:3000 を開く
-2. モダンなWebUIでコメント生成機能を利用
 
 ### プログラマティック使用
 
@@ -311,17 +381,17 @@ print(f"生成コメント: {result['final_comment']}")
 
 ```bash
 # アプリ起動
-make run-streamlit                      # Streamlit UI
-make run-frontend                       # Vue.js フロントエンド
+uv run ./start_api.sh                   # FastAPI + フロントエンド
+uv run streamlit run app.py             # Streamlit UI（デバッグ用）
 
 # 開発ツール
-make test                               # テスト実行
+uv run pytest                           # テスト実行
 make lint                               # コード品質チェック
 make format                             # コードフォーマット
 
 # メンテナンス
 make clean                              # 一時ファイル削除
-make update-deps                        # 依存関係更新
+uv sync                                 # 依存関係更新
 ```
 
 ## 🧪 テスト
@@ -368,9 +438,10 @@ make type-check                         # 型チェック
 - OpenAI/Gemini/Anthropic APIs
 
 **フロントエンド:**
-- Vue.js 3.5.16
-- Nuxt.js 3.17.4
-- TypeScript 5.3.0
+- Vue.js 3.5+
+- Nuxt.js 3.17+
+- TypeScript 5.3+
+- FastAPI 0.104+
 
 **データ処理:**
 - Pandas 2.1.4+
@@ -382,9 +453,9 @@ make type-check                         # 型チェック
 - AWS CLI 1.32.0+
 
 ### メタデータ
-- **バージョン**: 1.0.0
+- **バージョン**: 1.1.0
 - **ライセンス**: MIT
-- **最終更新**: 2025-06-12
+- **最終更新**: 2025-06-15
 - **開発チーム**: WNI Team
 
 ## 🎯 パフォーマンス
@@ -396,7 +467,8 @@ make type-check                         # 型チェック
 
 ## 🔄 更新履歴
 
-- **v1.0.0** (2025-06-12): Phase 3完了 - Streamlit UI実装・README.md更新
+- **v1.1.0** (2025-06-15): FastAPI統合・フロントエンド分離完了・PastComment修正
+- **v1.0.0** (2025-06-12): Phase 4完了 - Vue.js/Nuxt.jsフロントエンド実装
 - **v0.3.0** (2025-06-06): Phase 2完了 - LangGraphワークフロー実装
 - **v0.2.0** (2025-06-04): Phase 1完了 - 基礎機能実装
 - **v0.1.0** (2025-06-01): プロジェクト開始
