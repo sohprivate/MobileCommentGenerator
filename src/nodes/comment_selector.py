@@ -253,14 +253,164 @@ class CommentSelector:
     
     # ヘルパーメソッド（既存のprivate関数から移行）
     def _should_exclude_weather_comment(self, comment_text: str, weather_data: WeatherForecast) -> bool:
-        """天気コメントを除外すべきかチェック"""
-        # 簡単な実装（詳細は既存のロジックを移行）
-        return False
+        """天気コメントを除外すべきかチェック（YAML設定ベース）"""
+        try:
+            from pathlib import Path
+            
+            # yamlモジュールのインポートを条件付きで実行
+            try:
+                import yaml
+            except ImportError:
+                logger.debug("PyYAMLがインストールされていません。基本チェックのみ実行")
+                return False
+            
+            try:
+                from src.config.weather_constants import TemperatureThresholds, HumidityThresholds, PrecipitationThresholds
+            except ImportError:
+                logger.debug("weather_constants.pyが見つかりません。基本チェックのみ実行")
+                return False
+            
+            # YAML設定ファイル読み込み
+            config_path = Path(__file__).parent.parent / "config" / "comment_restrictions.yaml"
+            if not config_path.exists():
+                logger.debug("comment_restrictions.yaml が見つかりません。基本チェックのみ実行")
+                return False
+            
+            with open(config_path, 'r', encoding='utf-8') as f:
+                restrictions = yaml.safe_load(f)
+            
+            # 天気条件による除外チェック
+            weather_desc = weather_data.weather_description.lower()
+            
+            # 雨天時のチェック
+            if any(keyword in weather_desc for keyword in ['雨', 'rain']):
+                if weather_data.precipitation >= PrecipitationThresholds.HEAVY_RAIN:
+                    forbidden_list = restrictions.get('weather_restrictions', {}).get('heavy_rain', {}).get('weather_comment_forbidden', [])
+                else:
+                    forbidden_list = restrictions.get('weather_restrictions', {}).get('rain', {}).get('weather_comment_forbidden', [])
+                
+                for forbidden in forbidden_list:
+                    if forbidden in comment_text:
+                        logger.debug(f"雨天時の禁止ワード「{forbidden}」でコメント除外: {comment_text}")
+                        return True
+            
+            # 晴天時のチェック
+            elif any(keyword in weather_desc for keyword in ['晴', 'clear', 'sunny']):
+                forbidden_list = restrictions.get('weather_restrictions', {}).get('sunny', {}).get('weather_comment_forbidden', [])
+                for forbidden in forbidden_list:
+                    if forbidden in comment_text:
+                        logger.debug(f"晴天時の禁止ワード「{forbidden}」でコメント除外: {comment_text}")
+                        return True
+            
+            # 曇天時のチェック
+            elif any(keyword in weather_desc for keyword in ['曇', 'cloud']):
+                forbidden_list = restrictions.get('weather_restrictions', {}).get('cloudy', {}).get('weather_comment_forbidden', [])
+                for forbidden in forbidden_list:
+                    if forbidden in comment_text:
+                        logger.debug(f"曇天時の禁止ワード「{forbidden}」でコメント除外: {comment_text}")
+                        return True
+            
+            # 気温による除外チェック
+            temp = weather_data.temperature
+            temp_restrictions = restrictions.get('temperature_restrictions', {})
+            
+            if temp >= TemperatureThresholds.HOT_WEATHER:
+                forbidden_list = temp_restrictions.get('hot_weather', {}).get('forbidden_keywords', [])
+            elif temp < TemperatureThresholds.COLD_COMMENT_THRESHOLD:
+                forbidden_list = temp_restrictions.get('cold_weather', {}).get('forbidden_keywords', [])
+            else:
+                forbidden_list = temp_restrictions.get('mild_weather', {}).get('forbidden_keywords', [])
+            
+            for forbidden in forbidden_list:
+                if forbidden in comment_text:
+                    logger.debug(f"気温条件「{temp}°C」で禁止ワード「{forbidden}」によりコメント除外: {comment_text}")
+                    return True
+            
+            # 湿度による除外チェック
+            humidity = weather_data.humidity
+            humidity_restrictions = restrictions.get('humidity_restrictions', {})
+            
+            if humidity >= HumidityThresholds.HIGH_HUMIDITY:
+                forbidden_list = humidity_restrictions.get('high_humidity', {}).get('forbidden_keywords', [])
+            elif humidity < HumidityThresholds.LOW_HUMIDITY:
+                forbidden_list = humidity_restrictions.get('low_humidity', {}).get('forbidden_keywords', [])
+            else:
+                forbidden_list = []
+            
+            for forbidden in forbidden_list:
+                if forbidden in comment_text:
+                    logger.debug(f"湿度条件「{humidity}%」で禁止ワード「{forbidden}」によりコメント除外: {comment_text}")
+                    return True
+            
+            return False
+            
+        except Exception as e:
+            logger.warning(f"YAML設定チェック中にエラー: {e}")
+            return False
     
     def _should_exclude_advice_comment(self, comment_text: str, weather_data: WeatherForecast) -> bool:
-        """アドバイスコメントを除外すべきかチェック"""
-        # 簡単な実装（詳細は既存のロジックを移行）
-        return False
+        """アドバイスコメントを除外すべきかチェック（YAML設定ベース）"""
+        try:
+            from pathlib import Path
+            
+            # yamlモジュールのインポートを条件付きで実行
+            try:
+                import yaml
+            except ImportError:
+                logger.debug("PyYAMLがインストールされていません。基本チェックのみ実行")
+                return False
+            
+            try:
+                from src.config.weather_constants import PrecipitationThresholds
+            except ImportError:
+                logger.debug("weather_constants.pyが見つかりません。基本チェックのみ実行")
+                return False
+            
+            # YAML設定ファイル読み込み
+            config_path = Path(__file__).parent.parent / "config" / "comment_restrictions.yaml"
+            if not config_path.exists():
+                logger.debug("comment_restrictions.yaml が見つかりません。基本チェックのみ実行")
+                return False
+            
+            with open(config_path, 'r', encoding='utf-8') as f:
+                restrictions = yaml.safe_load(f)
+            
+            # 天気条件による除外チェック
+            weather_desc = weather_data.weather_description.lower()
+            
+            # 雨天時のチェック
+            if any(keyword in weather_desc for keyword in ['雨', 'rain']):
+                if weather_data.precipitation >= PrecipitationThresholds.HEAVY_RAIN:
+                    forbidden_list = restrictions.get('weather_restrictions', {}).get('heavy_rain', {}).get('advice_forbidden', [])
+                else:
+                    forbidden_list = restrictions.get('weather_restrictions', {}).get('rain', {}).get('advice_forbidden', [])
+                
+                for forbidden in forbidden_list:
+                    if forbidden in comment_text:
+                        logger.debug(f"雨天時の禁止ワード「{forbidden}」でアドバイス除外: {comment_text}")
+                        return True
+            
+            # 晴天時のチェック
+            elif any(keyword in weather_desc for keyword in ['晴', 'clear', 'sunny']):
+                forbidden_list = restrictions.get('weather_restrictions', {}).get('sunny', {}).get('advice_forbidden', [])
+                for forbidden in forbidden_list:
+                    if forbidden in comment_text:
+                        logger.debug(f"晴天時の禁止ワード「{forbidden}」でアドバイス除外: {comment_text}")
+                        return True
+            
+            # 曇天時のチェック
+            elif any(keyword in weather_desc for keyword in ['曇', 'cloud']):
+                forbidden_list = restrictions.get('weather_restrictions', {}).get('cloudy', {}).get('advice_forbidden', [])
+                for forbidden in forbidden_list:
+                    if forbidden in comment_text:
+                        logger.debug(f"曇天時の禁止ワード「{forbidden}」でアドバイス除外: {comment_text}")
+                        return True
+            
+            return False
+            
+        except Exception as e:
+            logger.warning(f"YAML設定チェック中にエラー: {e}")
+            return False
     
     def _is_severe_weather_appropriate(self, comment_text: str, weather_data: WeatherForecast) -> bool:
         """悪天候に適したコメントかチェック"""
@@ -391,28 +541,71 @@ class CommentSelector:
 - 風速: {weather_data.wind_speed}m/s
 """
         
-        # 時系列変化情報を追加（stateから取得可能な場合）
+        # 時系列変化情報を追加（フォールバック戦略付き）
         try:
             from src.data.forecast_cache import ForecastCache
             cache = ForecastCache()
             
+            forecast_data_found = False
+            
             # 3時間間隔で予報を取得
             forecast_hours = [-12, -6, -3, 3, 6, 12]
             for hours in forecast_hours:
-                forecast_datetime = target_datetime + timedelta(hours=hours)
-                if forecast_datetime.tzinfo is None and target_datetime.tzinfo is not None:
-                    forecast_datetime = forecast_datetime.replace(tzinfo=target_datetime.tzinfo)
-                forecast = cache.get_forecast_at_time(location_name, forecast_datetime)
-                if forecast:
-                    if hours < 0:
-                        temp_diff = weather_data.temperature - forecast.temperature
-                        context += f"- {abs(hours)}時間前: {forecast.temperature}°C ({temp_diff:+.1f}°C差), {forecast.weather_description}\n"
-                    else:
-                        temp_diff = forecast.temperature - weather_data.temperature
-                        context += f"- {hours}時間後: {forecast.temperature}°C ({temp_diff:+.1f}°C変化), {forecast.weather_description}\n"
+                try:
+                    forecast_datetime = target_datetime + timedelta(hours=hours)
+                    if forecast_datetime.tzinfo is None and target_datetime.tzinfo is not None:
+                        forecast_datetime = forecast_datetime.replace(tzinfo=target_datetime.tzinfo)
+                    forecast = cache.get_forecast_at_time(location_name, forecast_datetime)
+                    if forecast:
+                        forecast_data_found = True
+                        if hours < 0:
+                            temp_diff = weather_data.temperature - forecast.temperature
+                            context += f"- {abs(hours)}時間前: {forecast.temperature}°C ({temp_diff:+.1f}°C差), {forecast.weather_description}\n"
+                        else:
+                            temp_diff = forecast.temperature - weather_data.temperature
+                            context += f"- {hours}時間後: {forecast.temperature}°C ({temp_diff:+.1f}°C変化), {forecast.weather_description}\n"
+                except Exception as inner_e:
+                    logger.debug(f"{hours}時間後の予報取得エラー: {inner_e}")
+                    continue
+            
+            # フォールバック: 時系列データが取得できない場合の代替情報
+            if not forecast_data_found:
+                logger.warning("時系列データが取得できませんでした。基本情報のみで判断します。")
+                # 季節と現在気温から簡易的な傾向を推定
+                month = target_datetime.month
+                temp = weather_data.temperature
+                
+                # 季節的傾向の推定
+                if month in [12, 1, 2]:  # 冬
+                    if temp > 15:
+                        context += "- 冬としては暖かめの気温です\n"
+                    elif temp < 5:
+                        context += "- 冬らしい寒さです\n"
+                elif month in [6, 7, 8]:  # 夏
+                    if temp > 30:
+                        context += "- 真夏の暑さです\n"
+                    elif temp < 25:
+                        context += "- 夏としては涼しめです\n"
+                elif month in [3, 4, 5]:  # 春
+                    context += "- 春らしい気候です\n"
+                elif month in [9, 10, 11]:  # 秋
+                    context += "- 秋らしい気候です\n"
+                
+                # 時刻による推定
+                hour = target_datetime.hour
+                if 6 <= hour <= 10:
+                    context += "- 朝の時間帯です\n"
+                elif 11 <= hour <= 14:
+                    context += "- 昼間の時間帯（気温上昇期）です\n"
+                elif 15 <= hour <= 18:
+                    context += "- 午後の時間帯です\n"
+                else:
+                    context += "- 夜間の時間帯（気温下降期）です\n"
                 
         except Exception as e:
-            logger.debug(f"時系列データ取得エラー: {e}")
+            logger.warning(f"時系列データ取得で予期しないエラー: {e}")
+            # 完全フォールバック: 最小限の情報を追加
+            context += "- 時系列データは利用できませんが、現在の気象状況から判断してください\n"
         
         return context
     
@@ -447,18 +640,57 @@ class CommentSelector:
 """
     
     def _extract_selected_index(self, response: str, max_index: int) -> Optional[int]:
-        """LLMレスポンスから選択インデックスを抽出"""
+        """LLMレスポンスから選択インデックスを抽出（堅牢化）"""
         import re
         
-        # 数字のみを抽出
-        numbers = re.findall(r'\d+', response.strip())
+        response_clean = response.strip()
         
-        if numbers:
+        # パターン1: 単純な数字のみの回答（最優先）
+        if re.match(r'^\d+$', response_clean):
             try:
-                index = int(numbers[0])
+                index = int(response_clean)
                 if 0 <= index < max_index:
                     return index
             except ValueError:
                 pass
         
+        # パターン2: 行頭の数字（例: "3\n説明文..."）
+        match = re.match(r'^(\d+)', response_clean)
+        if match:
+            try:
+                index = int(match.group(1))
+                if 0 <= index < max_index:
+                    return index
+            except ValueError:
+                pass
+        
+        # パターン3: 「答え: 2」「選択: 5」などの形式
+        patterns = [
+            r'(?:答え|選択|回答|結果)[:：]\s*(\d+)',
+            r'(\d+)\s*(?:番|番目)',
+            r'インデックス[:：]\s*(\d+)',
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, response_clean, re.IGNORECASE)
+            if match:
+                try:
+                    index = int(match.group(1))
+                    if 0 <= index < max_index:
+                        return index
+                except ValueError:
+                    continue
+        
+        # パターン4: 最後の手段として最初に見つかった数字（但し範囲内のもの）
+        numbers = re.findall(r'\d+', response_clean)
+        for num_str in numbers:
+            try:
+                index = int(num_str)
+                if 0 <= index < max_index:
+                    logger.warning(f"数値抽出: フォールバック使用 - '{response_clean}' -> {index}")
+                    return index
+            except ValueError:
+                continue
+        
+        logger.error(f"数値抽出失敗: '{response_clean}' (範囲: 0-{max_index-1})")
         return None
