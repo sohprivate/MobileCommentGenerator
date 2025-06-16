@@ -53,6 +53,12 @@ generation:
   advice_candidates_limit: 100   # アドバイスコメント候補数を大幅増加
   fallback_candidates_limit: 20  # フォールバック候補数も増加
   
+  # 候補カテゴリ別比率
+  candidate_ratios:
+    severe_weather: 0.4  # 悪天候の比率
+    weather_matched: 0.4  # 天気マッチの比率
+    others: 0.2  # その他の比率
+  
   # デフォルト値
   default_llm_provider: "openai"
   default_forecast_hours: 24  # 翌日9:00-18:00の予報に対応

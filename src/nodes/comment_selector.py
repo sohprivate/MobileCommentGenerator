@@ -181,9 +181,19 @@ class CommentSelector:
         except:
             limit = 100  # デフォルト値
         
-        # 各カテゴリの制限を計算（比率: 悪天候40%, 天気マッチ40%, その他20%）
-        severe_limit = int(limit * 0.4)
-        weather_limit = int(limit * 0.4) 
+        # 設定ファイルから候補比率を取得
+        try:
+            ratios = config.get('generation', {}).get('candidate_ratios', {})
+            severe_ratio = ratios.get('severe_weather', 0.4)
+            weather_ratio = ratios.get('weather_matched', 0.4)
+            others_ratio = ratios.get('others', 0.2)
+        except:
+            # デフォルト比率（悪天候40%, 天気マッチ40%, その他20%）
+            severe_ratio, weather_ratio, others_ratio = 0.4, 0.4, 0.2
+        
+        # 各カテゴリの制限を計算
+        severe_limit = int(limit * severe_ratio)
+        weather_limit = int(limit * weather_ratio) 
         others_limit = limit - severe_limit - weather_limit
         
         candidates = (severe_matched[:severe_limit] + weather_matched[:weather_limit] + others[:others_limit])
@@ -802,13 +812,25 @@ class CommentSelector:
                 logger.debug(f"類似表現検出: 天気パターン={weather_patterns}, アドバイスパターン={advice_patterns}")
                 return True
         
-        # 6. 文字列の類似度チェック（簡易版）
-        # 短いコメントで70%以上の文字が共通している場合
+        # 6. 文字列の類似度チェック（最適化版）
+        # 短いコメントのみ対象とし、計算コストを削減
         if len(weather_text) <= 10 and len(advice_text) <= 10:
-            common_chars = set(weather_text) & set(advice_text)
+            # 最小長による早期判定
+            min_length = min(len(weather_text), len(advice_text))
+            if min_length == 0:
+                return False
+                
+            # 長さ差が大きい場合は類似度が低いと判定
             max_length = max(len(weather_text), len(advice_text))
-            if max_length > 0 and len(common_chars) / max_length > 0.7:
-                logger.debug(f"高い文字列類似度検出: {len(common_chars) / max_length:.2f}")
+            if max_length / min_length > 2.0:  # 長さが2倍以上違う場合
+                return False
+            
+            # 文字集合の重複計算（set演算は効率的）
+            common_chars = set(weather_text) & set(advice_text)
+            similarity_ratio = len(common_chars) / max_length
+            
+            if similarity_ratio > 0.7:
+                logger.debug(f"高い文字列類似度検出: {similarity_ratio:.2f}")
                 return True
         
         return False

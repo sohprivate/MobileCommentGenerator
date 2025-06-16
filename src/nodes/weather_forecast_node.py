@@ -644,9 +644,14 @@ def _select_priority_forecast(forecasts):
         
     Returns:
         選択された予報（優先度ルールに基づく）
+        
+    Raises:
+        ValueError: 予報データが空の場合
     """
     if not forecasts:
-        return None
+        error_msg = "指定時刻の天気予報データが取得できませんでした"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
     
     logger.info(f"翌日9:00-18:00の予報分析開始: {len(forecasts)}件")
     
