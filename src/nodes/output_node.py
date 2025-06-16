@@ -215,9 +215,9 @@ def _determine_final_comment(state: CommentGenerationState) -> str:
     2. selected_pair の weather_comment
     3. エラーを発生させる
     """
-    logger.critical(f"🚨 _determine_final_comment 開始")
-    logger.critical(f"🚨 state.generated_comment = '{getattr(state, 'generated_comment', None)}'")
-    logger.critical(f"🚨 state.selected_pair = {getattr(state, 'selected_pair', None)}")
+    logger.debug("最終コメント確定処理開始")
+    logger.debug(f"state.generated_comment = '{getattr(state, 'generated_comment', None)}'")
+    logger.debug(f"state.selected_pair = {getattr(state, 'selected_pair', None)}")
     
     # 最終安全チェック用データ
     weather_data = state.weather_data
@@ -226,7 +226,7 @@ def _determine_final_comment(state: CommentGenerationState) -> str:
     # LLM生成コメントがある場合
     if state.generated_comment:
         final_comment = state.generated_comment
-        logger.critical(f"🚨 generated_comment使用: '{final_comment}'")
+        logger.info(f"LLM生成コメント使用: '{final_comment}'")
     else:
         # 選択されたペアがある場合 - 正しい形式で構成
         selected_pair = state.selected_pair
@@ -240,18 +240,18 @@ def _determine_final_comment(state: CommentGenerationState) -> str:
             if hasattr(selected_pair, "advice_comment") and selected_pair.advice_comment:
                 advice_comment = selected_pair.advice_comment.comment_text
             
-            logger.critical(f"🚨 選択されたペア: weather='{weather_comment}', advice='{advice_comment}'")
+            logger.debug(f"選択されたペア: weather='{weather_comment}', advice='{advice_comment}'")
             
             # 正しい形式で結合（weather + 全角スペース + advice）
             if weather_comment and advice_comment:
                 final_comment = f"{weather_comment}　{advice_comment}"
-                logger.critical(f"🚨 ペア結合使用: '{final_comment}'")
+                logger.info(f"ペア結合コメント使用: '{final_comment}'")
             elif weather_comment:
                 final_comment = weather_comment
-                logger.critical(f"🚨 weather_commentのみ使用: '{final_comment}'")
+                logger.info(f"天気コメントのみ使用: '{final_comment}'")
             elif advice_comment:
                 final_comment = advice_comment
-                logger.critical(f"🚨 advice_commentのみ使用: '{final_comment}'")
+                logger.info(f"アドバイスコメントのみ使用: '{final_comment}'")
 
     if not final_comment:
         # コメントが生成できなかった場合はエラー
@@ -320,27 +320,51 @@ def _determine_final_comment(state: CommentGenerationState) -> str:
                 if "　" in final_comment:  # 複合コメントの場合
                     parts = final_comment.split("　")
                     
-                    # 文脈を保持しながら修正
+                    # 文脈を保持しながら安全な修正（単語境界考慮）
                     if any(word in parts[0] for word in inappropriate_keywords):
-                        # 完全置換ではなく、雨天用に調整
-                        if any(word in parts[0] for word in ["熱中症", "暑い", "ムシムシ"]):
-                            parts[0] = parts[0].replace("熱中症", "雨模様").replace("暑い", "涼しい雨").replace("ムシムシ", "しっとり")
-                        elif "花粉" in parts[0]:
-                            parts[0] = parts[0].replace("花粉", "雨")
-                        # その他の不適切キーワードは雨天用に調整
+                        # 安全な単語置換（前後の文字を考慮）
+                        import re
+                        weather_part = parts[0]
+                        
+                        # 完全一致または単語境界での置換
+                        if re.search(r'\b熱中症\b', weather_part):
+                            weather_part = re.sub(r'\b熱中症\b', '雨模様', weather_part)
+                        if re.search(r'\b暑い\b', weather_part):
+                            weather_part = re.sub(r'\b暑い\b', '涼しい', weather_part)
+                        if re.search(r'\bムシムシ\b', weather_part):
+                            weather_part = re.sub(r'\bムシムシ\b', 'しっとり', weather_part)
+                        if re.search(r'\b花粉\b', weather_part):
+                            weather_part = re.sub(r'\b花粉\b', '雨', weather_part)
+                        
+                        # 日焼け・紫外線関連の慎重な置換
                         for keyword in ["日焼け", "紫外線"]:
-                            if keyword in parts[0]:
-                                parts[0] = parts[0].replace(keyword, "雨")
+                            pattern = rf'\b{re.escape(keyword)}\b'
+                            if re.search(pattern, weather_part):
+                                weather_part = re.sub(pattern, '雨', weather_part)
+                        
+                        parts[0] = weather_part
                     
-                    # アドバイス部分も文脈保持型修正
+                    # アドバイス部分も安全な修正
                     if any(word in parts[1] for word in inappropriate_keywords):
-                        # 元のアドバイスを活かしつつ雨天用に調整
-                        if any(word in parts[1] for word in ["散歩", "ピクニック", "外遊び"]):
-                            parts[1] = f"{parts[1].replace('散歩', '室内').replace('ピクニック', '屋内').replace('外遊び', '室内')}（雨天のため）"
-                        elif any(word in parts[1] for word in ["熱中症", "暑い", "ムシムシ"]):
-                            parts[1] = f"傘をお忘れなく"
+                        import re
+                        advice_part = parts[1]
+                        
+                        # 外出活動の安全な置換
+                        if re.search(r'\b散歩\b', advice_part):
+                            advice_part = re.sub(r'\b散歩\b', '室内活動', advice_part)
+                            advice_part = f"{advice_part}（雨天のため）"
+                        elif re.search(r'\bピクニック\b', advice_part):
+                            advice_part = re.sub(r'\bピクニック\b', '屋内', advice_part)
+                            advice_part = f"{advice_part}（雨天のため）"
+                        elif re.search(r'\b外遊び\b', advice_part):
+                            advice_part = re.sub(r'\b外遊び\b', '室内遊び', advice_part)
+                            advice_part = f"{advice_part}（雨天のため）"
+                        elif any(re.search(rf'\b{word}\b', advice_part) for word in ["熱中症", "暑い", "ムシムシ"]):
+                            advice_part = "傘をお忘れなく"
                         else:
-                            parts[1] = f"{parts[1]}（雨にご注意）"
+                            advice_part = f"{advice_part}（雨にご注意）"
+                        
+                        parts[1] = advice_part
                     
                     final_comment = "　".join(parts)
                 else:
