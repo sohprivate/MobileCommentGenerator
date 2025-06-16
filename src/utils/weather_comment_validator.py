@@ -65,7 +65,7 @@ class WeatherCommentValidator:
                     "傘", "雨具", "濡れ", "湿気", "降水",
                     # 晴天時に不適切な空の状態表現を追加
                     "スッキリしない", "すっきりしない", "はっきりしない", "ぼんやり",
-                    "もやもや", "どんより", "重い空", "厚い雲", "灰色の空",
+                    "もやもや", "重い空", "厚い雲", "灰色の空",  # 重複「どんより」を削除
                     "曇りがち", "雲多め", "変わりやすい天気", "不安定",
                     # 安定した晴れ天気に不適切な表現を追加
                     "変わりやすい空", "変わりやすい", "気まぐれ", "移ろいやすい",
@@ -192,14 +192,22 @@ class WeatherCommentValidator:
         
         # 雷の特別チェック（降水量を考慮）
         elif "雷" in weather_desc:
-            if precipitation >= 5.0:
-                # 強い雷（降水量5mm以上）
+            # 設定ファイルから雷の降水量閾値を取得
+            try:
+                from src.utils.config_loader import load_config
+                config = load_config()
+                thunder_threshold = config.get('precipitation', {}).get('thunder_severe_threshold', 5.0)
+            except:
+                thunder_threshold = 5.0  # デフォルト値：気象庁の「やや強い雨」基準
+            
+            if precipitation >= thunder_threshold:
+                # 強い雷（設定された閾値以上）- 気象庁基準でやや強い雨レベル
                 forbidden_words = self.weather_forbidden_words["heavy_rain"][comment_type]
                 for word in forbidden_words:
                     if word in comment_text:
                         return False, f"強い雷雨時の禁止ワード「{word}」を含む"
             else:
-                # 軽微な雷（降水量5mm未満）
+                # 軽微な雷（閾値未満）
                 if comment_type == "weather_comment":
                     # 軽微な雷では強い警戒表現を禁止
                     strong_warning_words = ["激しい", "警戒", "危険", "大荒れ", "本格的", "強雨"]
@@ -357,28 +365,40 @@ class WeatherCommentValidator:
         return True, "矛盾表現チェックOK"
     
     def _check_regional_specifics(self, comment_text: str, location: str) -> Tuple[bool, str]:
-        """地域特性に基づく検証"""
-        # 沖縄特有のチェック
-        if "沖縄" in location:
+        """地域特性に基づく検証（改善版）"""
+        # 地域判定の改善：都道府県と市町村の適切な判定
+        location_lower = location.lower()
+        
+        # 沖縄県関連の判定（県名・市町村名を包括）
+        okinawa_keywords = ["沖縄", "那覇", "石垣", "宮古", "名護", "うるま", "沖縄市", "浦添", "糸満", "豊見城", "南城"]
+        is_okinawa = any(keyword in location_lower for keyword in okinawa_keywords)
+        
+        if is_okinawa:
             # 雪関連のコメントを除外
-            snow_words = ["雪", "雪景色", "粉雪", "新雪", "雪かき", "雪道", "雪が降る"]
+            snow_words = ["雪", "雪景色", "粉雪", "新雪", "雪かき", "雪道", "雪が降る", "雪化粧", "雪だるま"]
             for word in snow_words:
                 if word in comment_text:
-                    return False, f"沖縄で雪関連表現「{word}」は不適切"
+                    return False, f"沖縄地域で雪関連表現「{word}」は不適切"
             
-            # 低温警告の闾値を緩和（沖縄は寒くならない）
-            strong_cold_words = ["極寒", "凍える", "凍結", "防寒対策必須"]
+            # 低温警告の閾値を緩和（沖縄は寒くならない）
+            strong_cold_words = ["極寒", "凍える", "凍結", "防寒対策必須", "暖房必須", "厚着必要"]
             for word in strong_cold_words:
                 if word in comment_text:
-                    return False, f"沖縄で強い寒さ表現「{word}」は不適切"
+                    return False, f"沖縄地域で強い寒さ表現「{word}」は不適切"
         
-        # 北海道特有のチェック
-        elif "北海道" in location:
-            # 高温警告の闾値を上げ（北海道は暑くなりにくい）
-            strong_heat_words = ["酷暑", "猛暑", "危険な暑さ", "熱帯夜"]
+        # 北海道関連の判定（道名・主要都市名を包括）
+        hokkaido_keywords = ["北海道", "札幌", "函館", "旭川", "釧路", "帯広", "北見", "小樽", "室蘭", "苫小牧"]
+        is_hokkaido = any(keyword in location_lower for keyword in hokkaido_keywords)
+        
+        if is_hokkaido:
+            # 高温警告の閾値を上げ（北海道は暑くなりにくい）
+            strong_heat_words = ["酷暑", "猛暑", "危険な暑さ", "熱帯夜", "猛烈な暑さ"]
             for word in strong_heat_words:
                 if word in comment_text:
-                    return False, f"北海道で強い暑さ表現「{word}」は不適切"
+                    return False, f"北海道地域で強い暑さ表現「{word}」は不適切"
+        
+        # その他の地域特性チェック（今後拡張可能）
+        # 山間部・海岸部などの特性も将来的に追加可能
         
         return True, "地域特性OK"
     

@@ -265,83 +265,91 @@ def _determine_final_comment(state: CommentGenerationState) -> str:
         temperature = weather_data.temperature if hasattr(weather_data, 'temperature') else 20.0
         weather_condition = weather_data.weather_condition.value
         
-        # 特殊気象条件ごとの適切なコメント置換
+        # 特殊気象条件ごとの文脈保持型安全性チェック
         if weather_condition == "thunder" or "雷" in current_weather:
-            logger.critical(f"🚨 雷天候検出: '{final_comment}'")
-            if "　" in final_comment and not any(word in final_comment for word in ["雷", "屋内", "危険", "注意"]):
+            logger.info(f"雷天候検出: '{final_comment}'")
+            if "　" in final_comment:
                 parts = final_comment.split("　")
-                parts[0] = "雷雨に警戒"
-                parts[1] = "屋内での避難を"
-                final_comment = "　".join(parts)
-                logger.critical(f"🚨 雷天候修正: '{final_comment}'")
+                # 文脈を保持しながら安全性を確保
+                if not any(word in final_comment for word in ["雷", "屋内", "危険", "注意"]):
+                    # アドバイス部分に安全情報を追加
+                    parts[1] = f"{parts[1]}（雷注意・屋内へ）"
+                    final_comment = "　".join(parts)
+                    logger.info(f"雷天候安全性強化: '{final_comment}'")
                 
         elif weather_condition == "fog" or "霧" in current_weather:
-            logger.critical(f"🚨 霧天候検出: '{final_comment}'")
-            if "　" in final_comment and not any(word in final_comment for word in ["霧", "視界", "運転", "注意"]):
+            logger.info(f"霧天候検出: '{final_comment}'")
+            if "　" in final_comment:
                 parts = final_comment.split("　")
-                parts[0] = "霧で視界不良"
-                parts[1] = "運転には注意を"
-                final_comment = "　".join(parts)
-                logger.critical(f"🚨 霧天候修正: '{final_comment}'")
+                if not any(word in final_comment for word in ["霧", "視界", "運転", "注意"]):
+                    # 文脈を保持して視界注意を追加
+                    parts[1] = f"{parts[1]}（視界注意）"
+                    final_comment = "　".join(parts)
+                    logger.info(f"霧天候安全性強化: '{final_comment}'")
                 
         elif weather_condition in ["storm", "severe_storm"] or any(word in current_weather for word in ["嵐", "暴風"]):
-            logger.critical(f"🚨 嵐天候検出: '{final_comment}'")
-            if "　" in final_comment and not any(word in final_comment for word in ["嵐", "暴風", "強風", "危険"]):
+            logger.info(f"嵐天候検出: '{final_comment}'")
+            if "　" in final_comment:
                 parts = final_comment.split("　")
-                parts[0] = "大荒れの天気"
-                parts[1] = "外出は控えて"
-                final_comment = "　".join(parts)
-                logger.critical(f"🚨 嵐天候修正: '{final_comment}'")
+                if not any(word in final_comment for word in ["嵐", "暴風", "強風", "危険"]):
+                    # 文脈を保持して強風注意を追加
+                    parts[1] = f"{parts[1]}（強風危険・外出注意）"
+                    final_comment = "　".join(parts)
+                    logger.info(f"嵐天候安全性強化: '{final_comment}'")
                 
         elif weather_condition == "heavy_rain" or "大雨" in current_weather:
-            logger.critical(f"🚨 大雨天候検出: '{final_comment}'")
-            if "　" in final_comment and not any(word in final_comment for word in ["大雨", "洪水", "冠水", "危険"]):
+            logger.info(f"大雨天候検出: '{final_comment}'")
+            if "　" in final_comment:
                 parts = final_comment.split("　")
-                parts[0] = "大雨に警戒"
-                parts[1] = "冠水に注意を"
-                final_comment = "　".join(parts)
-                logger.critical(f"🚨 大雨天候修正: '{final_comment}'")
+                if not any(word in final_comment for word in ["大雨", "洪水", "冠水", "危険"]):
+                    # 文脈を保持して大雨注意を追加
+                    parts[1] = f"{parts[1]}（大雨・冠水注意）"
+                    final_comment = "　".join(parts)
+                    logger.info(f"大雨天候安全性強化: '{final_comment}'")
                 
-        # 雨天で不適切なコメント全般の修正（拡張版）
+        # 雨天で不適切なコメント全般の修正（文脈保持版）
         elif "雨" in current_weather:
-            logger.critical(f"🚨 雨天コメント検証: '{final_comment}'")
+            logger.info(f"雨天コメント検証: '{final_comment}'")
             
             inappropriate_keywords = ["熱中症", "暑い", "ムシムシ", "花粉", "日焼け", "紫外線", "散歩", "ピクニック", "外遊び"]
             needs_correction = any(keyword in final_comment for keyword in inappropriate_keywords)
             
             if needs_correction:
-                logger.critical(f"🚨 雨天不適切コメント検出: '{final_comment}'")
+                logger.info(f"雨天不適切コメント検出: '{final_comment}'")
                 
                 if "　" in final_comment:  # 複合コメントの場合
                     parts = final_comment.split("　")
                     
-                    # 天気コメント部分の修正
+                    # 文脈を保持しながら修正
                     if any(word in parts[0] for word in inappropriate_keywords):
+                        # 完全置換ではなく、雨天用に調整
                         if any(word in parts[0] for word in ["熱中症", "暑い", "ムシムシ"]):
-                            parts[0] = "雨模様"
+                            parts[0] = parts[0].replace("熱中症", "雨模様").replace("暑い", "涼しい雨").replace("ムシムシ", "しっとり")
                         elif "花粉" in parts[0]:
-                            parts[0] = "雨降り"
-                        else:
-                            parts[0] = "雨の空"
+                            parts[0] = parts[0].replace("花粉", "雨")
+                        # その他の不適切キーワードは雨天用に調整
+                        for keyword in ["日焼け", "紫外線"]:
+                            if keyword in parts[0]:
+                                parts[0] = parts[0].replace(keyword, "雨")
                     
-                    # アドバイス部分の修正
+                    # アドバイス部分も文脈保持型修正
                     if any(word in parts[1] for word in inappropriate_keywords):
-                        if "花粉" in parts[1]:
-                            parts[1] = "雨に注意を"
+                        # 元のアドバイスを活かしつつ雨天用に調整
+                        if any(word in parts[1] for word in ["散歩", "ピクニック", "外遊び"]):
+                            parts[1] = f"{parts[1].replace('散歩', '室内').replace('ピクニック', '屋内').replace('外遊び', '室内')}（雨天のため）"
                         elif any(word in parts[1] for word in ["熱中症", "暑い", "ムシムシ"]):
-                            parts[1] = "傘をお忘れなく"
-                        elif any(word in parts[1] for word in ["散歩", "ピクニック", "外遊び"]):
-                            parts[1] = "室内で過ごそう"
+                            parts[1] = f"傘をお忘れなく"
                         else:
-                            parts[1] = "濡れないよう注意"
+                            parts[1] = f"{parts[1]}（雨にご注意）"
                     
                     final_comment = "　".join(parts)
                 else:
-                    final_comment = "雨の日はお気をつけて"
+                    # 単体コメントは最小限の調整
+                    final_comment = f"{final_comment}（雨天注意）"
                 
-                logger.critical(f"🚨 雨天修正後: '{final_comment}'")
+                logger.info(f"雨天修正後: '{final_comment}'")
             
-    logger.critical(f"🚨 最終コメント確定: '{final_comment}'")
+    logger.info(f"最終コメント確定: '{final_comment}'")
     return final_comment
 
 

@@ -15899,5 +15899,83 @@
       }
     },
     "error": null
+  },
+  {
+    "timestamp": "2025-06-16T19:46:23.386958",
+    "location": "千葉",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 6087,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-16T19:46:23.340415",
+      "location_name": "千葉",
+      "target_datetime": "2025-06-16T19:46:17.170919",
+      "llm_provider": "openai",
+      "weather_condition": "晴れ",
+      "temperature": 33.0,
+      "humidity": 68.0,
+      "wind_speed": 2.0,
+      "weather_forecast_time": "2025-06-17T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/17 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/17 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/17 15:00",
+            "label": "15:00",
+            "weather": "猛暑",
+            "temperature": 34.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/17 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 30.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-17T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "28.0°C〜34.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 6087,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-16T19:46:23.340415\",\n    \"location_name\": \"千葉\",\n    \"target_datetime\": \"2025-06-16T19:46:17.170919\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 33.0,\n    \"humidity\": 68.0,\n    \"wind_speed\": 2.0,\n    \"weather_forecast_time\": \"2025-06-17T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/17 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/17 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/17 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"猛暑\",\n          \"temperature\": 34.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/17 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 30.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-17T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"28.0°C〜34.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 46.36693000793457
+      }
+    },
+    "error": null
   }
 ]

@@ -24,7 +24,7 @@ precipitation:
   very_heavy_max: 50.0  # 非常に激しい雨
   
   # 雷判定
-  thunder_severe_threshold: 5.0  # 強い雷の降水量閾値
+  thunder_severe_threshold: 5.0  # 強い雷の降水量閾値（mm/h）- 気象庁「やや強い雨」基準
 
 humidity:
   # 湿度閾値
