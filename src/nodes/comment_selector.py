@@ -61,7 +61,14 @@ class CommentSelector:
             
         # ペア作成前の最終バリデーション
         if not self._validate_comment_pair(best_weather, best_advice, weather_data):
-            # フォールバック処理
+            # 重複回避のための代替選択を試行
+            alternative_pair = self._select_alternative_non_duplicate_pair(
+                filtered_weather, filtered_advice, weather_data, location_name, target_datetime, state
+            )
+            if alternative_pair:
+                return alternative_pair
+            
+            # 代替選択も失敗した場合はフォールバック処理
             return self._fallback_comment_selection(
                 weather_comments, advice_comments, weather_data
             )
@@ -191,7 +198,7 @@ class CommentSelector:
         advice_comment: PastComment, 
         weather_data: WeatherForecast
     ) -> bool:
-        """コメントペアの最終バリデーション"""
+        """コメントペアの最終バリデーション（重複チェック含む）"""
         weather_valid, weather_reason = self.validator.validate_comment(weather_comment, weather_data)
         advice_valid, advice_reason = self.validator.validate_comment(advice_comment, weather_data)
         
@@ -199,6 +206,11 @@ class CommentSelector:
             logger.critical("最終バリデーション失敗:")
             logger.critical(f"  天気コメント: '{weather_comment.comment_text}' - {weather_reason}")
             logger.critical(f"  アドバイス: '{advice_comment.comment_text}' - {advice_reason}")
+            return False
+        
+        # 重複チェック: 同じ内容の繰り返しを防ぐ
+        if self._is_duplicate_content(weather_comment.comment_text, advice_comment.comment_text):
+            logger.warning(f"重複コンテンツ検出: 天気='{weather_comment.comment_text}', アドバイス='{advice_comment.comment_text}'")
             return False
             
         return True
@@ -693,4 +705,117 @@ class CommentSelector:
                 continue
         
         logger.error(f"数値抽出失敗: '{response_clean}' (範囲: 0-{max_index-1})")
+        return None
+    
+    def _is_duplicate_content(self, weather_text: str, advice_text: str) -> bool:
+        """天気コメントとアドバイスの重複をチェック"""
+        # 基本的な重複パターンをチェック
+        
+        # 1. 完全一致
+        if weather_text == advice_text:
+            return True
+        
+        # 2. 主要キーワードの重複チェック
+        # 同じ重要キーワードが両方に含まれている場合は重複と判定
+        duplicate_keywords = [
+            "にわか雨", "熱中症", "紫外線", "雷", "強風", "大雨", "猛暑", "酷暑",
+            "注意", "警戒", "対策", "気をつけ", "備え", "準備"
+        ]
+        
+        weather_keywords = []
+        advice_keywords = []
+        
+        for keyword in duplicate_keywords:
+            if keyword in weather_text:
+                weather_keywords.append(keyword)
+            if keyword in advice_text:
+                advice_keywords.append(keyword)
+        
+        # 3. 重要キーワードが重複している場合
+        common_keywords = set(weather_keywords) & set(advice_keywords)
+        if common_keywords:
+            # 特に以下のキーワードは重複を強く示唆
+            critical_duplicates = {"にわか雨", "熱中症", "紫外線", "雷", "強風", "大雨", "猛暑", "酷暑"}
+            if any(keyword in critical_duplicates for keyword in common_keywords):
+                logger.debug(f"重複キーワード検出: {common_keywords}")
+                return True
+        
+        # 4. 類似表現のチェック
+        similarity_patterns = [
+            (["雨が心配", "雨に注意"], ["雨", "注意"]),
+            (["暑さが心配", "暑さに注意"], ["暑", "注意"]),
+            (["風が強い", "風に注意"], ["風", "注意"]),
+            (["紫外線が強い", "紫外線対策"], ["紫外線"]),
+            (["雷が心配", "雷に注意"], ["雷", "注意"]),
+        ]
+        
+        for weather_patterns, advice_patterns in similarity_patterns:
+            weather_match = any(pattern in weather_text for pattern in weather_patterns)
+            advice_match = any(pattern in advice_text for pattern in advice_patterns)
+            if weather_match and advice_match:
+                logger.debug(f"類似表現検出: 天気パターン={weather_patterns}, アドバイスパターン={advice_patterns}")
+                return True
+        
+        # 5. 文字列の類似度チェック（簡易版）
+        # 短いコメントで70%以上の文字が共通している場合
+        if len(weather_text) <= 10 and len(advice_text) <= 10:
+            common_chars = set(weather_text) & set(advice_text)
+            max_length = max(len(weather_text), len(advice_text))
+            if max_length > 0 and len(common_chars) / max_length > 0.7:
+                logger.debug(f"高い文字列類似度検出: {len(common_chars) / max_length:.2f}")
+                return True
+        
+        return False
+    
+    def _select_alternative_non_duplicate_pair(
+        self,
+        weather_comments: List[PastComment],
+        advice_comments: List[PastComment],
+        weather_data: WeatherForecast,
+        location_name: str,
+        target_datetime: datetime,
+        state: Optional[CommentGenerationState] = None
+    ) -> Optional[CommentPair]:
+        """重複を回避する代替ペア選択"""
+        logger.info("重複回避のための代替コメントペア選択を開始")
+        
+        # 複数の候補を生成して重複しないペアを探す
+        weather_candidates = self._prepare_weather_candidates(weather_comments, weather_data)
+        advice_candidates = self._prepare_advice_candidates(advice_comments, weather_data)
+        
+        # 上位候補から順に試行（最大10回）
+        max_attempts = min(10, len(weather_candidates), len(advice_candidates))
+        
+        for attempt in range(max_attempts):
+            try:
+                # 天気コメント候補を選択（異なるものを順番に試す）
+                weather_idx = attempt % len(weather_candidates)
+                weather_candidate = weather_candidates[weather_idx]['comment_object']
+                
+                # アドバイス候補を選択
+                advice_idx = attempt % len(advice_candidates)
+                advice_candidate = advice_candidates[advice_idx]['comment_object']
+                
+                # 重複チェック
+                if not self._is_duplicate_content(weather_candidate.comment_text, advice_candidate.comment_text):
+                    # 個別バリデーション
+                    weather_valid, _ = self.validator.validate_comment(weather_candidate, weather_data)
+                    advice_valid, _ = self.validator.validate_comment(advice_candidate, weather_data)
+                    
+                    if weather_valid and advice_valid:
+                        logger.info(f"代替ペア選択成功 (試行{attempt+1}): 天気='{weather_candidate.comment_text}', アドバイス='{advice_candidate.comment_text}'")
+                        return CommentPair(
+                            weather_comment=weather_candidate,
+                            advice_comment=advice_candidate,
+                            similarity_score=0.8,  # 代替選択なので若干低めのスコア
+                            selection_reason=f"重複回避代替選択（試行{attempt+1}回目）"
+                        )
+                
+                logger.debug(f"試行{attempt+1}: 重複または無効 - 天気='{weather_candidate.comment_text}', アドバイス='{advice_candidate.comment_text}'")
+                
+            except Exception as e:
+                logger.warning(f"代替選択試行{attempt+1}でエラー: {e}")
+                continue
+        
+        logger.warning("重複しない代替ペアの選択に失敗")
         return None
