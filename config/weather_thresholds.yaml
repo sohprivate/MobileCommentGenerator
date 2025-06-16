@@ -24,7 +24,7 @@ precipitation:
   very_heavy_max: 50.0  # 非常に激しい雨
   
   # 雷判定
-  thunder_severe_threshold: 5.0  # 強い雷の降水量閾値
+  thunder_severe_threshold: 5.0  # 強い雷の降水量閾値（mm/h）- 気象庁「やや強い雨」基準
 
 humidity:
   # 湿度閾値
@@ -49,10 +49,16 @@ scoring:
 # 生成設定
 generation:
   # 候補数制限
-  weather_candidates_limit: 15
-  advice_candidates_limit: 10
-  fallback_candidates_limit: 5
+  weather_candidates_limit: 100  # 天気コメント候補数を大幅増加
+  advice_candidates_limit: 100   # アドバイスコメント候補数を大幅増加
+  fallback_candidates_limit: 20  # フォールバック候補数も増加
+  
+  # 候補カテゴリ別比率
+  candidate_ratios:
+    severe_weather: 0.4  # 悪天候の比率
+    weather_matched: 0.4  # 天気マッチの比率
+    others: 0.2  # その他の比率
   
   # デフォルト値
   default_llm_provider: "openai"
-  default_forecast_hours: 12
+  default_forecast_hours: 24  # 翌日9:00-18:00の予報に対応

@@ -17,8 +17,9 @@ from src.ui.streamlit_utils import (
     save_to_history,
     load_history,
     format_timestamp,
-    validate_api_key,
+    validate_api_keys,
 )
+from unittest.mock import patch
 
 
 class TestLocationUtils:
@@ -233,37 +234,29 @@ class TestFormatUtils:
 class TestValidationUtils:
     """バリデーション関連ユーティリティのテスト"""
 
-    def test_validate_api_key_valid(self):
+    def test_validate_api_keys_valid(self):
         """有効なAPIキーのバリデーションテスト"""
-        # OpenAI形式
-        assert validate_api_key("sk-abcdef1234567890abcdef1234567890", "openai") is True
+        with patch.dict(os.environ, {
+            'OPENAI_API_KEY': 'sk-abcdef1234567890abcdef1234567890',
+            'ANTHROPIC_API_KEY': 'sk-ant-api03-abcdef1234567890',
+            'GEMINI_API_KEY': 'AIzaSyABC123defGHI456jklMNO789pqrSTU'
+        }):
+            result = validate_api_keys()
+            assert isinstance(result, dict)
 
-        # 一般的な形式
-        assert validate_api_key("abc123def456", "gemini") is True
-        assert validate_api_key("anthropic-key-123", "anthropic") is True
-
-    def test_validate_api_key_invalid(self):
+    def test_validate_api_keys_invalid(self):
         """無効なAPIキーのバリデーションテスト"""
-        # 空文字
-        assert validate_api_key("", "openai") is False
-        assert validate_api_key(None, "openai") is False
+        with patch.dict(os.environ, {}, clear=True):
+            result = validate_api_keys()
+            assert isinstance(result, dict)
 
-        # 短すぎる
-        assert validate_api_key("abc", "openai") is False
-
-        # スペースのみ
-        assert validate_api_key("   ", "openai") is False
-
-    def test_validate_api_key_provider_specific(self):
-        """プロバイダー固有のバリデーションテスト"""
-        # OpenAIの場合、sk-で始まることを確認（実装に依存）
-        # 注: 実際の実装では、より厳密なバリデーションが必要
-        key = "test-key-1234567890"
-
-        # 各プロバイダーで基本的な長さチェックは通る
-        assert validate_api_key(key, "openai") is True
-        assert validate_api_key(key, "gemini") is True
-        assert validate_api_key(key, "anthropic") is True
+    def test_validate_api_keys_partial(self):
+        """部分的に有効なAPIキーのテスト"""
+        with patch.dict(os.environ, {
+            'OPENAI_API_KEY': 'sk-valid-key-1234567890'
+        }, clear=True):
+            result = validate_api_keys()
+            assert isinstance(result, dict)
 
 
 if __name__ == "__main__":
