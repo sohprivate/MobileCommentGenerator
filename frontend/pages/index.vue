@@ -138,25 +138,21 @@
                 </UFormGroup>
               </div>
 
-              <!-- Forecast Hours Setting -->
+              <!-- Weather Forecast Info -->
               <div class="mb-6">
-                <UFormGroup label="予報基準時間（時間後）" class="mb-4">
-                  <UInput
-                    v-model.number="forecastHours"
-                    type="number"
-                    min="1"
-                    max="72"
-                    placeholder="12"
-                  />
-                  <div class="text-xs text-gray-500 mt-1">
-                    {{ forecastHours }}時間後を基準とした前後24時間の天気変化を分析
-                  </div>
-                  <div class="text-xs text-gray-400 mt-1">
-                    • 実際の予報範囲: {{ Math.max(0, forecastHours - 12) }}〜{{ forecastHours + 12 }}時間後
-                    <br>
-                    • キャッシュがある場合: 前{{ forecastHours + 12 }}時間の変化も考慮
-                  </div>
-                </UFormGroup>
+                <UAlert
+                  color="blue"
+                  variant="subtle"
+                  title="天気予報の仕様"
+                  icon="i-heroicons-cloud"
+                >
+                  <template #description>
+                    <div class="text-sm space-y-1">
+                      <div>• 予報時刻: 翌日の9:00, 12:00, 15:00, 18:00（JST）</div>
+                      <div>• 優先順位: 雷・嵐 > 本降りの雨 > 猛暑日熱中症対策 > 雨 > 曇り > 晴れ</div>
+                    </div>
+                  </template>
+                </UAlert>
               </div>
 
               <!-- Current Time -->
@@ -460,7 +456,6 @@ const providers = ref([])
 const history = ref([])
 const locationsLoading = ref(false)
 const providersLoading = ref(false)
-const forecastHours = ref(12)
 const isBatchMode = ref(false)
 
 // Computed properties
@@ -554,8 +549,7 @@ const generateComment = async () => {
 
   console.log('Starting comment generation:', { 
     locations: locationsToProcess, 
-    provider: providerValue,
-    forecastHours: forecastHours.value
+    provider: providerValue
   })
   
   generating.value = true

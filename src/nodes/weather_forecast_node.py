@@ -14,7 +14,7 @@ from langgraph.graph import END, START, StateGraph
 
 from src.apis.wxtech_client import WxTechAPIClient, WxTechAPIError
 from src.data.location_manager import LocationManager
-from src.data.weather_data import WeatherForecast, WeatherForecastCollection
+from src.data.weather_data import WeatherForecast, WeatherForecastCollection, WeatherCondition
 from src.data.weather_trend import WeatherTrend
 from src.data.forecast_cache import save_forecast_to_cache, get_temperature_differences, get_forecast_cache
 from src.config.weather_config import get_config
@@ -514,28 +514,47 @@ def fetch_weather_forecast_node(state):
         comment_config = get_comment_config()
         trend_hours = comment_config.trend_hours_ahead
         
-        # 指定時間後から更に先の予報を取得（3時間ごと）
+        # 翌日9:00-18:00(JST)の予報を取得（3時間ごと: 9:00, 12:00, 15:00, 18:00）
         import pytz
         jst = pytz.timezone("Asia/Tokyo")
         now_jst = datetime.now(jst)
         
-        # 12-24時間の期間で予報を取得（3時間ごと）
-        forecast_start = now_jst + timedelta(hours=forecast_hours_ahead)
-        forecast_end = now_jst + timedelta(hours=forecast_hours_ahead + trend_hours)
+        # 常に翌日を対象にする
+        target_date = now_jst.date() + timedelta(days=1)
         
-        # 期間内の予報を抽出（3時間ごと）
+        forecast_start = jst.localize(datetime.combine(target_date, datetime.min.time().replace(hour=9)))
+        forecast_end = jst.localize(datetime.combine(target_date, datetime.min.time().replace(hour=18)))
+        
+        logger.info(f"翌日対象: {target_date} (現在時刻: {now_jst.strftime('%Y-%m-%d %H:%M')})")
+        
+        # 対象時刻のリスト（9:00, 12:00, 15:00, 18:00）
+        target_hours = [9, 12, 15, 18]
+        target_times = [jst.localize(datetime.combine(target_date, datetime.min.time().replace(hour=hour))) 
+                       for hour in target_hours]
+        
+        # 各対象時刻に最も近い予報を抽出
         period_forecasts = []
-        for forecast in forecast_collection.forecasts:
-            # forecastのdatetimeがnaiveな場合はJSTとして扱う
-            forecast_dt = forecast.datetime
-            if forecast_dt.tzinfo is None:
-                forecast_dt = jst.localize(forecast_dt)
+        for target_time in target_times:
+            closest_forecast = None
+            min_diff = float('inf')
             
-            if forecast_start <= forecast_dt <= forecast_end:
-                period_forecasts.append(forecast)
+            for forecast in forecast_collection.forecasts:
+                # forecastのdatetimeがnaiveな場合はJSTとして扱う
+                forecast_dt = forecast.datetime
+                if forecast_dt.tzinfo is None:
+                    forecast_dt = jst.localize(forecast_dt)
+                
+                # 目標時刻との差を計算
+                diff = abs((forecast_dt - target_time).total_seconds())
+                if diff < min_diff:
+                    min_diff = diff
+                    closest_forecast = forecast
+            
+            if closest_forecast:
+                period_forecasts.append(closest_forecast)
         
         # 期間内の予報から最も重要な天気条件を選択
-        selected_forecast = _select_priority_forecast(period_forecasts, target_datetime)
+        selected_forecast = _select_priority_forecast(period_forecasts)
         
         # 気象変化傾向の分析
         if len(period_forecasts) >= 2:
@@ -611,74 +630,97 @@ def fetch_weather_forecast_node(state):
         raise
 
 
-def _select_priority_forecast(forecasts, target_datetime):
-    """期間内の予報から最も重要な気象条件を選択
+def _select_priority_forecast(forecasts):
+    """翌日9:00-18:00の予報から最も重要な気象条件を選択
+    
+    優先順位ルール:
+    1. 雷、嵐、霧などの特殊気象条件を最優先
+    2. 本降りの雨（>10mm/h）は猛暑日でも優先
+    3. 猛暑日（35℃以上）では小雨でも熱中症対策を優先
+    4. 雨 > 曇り > 晴れの順で優先
     
     Args:
-        forecasts: 期間内の予報リスト
-        target_datetime: 基準となる目標日時
+        forecasts: 9時間の予報リスト（9:00, 12:00, 15:00, 18:00）
         
     Returns:
-        選択された予報（特殊気象条件を優先）
+        選択された予報（優先度ルールに基づく）
     """
     if not forecasts:
         return None
     
-    # 単一の予報の場合はそのまま返す
-    if len(forecasts) == 1:
-        return forecasts[0]
+    logger.info(f"翌日9:00-18:00の予報分析開始: {len(forecasts)}件")
     
-    # 特殊気象条件（雷、霧、嵐）を優先
-    special_conditions = [f for f in forecasts if f.weather_condition.is_special_condition]
-    if special_conditions:
-        # 特殊気象条件の中で最も優先度が高いものを選択
-        selected = max(special_conditions, key=lambda f: f.weather_condition.priority)
-        logger.info(f"特殊気象条件を優先選択: {selected.weather_condition.value} ({selected.datetime})")
+    # 各予報の詳細をログ出力
+    for f in forecasts:
+        logger.info(f"  {f.datetime.strftime('%H:%M')}: {f.weather_description}, 気温{f.temperature}°C, 降水量{f.precipitation}mm/h")
+    
+    # 1. 真の特殊気象条件（雷、霧、嵐）を最優先（雨は除く）
+    extreme_conditions = [f for f in forecasts if f.weather_condition in [
+        WeatherCondition.THUNDER, WeatherCondition.FOG, WeatherCondition.STORM, 
+        WeatherCondition.SEVERE_STORM, WeatherCondition.EXTREME_HEAT
+    ]]
+    if extreme_conditions:
+        selected = max(extreme_conditions, key=lambda f: f.weather_condition.priority)
+        logger.info(f"特殊気象条件を優先選択: {selected.weather_condition.value} ({selected.datetime.strftime('%H:%M')})")
         return selected
     
-    # 特殊気象条件がない場合、悪天候を優先
+    # 2. 本降りの雨（>10mm/h）は猛暑日でも優先
+    heavy_rain = [f for f in forecasts if f.precipitation > 10.0]
+    if heavy_rain:
+        selected = max(heavy_rain, key=lambda f: f.precipitation)
+        logger.info(f"本降りの雨を優先選択: {selected.precipitation}mm/h ({selected.datetime.strftime('%H:%M')})")
+        return selected
+    
+    # 3. 猛暑日（35℃以上）の場合の処理
+    extreme_hot = [f for f in forecasts if f.temperature >= 35.0]
+    if extreme_hot:
+        # 雨の時間帯の割合を計算
+        rainy_forecasts = [f for f in forecasts if f.precipitation > 0.1]
+        rain_ratio = len(rainy_forecasts) / len(forecasts)
+        
+        # 猛暑日に雨がある場合の判定
+        light_rain_in_hot = [f for f in extreme_hot if 0.1 < f.precipitation <= 10.0]
+        
+        if light_rain_in_hot and rain_ratio <= 0.5:
+            # 雨の時間帯が半分以下（ほとんど晴れ）なら熱中症対策を優先
+            selected = max(extreme_hot, key=lambda f: f.temperature)
+            logger.info(f"猛暑日で熱中症対策を優先選択（雨は少数）: {selected.temperature}°C ({selected.datetime.strftime('%H:%M')}, 雨の割合: {rain_ratio:.1%})")
+            return selected
+        elif light_rain_in_hot and rain_ratio > 0.5:
+            # 雨の時間帯が半分以上（ずっと雨）なら雨を優先
+            selected = max(rainy_forecasts, key=lambda f: f.precipitation)
+            logger.info(f"猛暑日だが雨が多いため雨を優先選択: {selected.precipitation}mm/h ({selected.datetime.strftime('%H:%M')}, 雨の割合: {rain_ratio:.1%})")
+            return selected
+        else:
+            # 雨がない猛暑日は最高気温の時間帯を選択
+            selected = max(extreme_hot, key=lambda f: f.temperature)
+            logger.info(f"猛暑日を優先選択: {selected.temperature}°C ({selected.datetime.strftime('%H:%M')})")
+            return selected
+    
+    # 4. 悪天候を優先（降水量の多い順）
     severe_weather = [f for f in forecasts if f.is_severe_weather()]
     if severe_weather:
-        # 悪天候の中で最も降水量が多いものを選択
         selected = max(severe_weather, key=lambda f: f.precipitation)
-        logger.info(f"悪天候を優先選択: {selected.weather_description} ({selected.datetime})")
+        logger.info(f"悪天候を優先選択: {selected.weather_description} ({selected.datetime.strftime('%H:%M')})")
         return selected
     
-    # 雨天を優先
+    # 5. 雨天を優先（降水量の多い順）
     rainy_forecasts = [f for f in forecasts if f.precipitation > 0.1]
     if rainy_forecasts:
-        # 雨天の中で最も降水量が多いものを選択
         selected = max(rainy_forecasts, key=lambda f: f.precipitation)
-        logger.info(f"雨天を優先選択: {selected.weather_description} ({selected.datetime})")
+        logger.info(f"雨天を優先選択: {selected.precipitation}mm/h ({selected.datetime.strftime('%H:%M')})")
         return selected
     
-    # 晴れ以外の条件を優先
+    # 6. 曇りを優先（晴れ以外の条件）
     non_clear_forecasts = [f for f in forecasts if f.weather_condition.value != "clear"]
     if non_clear_forecasts:
-        # 晴れ以外の中で最も優先度が高いものを選択
         selected = max(non_clear_forecasts, key=lambda f: f.weather_condition.priority)
-        logger.info(f"晴れ以外の条件を優先選択: {selected.weather_description} ({selected.datetime})")
+        logger.info(f"曇りを優先選択: {selected.weather_description} ({selected.datetime.strftime('%H:%M')})")
         return selected
     
-    # 全て晴れの場合は、目標時刻に最も近いものを選択
-    # タイムゾーンの違いを解決するため、両方をnaive datetimeに統一
-    if target_datetime.tzinfo is not None:
-        # target_datetimeがタイムゾーン付きの場合、ナイーブに変換
-        target_naive = target_datetime.replace(tzinfo=None)
-    else:
-        target_naive = target_datetime
-    
-    def get_time_diff(f) -> float:
-        forecast_time = f.datetime
-        if forecast_time.tzinfo is not None:
-            # 予報時刻もナイーブに変換
-            forecast_naive = forecast_time.replace(tzinfo=None)
-        else:
-            forecast_naive = forecast_time
-        return abs((forecast_naive - target_naive).total_seconds())
-    
-    selected = min(forecasts, key=get_time_diff)
-    logger.info(f"目標時刻に最も近い予報を選択: {selected.weather_description} ({selected.datetime})")
+    # 7. 全て晴れの場合は最も気温の高い時間帯を選択
+    selected = max(forecasts, key=lambda f: f.temperature)
+    logger.info(f"晴れ日で最高気温を選択: {selected.temperature}°C ({selected.datetime.strftime('%H:%M')})")
     return selected
 
 

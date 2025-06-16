@@ -142,6 +142,13 @@ class CommentSelector:
         others = []
         
         for i, comment in enumerate(comments):
+            # バリデーターによる除外チェック
+            is_valid, reason = self.validator.validate_comment(comment, weather_data)
+            if not is_valid:
+                logger.info(f"バリデーター除外: '{comment.comment_text}' - 理由: {reason}")
+                continue
+                
+            # 旧式の除外チェック（後方互換）
             if self._should_exclude_weather_comment(comment.comment_text, weather_data):
                 logger.debug(f"天気条件不適合のため除外: '{comment.comment_text}'")
                 continue
@@ -166,8 +173,20 @@ class CommentSelector:
                 else:
                     others.append(candidate)
         
-        # 優先順位順に結合（最大50件）
-        candidates = (severe_matched[:20] + weather_matched[:20] + others[:10])
+        # 優先順位順に結合（設定ファイルから制限を取得）
+        from src.config.config_loader import load_config
+        try:
+            config = load_config('weather_thresholds', validate=False)
+            limit = config.get('generation', {}).get('weather_candidates_limit', 100)
+        except:
+            limit = 100  # デフォルト値
+        
+        # 各カテゴリの制限を計算（比率: 悪天候40%, 天気マッチ40%, その他20%）
+        severe_limit = int(limit * 0.4)
+        weather_limit = int(limit * 0.4) 
+        others_limit = limit - severe_limit - weather_limit
+        
+        candidates = (severe_matched[:severe_limit] + weather_matched[:weather_limit] + others[:others_limit])
         
         return candidates
     
@@ -180,6 +199,13 @@ class CommentSelector:
         candidates = []
         
         for i, comment in enumerate(comments):
+            # バリデーターによる除外チェック
+            is_valid, reason = self.validator.validate_comment(comment, weather_data)
+            if not is_valid:
+                logger.info(f"アドバイスバリデーター除外: '{comment.comment_text}' - 理由: {reason}")
+                continue
+                
+            # 旧式の除外チェック（後方互換）
             if self._should_exclude_advice_comment(comment.comment_text, weather_data):
                 logger.debug(f"アドバイス条件不適合のため除外: '{comment.comment_text}'")
                 continue
@@ -187,7 +213,15 @@ class CommentSelector:
             candidate = self._create_candidate_dict(len(candidates), comment, original_index=i)
             candidates.append(candidate)
             
-            if len(candidates) >= 50:  # 最大50件
+            # 設定ファイルから制限を取得
+            from src.config.config_loader import load_config
+            try:
+                config = load_config('weather_thresholds', validate=False)
+                limit = config.get('generation', {}).get('advice_candidates_limit', 100)
+            except:
+                limit = 100  # デフォルト値
+            
+            if len(candidates) >= limit:
                 break
         
         return candidates
@@ -553,71 +587,37 @@ class CommentSelector:
 - 風速: {weather_data.wind_speed}m/s
 """
         
-        # 時系列変化情報を追加（フォールバック戦略付き）
-        try:
-            from src.data.forecast_cache import ForecastCache
-            cache = ForecastCache()
-            
-            forecast_data_found = False
-            
-            # 3時間間隔で予報を取得
-            forecast_hours = [-12, -6, -3, 3, 6, 12]
-            for hours in forecast_hours:
-                try:
-                    forecast_datetime = target_datetime + timedelta(hours=hours)
-                    if forecast_datetime.tzinfo is None and target_datetime.tzinfo is not None:
-                        forecast_datetime = forecast_datetime.replace(tzinfo=target_datetime.tzinfo)
-                    forecast = cache.get_forecast_at_time(location_name, forecast_datetime)
-                    if forecast:
-                        forecast_data_found = True
-                        if hours < 0:
-                            temp_diff = weather_data.temperature - forecast.temperature
-                            context += f"- {abs(hours)}時間前: {forecast.temperature}°C ({temp_diff:+.1f}°C差), {forecast.weather_description}\n"
-                        else:
-                            temp_diff = forecast.temperature - weather_data.temperature
-                            context += f"- {hours}時間後: {forecast.temperature}°C ({temp_diff:+.1f}°C変化), {forecast.weather_description}\n"
-                except Exception as inner_e:
-                    logger.debug(f"{hours}時間後の予報取得エラー: {inner_e}")
-                    continue
-            
-            # フォールバック: 時系列データが取得できない場合の代替情報
-            if not forecast_data_found:
-                logger.warning("時系列データが取得できませんでした。基本情報のみで判断します。")
-                # 季節と現在気温から簡易的な傾向を推定
-                month = target_datetime.month
-                temp = weather_data.temperature
-                
-                # 季節的傾向の推定
-                if month in [12, 1, 2]:  # 冬
-                    if temp > 15:
-                        context += "- 冬としては暖かめの気温です\n"
-                    elif temp < 5:
-                        context += "- 冬らしい寒さです\n"
-                elif month in [6, 7, 8]:  # 夏
-                    if temp > 30:
-                        context += "- 真夏の暑さです\n"
-                    elif temp < 25:
-                        context += "- 夏としては涼しめです\n"
-                elif month in [3, 4, 5]:  # 春
-                    context += "- 春らしい気候です\n"
-                elif month in [9, 10, 11]:  # 秋
-                    context += "- 秋らしい気候です\n"
-                
-                # 時刻による推定
-                hour = target_datetime.hour
-                if 6 <= hour <= 10:
-                    context += "- 朝の時間帯です\n"
-                elif 11 <= hour <= 14:
-                    context += "- 昼間の時間帯（気温上昇期）です\n"
-                elif 15 <= hour <= 18:
-                    context += "- 午後の時間帯です\n"
-                else:
-                    context += "- 夜間の時間帯（気温下降期）です\n"
-                
-        except Exception as e:
-            logger.warning(f"時系列データ取得で予期しないエラー: {e}")
-            # 完全フォールバック: 最小限の情報を追加
-            context += "- 時系列データは利用できませんが、現在の気象状況から判断してください\n"
+        # 翌日予報のシンプルな情報を追加
+        month = target_datetime.month
+        temp = weather_data.temperature
+        
+        # 季節と気温の関係
+        if month in [6, 7, 8]:  # 夏
+            if temp >= 35:
+                context += "- 猛暑日（35℃以上）です：熱中症に厳重注意\n"
+            elif temp >= 30:
+                context += "- 真夏日（30℃以上）です：暑さ対策を推奨\n"
+            elif temp < 25:
+                context += "- 夏としては涼しめです\n"
+        elif month in [12, 1, 2]:  # 冬
+            if temp <= 0:
+                context += "- 氷点下です：凍結や防寒対策必須\n"
+            elif temp < 5:
+                context += "- 真冬の寒さです：しっかりとした防寒が必要\n"
+            elif temp > 15:
+                context += "- 冬としては暖かめです\n"
+        elif month in [3, 4, 5]:  # 春
+            context += "- 春の気候です：気温変化に注意\n"
+        elif month in [9, 10, 11]:  # 秋
+            context += "- 秋の気候です：朝晩の冷え込みに注意\n"
+        
+        # 降水量の詳細
+        if weather_data.precipitation > 10:
+            context += "- 強雨（10mm/h以上）：外出時は十分な雨具を\n"
+        elif weather_data.precipitation > 1:
+            context += "- 軽雨～中雨：傘の携帯を推奨\n"
+        elif weather_data.precipitation > 0:
+            context += "- 小雨：念のため傘があると安心\n"
         
         return context
     
@@ -711,8 +711,25 @@ class CommentSelector:
         """天気コメントとアドバイスの重複をチェック"""
         # 基本的な重複パターンをチェック
         
-        # 1. 完全一致
+        # 1. 完全一致・ほぼ完全一致
         if weather_text == advice_text:
+            return True
+            
+        # 1.5. ほぼ同じ内容の検出（語尾の微差を無視）
+        weather_normalized = weather_text.replace("です", "").replace("だ", "").replace("である", "").replace("。", "").strip()
+        advice_normalized = advice_text.replace("です", "").replace("だ", "").replace("である", "").replace("。", "").strip()
+        
+        if weather_normalized == advice_normalized:
+            logger.debug(f"ほぼ完全一致検出: '{weather_text}' ≈ '{advice_text}'")
+            return True
+            
+        # 句読点や助詞の差のみの場合も検出
+        import re
+        weather_core = re.sub(r'[。、！？\s　]', '', weather_text)
+        advice_core = re.sub(r'[。、！？\s　]', '', advice_text)
+        
+        if weather_core == advice_core:
+            logger.debug(f"句読点差のみ検出: '{weather_text}' ≈ '{advice_text}'")
             return True
         
         # 2. 主要キーワードの重複チェック
@@ -740,7 +757,36 @@ class CommentSelector:
                 logger.debug(f"重複キーワード検出: {common_keywords}")
                 return True
         
-        # 4. 類似表現のチェック
+        # 4. 意味的矛盾パターンのチェック（新機能）
+        contradiction_patterns = [
+            # 日差し・太陽関連の矛盾
+            (["日差しの活用", "日差しを楽しん", "陽射しを活用", "太陽を楽しん", "日光浴", "日向"], 
+             ["紫外線対策", "日焼け対策", "日差しに注意", "陽射しに注意", "UV対策", "日陰"]),
+            # 外出関連の矛盾  
+            (["外出推奨", "お出かけ日和", "散歩日和", "外出には絶好", "外で過ごそう"], 
+             ["外出時は注意", "外出を控え", "屋内にいよう", "外出は危険"]),
+            # 暑さ関連の矛盾
+            (["暑さを楽しん", "夏を満喫", "暑いけど気持ち"], 
+             ["暑さに注意", "熱中症対策", "暑さを避け"]),
+            # 雨関連の矛盾
+            (["雨を楽しん", "雨音が心地", "恵みの雨"], 
+             ["雨に注意", "濡れないよう", "雨対策"])
+        ]
+        
+        for positive_patterns, negative_patterns in contradiction_patterns:
+            has_positive = any(pattern in weather_text for pattern in positive_patterns)
+            has_negative = any(pattern in advice_text for pattern in negative_patterns)
+            
+            # 逆パターンもチェック
+            has_positive_advice = any(pattern in advice_text for pattern in positive_patterns)
+            has_negative_weather = any(pattern in weather_text for pattern in negative_patterns)
+            
+            if (has_positive and has_negative) or (has_positive_advice and has_negative_weather):
+                logger.debug(f"意味的矛盾検出: ポジティブ={positive_patterns}, ネガティブ={negative_patterns}")
+                logger.debug(f"天気コメント: '{weather_text}', アドバイス: '{advice_text}'")
+                return True
+        
+        # 5. 類似表現のチェック
         similarity_patterns = [
             (["雨が心配", "雨に注意"], ["雨", "注意"]),
             (["暑さが心配", "暑さに注意"], ["暑", "注意"]),
@@ -756,7 +802,7 @@ class CommentSelector:
                 logger.debug(f"類似表現検出: 天気パターン={weather_patterns}, アドバイスパターン={advice_patterns}")
                 return True
         
-        # 5. 文字列の類似度チェック（簡易版）
+        # 6. 文字列の類似度チェック（簡易版）
         # 短いコメントで70%以上の文字が共通している場合
         if len(weather_text) <= 10 and len(advice_text) <= 10:
             common_chars = set(weather_text) & set(advice_text)

@@ -309,27 +309,12 @@ def result_display(result: Dict[str, Any]):
                 with col3:
                     st.metric("最大降水量", summary.get("max_precipitation", "不明"))
             
-            # 過去の推移
-            past_forecasts = weather_timeline.get("past_forecasts", [])
-            if past_forecasts:
-                st.write("**過去の推移（12時間前〜基準時刻）**")
-                past_df_data = []
-                for forecast in past_forecasts:
-                    past_df_data.append({
-                        "時刻": forecast.get("label", ""),
-                        "日時": forecast.get("time", ""),
-                        "天気": forecast.get("weather", ""),
-                        "気温": f"{forecast.get('temperature', 'N/A')}°C",
-                        "降水量": f"{forecast.get('precipitation', 0)}mm" if forecast.get('precipitation', 0) > 0 else "-"
-                    })
-                if past_df_data:
-                    import pandas as pd
-                    st.dataframe(pd.DataFrame(past_df_data), use_container_width=True)
+            # 過去の推移は表示しない（翌日予報のみに集中）
             
             # 未来の予報
             future_forecasts = weather_timeline.get("future_forecasts", [])
             if future_forecasts:
-                st.write("**今後の予報（3〜24時間後）**")
+                st.write("**翌日の予報（9:00-18:00の3時間ごと）**")
                 future_df_data = []
                 for forecast in future_forecasts:
                     future_df_data.append({

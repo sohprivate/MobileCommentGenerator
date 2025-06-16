@@ -16,19 +16,20 @@ logger = logging.getLogger(__name__)
 
 
 def _get_weather_timeline(location_name: str, base_datetime: datetime) -> Dict[str, Any]:
-    """予報基準時刻の前後の天気データを取得
+    """翌日9:00-18:00の天気データを取得
     
     Args:
         location_name: 地点名
-        base_datetime: 予報基準時刻
+        base_datetime: 選択された予報時刻（使用しないが互換性のため維持）
         
     Returns:
-        時系列の天気データ
+        翌日9:00-18:00の時系列天気データ
     """
     from src.data.forecast_cache import ensure_jst
+    import pytz
     
-    # タイムゾーンを確保
-    base_datetime = ensure_jst(base_datetime)
+    jst = pytz.timezone("Asia/Tokyo")
+    now_jst = datetime.now(jst)
     
     timeline_data: Dict[str, Any] = {
         "future_forecasts": [],
@@ -39,62 +40,33 @@ def _get_weather_timeline(location_name: str, base_datetime: datetime) -> Dict[s
     try:
         cache = ForecastCache()
         
-        # 未来の予報データ（利用可能な範囲で取得）
-        future_times = []
-        # まず24時間先まで試行し、利用可能なデータのみ使用
-        for hours in range(3, 25, 3):  # 3, 6, 9, 12, 15, 18, 21, 24時間後
-            future_time = base_datetime + timedelta(hours=hours)
-            future_times.append((future_time, f"+{hours}h"))
+        # 常に翌日を対象にする
+        target_date = now_jst.date() + timedelta(days=1)
+        target_hours = [9, 12, 15, 18]
         
-        # 利用可能なデータがあるかを事前チェック
-        available_count = 0
-        for future_time, label in future_times:
+        logger.info(f"翌日({target_date})の予報データを取得中: {target_hours}")
+        
+        for hour in target_hours:
+            target_time = jst.localize(datetime.combine(target_date, datetime.min.time().replace(hour=hour)))
+            
             try:
-                forecast = cache.get_forecast_at_time(location_name, future_time)
-                if forecast:
-                    available_count += 1
-            except:
-                pass
-        
-        logger.info(f"利用可能な未来予報データ: {available_count}件")
-        
-        for future_time, label in future_times:
-            try:
-                forecast = cache.get_forecast_at_time(location_name, future_time)
+                forecast = cache.get_forecast_at_time(location_name, target_time)
                 if forecast:
                     timeline_data["future_forecasts"].append({
-                        "time": future_time.strftime("%m/%d %H:%M"),
-                        "label": label,
+                        "time": target_time.strftime("%m/%d %H:%M"),
+                        "label": f"{hour:02d}:00",
                         "weather": forecast.weather_description,
                         "temperature": forecast.temperature,
                         "precipitation": forecast.precipitation
                     })
-                    logger.debug(f"未来予報取得成功: {label} at {future_time}")
+                    logger.debug(f"翌日予報取得成功: {hour:02d}:00 at {target_time}")
                 else:
-                    logger.warning(f"未来予報データなし: {label} at {future_time}")
+                    logger.warning(f"翌日予報データなし: {hour:02d}:00 at {target_time}")
             except Exception as e:
-                logger.warning(f"未来の予報取得エラー ({label}): {e}")
+                logger.warning(f"翌日予報取得エラー ({hour:02d}:00): {e}")
         
-        # 過去の予報データ（12時間前から現在まで、3時間ごと）
-        past_times = []
-        for hours in range(-12, 1, 3):  # -12, -9, -6, -3, 0時間
-            past_time = base_datetime + timedelta(hours=hours)
-            label = f"{hours:+d}h" if hours != 0 else "基準時刻"
-            past_times.append((past_time, label))
-        
-        for past_time, label in past_times:
-            try:
-                forecast = cache.get_forecast_at_time(location_name, past_time)
-                if forecast:
-                    timeline_data["past_forecasts"].append({
-                        "time": past_time.strftime("%m/%d %H:%M"),
-                        "label": label,
-                        "weather": forecast.weather_description,
-                        "temperature": forecast.temperature,
-                        "precipitation": forecast.precipitation
-                    })
-            except Exception as e:
-                logger.warning(f"過去の予報取得エラー ({label}): {e}")
+        # 過去データ表示は削除（翌日の予報のみ表示）
+        timeline_data["past_forecasts"] = []
         
         # データが取得できた場合のみ統計情報を追加
         all_forecasts = timeline_data["future_forecasts"] + timeline_data["past_forecasts"]

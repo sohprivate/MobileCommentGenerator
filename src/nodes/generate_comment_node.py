@@ -7,6 +7,7 @@ from typing import Dict, Any, List, Optional
 import logging
 from datetime import datetime
 import os
+import yaml
 
 # langgraph nodeデコレータは新バージョンでは不要
 

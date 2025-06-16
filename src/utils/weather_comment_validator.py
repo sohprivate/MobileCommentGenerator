@@ -62,7 +62,14 @@ class WeatherCommentValidator:
             "sunny": {
                 "weather_comment": [
                     "雨", "じめじめ", "湿った", "どんより", "曇り", "雲が厚い",
-                    "傘", "雨具", "濡れ", "湿気", "降水"
+                    "傘", "雨具", "濡れ", "湿気", "降水",
+                    # 晴天時に不適切な空の状態表現を追加
+                    "スッキリしない", "すっきりしない", "はっきりしない", "ぼんやり",
+                    "もやもや", "どんより", "重い空", "厚い雲", "灰色の空",
+                    "曇りがち", "雲多め", "変わりやすい天気", "不安定",
+                    # 安定した晴れ天気に不適切な表現を追加
+                    "変わりやすい空", "変わりやすい", "気まぐれ", "移ろいやすい",
+                    "一定しない", "変化しやすい", "変動", "不規則"
                 ],
                 "advice": [
                     "傘", "レインコート", "濡れ", "雨具", "長靴"
@@ -81,16 +88,33 @@ class WeatherCommentValidator:
             }
         }
         
-        # 温度別禁止ワード
+        # 温度別禁止ワード（詳細な温度範囲に基づく）
         self.temperature_forbidden_words = {
-            "hot": {  # 30°C以上
+            "moderate_warm": {  # 25-33°C（中程度の暖かさ）
+                "forbidden": [
+                    "寒い", "冷える", "肌寒い", "防寒", "厚着",
+                    # 31°Cで「厳しい暑さ」は過大
+                    "厳しい暑さ", "酷暑", "激しい暑さ", "耐え難い暑さ",
+                    "猛烈な暑さ", "危険な暑さ"
+                ]
+            },
+            "very_hot": {  # 34°C以上（猛暑日）
                 "forbidden": ["寒い", "冷える", "肌寒い", "防寒", "暖かく", "厚着"]
             },
-            "cold": {  # 12°C未満（防寒閾値調整）
-                "forbidden": ["暑い", "猛暑", "酷暑", "熱中症", "クーラー", "冷房"]
+            "extreme_hot": {  # 37°C以上（危険な暑さ）
+                "forbidden": ["寒い", "冷える", "肌寒い", "防寒", "暖かく", "厚着"]
             },
-            "mild": {  # 10-30°C
-                "forbidden": ["極寒", "凍える", "猛暑", "酷暑"]
+            "cold": {  # 12°C未満
+                "forbidden": [
+                    "暑い", "猛暑", "酷暑", "熱中症", "クーラー", "冷房",
+                    "厳しい暑さ", "激しい暑さ"
+                ]
+            },
+            "mild": {  # 12-25°C（快適域）
+                "forbidden": [
+                    "極寒", "凍える", "猛暑", "酷暑", 
+                    "厳しい暑さ", "激しい暑さ", "耐え難い暑さ"
+                ]
             }
         }
         
@@ -210,41 +234,62 @@ class WeatherCommentValidator:
                     if word in comment_text:
                         return False, f"軽い雨（{precipitation}mm）で過度な警戒表現「{word}」を含む"
         
-        # 晴天チェック
+        # 晴天チェック（厳密な判定）
         elif any(sunny in weather_desc for sunny in ["晴", "快晴"]):
             forbidden_words = self.weather_forbidden_words["sunny"][comment_type]
             for word in forbidden_words:
                 if word in comment_text:
+                    logger.info(f"晴天時禁止ワード除外: '{comment_text}' - 理由: 晴天時の禁止ワード「{word}」を含む")
                     return False, f"晴天時の禁止ワード「{word}」を含む"
         
-        # 曇天チェック
+        # 曇天チェック（晴天でない場合のみ）
         elif "曇" in weather_desc or "くもり" in weather_desc:
             forbidden_words = self.weather_forbidden_words["cloudy"][comment_type]
             for word in forbidden_words:
                 if word in comment_text:
                     return False, f"曇天時の禁止ワード「{word}」を含む"
             
-            # 曇天時に「スッキリしない」を許可（除外から除く）
-            if "スッキリしない" in comment_text:
-                return True, "曇天時の適切な表現"
+            # 曇天時のみ「スッキリしない」を許可
+            logger.debug(f"曇天時コメント許可: '{comment_text}'")
+        
+        # その他の天気（明確でない場合）
+        else:
+            # 「スッキリしない」は曇天時のみ許可
+            if "スッキリしない" in comment_text and not any(cloudy in weather_desc for cloudy in ["曇", "くもり"]):
+                return False, f"不明確な天気時の禁止ワード「スッキリしない」を含む"
         
         return True, "天気条件OK"
     
     def _check_temperature_conditions(self, comment_text: str, 
                                     weather_data: WeatherForecast) -> Tuple[bool, str]:
-        """温度条件に基づく検証"""
+        """温度条件に基づく検証（詳細な温度範囲）"""
         temp = weather_data.temperature
         
-        if temp >= 30:
-            forbidden = self.temperature_forbidden_words["hot"]["forbidden"]
+        # 詳細な温度範囲による分類
+        if temp >= 37:
+            forbidden = self.temperature_forbidden_words["extreme_hot"]["forbidden"]
+            temp_category = "危険な暑さ"
+        elif temp >= 34:
+            forbidden = self.temperature_forbidden_words["very_hot"]["forbidden"]
+            temp_category = "猛暑日"
+        elif temp >= 25:
+            forbidden = self.temperature_forbidden_words["moderate_warm"]["forbidden"]
+            temp_category = "中程度の暖かさ"
+            # 31°C以下で熱中症は控えめに
+            if temp < 32 and "熱中症" in comment_text:
+                logger.info(f"温度不適切表現除外: '{comment_text}' - 理由: {temp}°C（32°C未満）で「熱中症」表現は過大")
+                return False, f"温度{temp}°C（32°C未満）で「熱中症」表現は過大"
         elif temp < 12:
             forbidden = self.temperature_forbidden_words["cold"]["forbidden"]
+            temp_category = "寒い"
         else:
             forbidden = self.temperature_forbidden_words["mild"]["forbidden"]
+            temp_category = "快適域"
         
         for word in forbidden:
             if word in comment_text:
-                return False, f"温度{temp}°Cで禁止ワード「{word}」を含む"
+                logger.info(f"温度不適切表現除外: '{comment_text}' - 理由: {temp}°C（{temp_category}）で禁止ワード「{word}」を含む")
+                return False, f"温度{temp}°C（{temp_category}）で禁止ワード「{word}」を含む"
         
         return True, "温度条件OK"
     
