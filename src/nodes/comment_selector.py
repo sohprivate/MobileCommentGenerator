@@ -746,7 +746,8 @@ class CommentSelector:
         # 同じ重要キーワードが両方に含まれている場合は重複と判定
         duplicate_keywords = [
             "にわか雨", "熱中症", "紫外線", "雷", "強風", "大雨", "猛暑", "酷暑",
-            "注意", "警戒", "対策", "気をつけ", "備え", "準備"
+            "注意", "警戒", "対策", "気をつけ", "備え", "準備",
+            "傘"  # 傘関連の重複を防ぐ
         ]
         
         weather_keywords = []
@@ -803,6 +804,9 @@ class CommentSelector:
             (["風が強い", "風に注意"], ["風", "注意"]),
             (["紫外線が強い", "紫外線対策"], ["紫外線"]),
             (["雷が心配", "雷に注意"], ["雷", "注意"]),
+            # 傘関連の類似表現を追加
+            (["傘が必須", "傘を忘れずに", "傘をお忘れなく"], ["傘", "必要", "お守り", "安心"]),
+            (["傘がお守り", "傘が安心"], ["傘", "必要", "必須", "忘れずに"]),
         ]
         
         for weather_patterns, advice_patterns in similarity_patterns:
@@ -812,7 +816,36 @@ class CommentSelector:
                 logger.debug(f"類似表現検出: 天気パターン={weather_patterns}, アドバイスパターン={advice_patterns}")
                 return True
         
-        # 6. 文字列の類似度チェック（最適化版）
+        # 6. 傘関連の特別チェック（より厳格な判定）
+        umbrella_expressions = [
+            "傘が必須", "傘がお守り", "傘を忘れずに", "傘をお忘れなく",
+            "傘の準備", "傘が活躍", "折り畳み傘", "傘があると安心",
+            "傘をお持ちください", "傘の携帯"
+        ]
+        
+        # 両方のコメントに傘関連の表現が含まれている場合
+        weather_has_umbrella = any(expr in weather_text for expr in umbrella_expressions) or "傘" in weather_text
+        advice_has_umbrella = any(expr in advice_text for expr in umbrella_expressions) or "傘" in advice_text
+        
+        if weather_has_umbrella and advice_has_umbrella:
+            # 傘という単語が両方に含まれていたら、より詳細にチェック
+            logger.debug(f"傘関連の重複候補検出: 天気='{weather_text}', アドバイス='{advice_text}'")
+            
+            # 同じような意味の傘表現は重複とみなす
+            similar_umbrella_meanings = [
+                ["必須", "お守り", "必要", "忘れずに", "お忘れなく", "携帯", "準備", "活躍", "安心"],
+            ]
+            
+            for meaning_group in similar_umbrella_meanings:
+                weather_meanings = [m for m in meaning_group if m in weather_text]
+                advice_meanings = [m for m in meaning_group if m in advice_text]
+                
+                # 同じ意味グループの単語が両方に含まれている場合は重複
+                if weather_meanings and advice_meanings:
+                    logger.debug(f"傘関連の意味的重複検出: 天気側={weather_meanings}, アドバイス側={advice_meanings}")
+                    return True
+        
+        # 7. 文字列の類似度チェック（最適化版）
         # 短いコメントのみ対象とし、計算コストを削減
         if len(weather_text) <= 10 and len(advice_text) <= 10:
             # 最小長による早期判定
