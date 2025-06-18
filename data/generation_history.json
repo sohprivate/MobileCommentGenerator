@@ -15977,5 +15977,2657 @@
       }
     },
     "error": null
+  },
+  {
+    "timestamp": "2025-06-18T08:25:00.401386",
+    "location": "さいたま",
+    "llm_provider": "gemini",
+    "final_comment": "厳しい暑さ　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 3119,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T08:25:00.386185",
+      "location_name": "さいたま",
+      "target_datetime": "2025-06-18T08:24:57.191231",
+      "llm_provider": "gemini",
+      "weather_condition": "猛暑",
+      "temperature": 34.0,
+      "humidity": 47.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 30.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "猛暑",
+            "temperature": 34.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "猛暑",
+            "temperature": 35.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "30.0°C〜35.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "厳しい暑さ",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"厳しい暑さ　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 3119,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T08:25:00.386185\",\n    \"location_name\": \"さいたま\",\n    \"target_datetime\": \"2025-06-18T08:24:57.191231\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"猛暑\",\n    \"temperature\": 34.0,\n    \"humidity\": 47.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 30.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"猛暑\",\n          \"temperature\": 34.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"猛暑\",\n          \"temperature\": 35.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"30.0°C〜35.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"厳しい暑さ\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 14.919042587280273
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:43:25.878110",
+    "location": "千葉",
+    "llm_provider": "openai",
+    "final_comment": "穏やかな空　過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 35409,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:43:25.821699",
+      "location_name": "千葉",
+      "target_datetime": "2025-06-18T09:42:50.375811",
+      "llm_provider": "openai",
+      "weather_condition": "晴れ",
+      "temperature": 31.0,
+      "humidity": 59.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "27.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 35409,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:43:25.821699\",\n    \"location_name\": \"千葉\",\n    \"target_datetime\": \"2025-06-18T09:42:50.375811\",\n    \"llm_provider\": \"openai\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 31.0,\n    \"humidity\": 59.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"27.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 56.24890327453613
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:43:42.784065",
+    "location": "那覇",
+    "llm_provider": "gemini",
+    "final_comment": "雲の多い空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2721,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:43:42.728929",
+      "location_name": "那覇",
+      "target_datetime": "2025-06-18T09:43:39.915478",
+      "llm_provider": "gemini",
+      "weather_condition": "くもり",
+      "temperature": 29.0,
+      "humidity": 81.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "くもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "変わりやすい天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲の多い空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲の多い空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2721,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:43:42.728929\",\n    \"location_name\": \"那覇\",\n    \"target_datetime\": \"2025-06-18T09:43:39.915478\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 81.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"くもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"変わりやすい天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲の多い空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 55.586814880371094
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:43:45.581960",
+    "location": "名護",
+    "llm_provider": "gemini",
+    "final_comment": "雲が優勢の空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2733,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:43:45.549106",
+      "location_name": "名護",
+      "target_datetime": "2025-06-18T09:43:42.807381",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 29.0,
+      "humidity": 83.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲が優勢の空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲が優勢の空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2733,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:43:45.549106\",\n    \"location_name\": \"名護\",\n    \"target_datetime\": \"2025-06-18T09:43:42.807381\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 83.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲が優勢の空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 32.57012367248535
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:43:48.095934",
+    "location": "久米島",
+    "llm_provider": "gemini",
+    "final_comment": "雲が優勢の空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2441,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:43:48.058795",
+      "location_name": "久米島",
+      "target_datetime": "2025-06-18T09:43:45.607771",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 29.0,
+      "humidity": 81.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲が優勢の空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲が優勢の空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2441,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:43:48.058795\",\n    \"location_name\": \"久米島\",\n    \"target_datetime\": \"2025-06-18T09:43:45.607771\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 81.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲が優勢の空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 40.23098945617676
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:43:51.009156",
+    "location": "大東島",
+    "llm_provider": "gemini",
+    "final_comment": "穏やかな空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2857,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:43:50.988699",
+      "location_name": "大東島",
+      "target_datetime": "2025-06-18T09:43:48.123891",
+      "llm_provider": "gemini",
+      "weather_condition": "晴れ",
+      "temperature": 32.0,
+      "humidity": 67.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-19T15:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T15:00:00+09:00",
+        "summary": {
+          "temperature_range": "27.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2857,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:43:50.988699\",\n    \"location_name\": \"大東島\",\n    \"target_datetime\": \"2025-06-18T09:43:48.123891\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 32.0,\n    \"humidity\": 67.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-19T15:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T15:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"27.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 20.22719383239746
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:43:53.856868",
+    "location": "宮古島",
+    "llm_provider": "gemini",
+    "final_comment": "雲が優勢の空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2789,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:43:53.827426",
+      "location_name": "宮古島",
+      "target_datetime": "2025-06-18T09:43:51.028669",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 29.0,
+      "humidity": 82.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲が優勢の空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲が優勢の空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2789,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:43:53.827426\",\n    \"location_name\": \"宮古島\",\n    \"target_datetime\": \"2025-06-18T09:43:51.028669\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 82.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲が優勢の空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 28.884172439575195
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:43:56.208863",
+    "location": "石垣島",
+    "llm_provider": "gemini",
+    "final_comment": "雲の多い空　暑さ対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2295,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:43:56.190559",
+      "location_name": "石垣島",
+      "target_datetime": "2025-06-18T09:43:53.886752",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 31.0,
+      "humidity": 79.0,
+      "wind_speed": 5.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲の多い空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "暑さ対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲の多い空　暑さ対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2295,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:43:56.190559\",\n    \"location_name\": \"石垣島\",\n    \"target_datetime\": \"2025-06-18T09:43:53.886752\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 31.0,\n    \"humidity\": 79.0,\n    \"wind_speed\": 5.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲の多い空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"暑さ対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 18.045902252197266
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:43:58.426376",
+    "location": "与那国島",
+    "llm_provider": "gemini",
+    "final_comment": "雲が優勢の空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2153,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:43:58.390532",
+      "location_name": "与那国島",
+      "target_datetime": "2025-06-18T09:43:56.229401",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 29.0,
+      "humidity": 83.0,
+      "wind_speed": 7.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲が優勢の空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲が優勢の空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2153,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:43:58.390532\",\n    \"location_name\": \"与那国島\",\n    \"target_datetime\": \"2025-06-18T09:43:56.229401\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 83.0,\n    \"wind_speed\": 7.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲が優勢の空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 35.15005111694336
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:57:51.118239",
+    "location": "那覇",
+    "llm_provider": "gemini",
+    "final_comment": "雲の多い空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2889,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:57:51.058359",
+      "location_name": "那覇",
+      "target_datetime": "2025-06-18T09:57:48.102962",
+      "llm_provider": "gemini",
+      "weather_condition": "くもり",
+      "temperature": 29.0,
+      "humidity": 81.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "くもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "変わりやすい天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲の多い空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲の多い空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2889,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:57:51.058359\",\n    \"location_name\": \"那覇\",\n    \"target_datetime\": \"2025-06-18T09:57:48.102962\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 81.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"くもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"変わりやすい天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲の多い空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 59.91101264953613
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:57:53.755056",
+    "location": "名護",
+    "llm_provider": "gemini",
+    "final_comment": "雲が優勢の空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2572,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:57:53.725761",
+      "location_name": "名護",
+      "target_datetime": "2025-06-18T09:57:51.145053",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 29.0,
+      "humidity": 83.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲が優勢の空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲が優勢の空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2572,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:57:53.725761\",\n    \"location_name\": \"名護\",\n    \"target_datetime\": \"2025-06-18T09:57:51.145053\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 83.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲が優勢の空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 28.90610694885254
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:57:56.658356",
+    "location": "久米島",
+    "llm_provider": "gemini",
+    "final_comment": "雲の多い空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2849,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:57:56.636357",
+      "location_name": "久米島",
+      "target_datetime": "2025-06-18T09:57:53.779692",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 29.0,
+      "humidity": 81.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲の多い空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲の多い空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2849,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:57:56.636357\",\n    \"location_name\": \"久米島\",\n    \"target_datetime\": \"2025-06-18T09:57:53.779692\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 81.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲の多い空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 21.705150604248047
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:57:59.826964",
+    "location": "大東島",
+    "llm_provider": "gemini",
+    "final_comment": "穏やかな空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 3112,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:57:59.802213",
+      "location_name": "大東島",
+      "target_datetime": "2025-06-18T09:57:56.679829",
+      "llm_provider": "gemini",
+      "weather_condition": "晴れ",
+      "temperature": 32.0,
+      "humidity": 67.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-19T15:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T15:00:00+09:00",
+        "summary": {
+          "temperature_range": "27.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 3112,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:57:59.802213\",\n    \"location_name\": \"大東島\",\n    \"target_datetime\": \"2025-06-18T09:57:56.679829\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 32.0,\n    \"humidity\": 67.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-19T15:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T15:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"27.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 24.328231811523438
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:58:02.283701",
+    "location": "宮古島",
+    "llm_provider": "gemini",
+    "final_comment": "雲が優勢の空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2397,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:58:02.252835",
+      "location_name": "宮古島",
+      "target_datetime": "2025-06-18T09:57:59.848403",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 29.0,
+      "humidity": 82.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲が優勢の空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲が優勢の空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2397,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:58:02.252835\",\n    \"location_name\": \"宮古島\",\n    \"target_datetime\": \"2025-06-18T09:57:59.848403\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 82.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲が優勢の空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 30.766010284423828
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:58:04.857294",
+    "location": "石垣島",
+    "llm_provider": "gemini",
+    "final_comment": "雲の多い空　暑さ対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2506,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:58:04.819590",
+      "location_name": "石垣島",
+      "target_datetime": "2025-06-18T09:58:02.304328",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 31.0,
+      "humidity": 79.0,
+      "wind_speed": 5.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲の多い空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "暑さ対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲の多い空　暑さ対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2506,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:58:04.819590\",\n    \"location_name\": \"石垣島\",\n    \"target_datetime\": \"2025-06-18T09:58:02.304328\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 31.0,\n    \"humidity\": 79.0,\n    \"wind_speed\": 5.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲の多い空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"暑さ対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 37.81604766845703
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T09:58:07.420846",
+    "location": "与那国島",
+    "llm_provider": "gemini",
+    "final_comment": "雲が優勢の空　ニワカ雨に注意",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2487,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T09:58:07.382716",
+      "location_name": "与那国島",
+      "target_datetime": "2025-06-18T09:58:04.887081",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 29.0,
+      "humidity": 83.0,
+      "wind_speed": 7.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "うすぐもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲が優勢の空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "ニワカ雨に注意",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲が優勢の空　ニワカ雨に注意\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2487,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T09:58:07.382716\",\n    \"location_name\": \"与那国島\",\n    \"target_datetime\": \"2025-06-18T09:58:04.887081\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 29.0,\n    \"humidity\": 83.0,\n    \"wind_speed\": 7.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲が優勢の空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"ニワカ雨に注意\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 38.062095642089844
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:08:35.067871",
+    "location": "東京",
+    "llm_provider": "gemini",
+    "final_comment": "穏やかな空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 4574,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:08:35.005045",
+      "location_name": "東京",
+      "target_datetime": "2025-06-18T10:08:30.394072",
+      "llm_provider": "gemini",
+      "weather_condition": "晴れ",
+      "temperature": 33.0,
+      "humidity": 48.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T15:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 33.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T15:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜33.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 4574,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:08:35.005045\",\n    \"location_name\": \"東京\",\n    \"target_datetime\": \"2025-06-18T10:08:30.394072\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 33.0,\n    \"humidity\": 48.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T15:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 33.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T15:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜33.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 62.58702278137207
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:08:37.446766",
+    "location": "大島",
+    "llm_provider": "gemini",
+    "final_comment": "ニワカ雨に注意　傘がお守り",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2305,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:08:37.404841",
+      "location_name": "大島",
+      "target_datetime": "2025-06-18T10:08:35.090441",
+      "llm_provider": "gemini",
+      "weather_condition": "雨",
+      "temperature": 29.0,
+      "humidity": 78.0,
+      "wind_speed": 1.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "くもり",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "雨",
+            "temperature": 29.0,
+            "precipitation": 1.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "くもり",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "うすぐもり",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "27.0°C〜29.0°C",
+          "max_precipitation": "1.0mm",
+          "weather_pattern": "雨天続く"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "ニワカ雨に注意",
+          "type": "weather_comment"
+        },
+        {
+          "text": "傘がお守り",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"ニワカ雨に注意　傘がお守り\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2305,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:08:37.404841\",\n    \"location_name\": \"大島\",\n    \"target_datetime\": \"2025-06-18T10:08:35.090441\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"雨\",\n    \"temperature\": 29.0,\n    \"humidity\": 78.0,\n    \"wind_speed\": 1.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"くもり\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"雨\",\n          \"temperature\": 29.0,\n          \"precipitation\": 1.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"くもり\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"27.0°C〜29.0°C\",\n        \"max_precipitation\": \"1.0mm\",\n        \"weather_pattern\": \"雨天続く\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"ニワカ雨に注意\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"傘がお守り\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 43.95866394042969
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:08:39.973249",
+    "location": "八丈島",
+    "llm_provider": "gemini",
+    "final_comment": "雲の多い空　蒸し暑い",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2447,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:08:39.930478",
+      "location_name": "八丈島",
+      "target_datetime": "2025-06-18T10:08:37.472220",
+      "llm_provider": "gemini",
+      "weather_condition": "くもり",
+      "temperature": 25.0,
+      "humidity": 93.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "くもり",
+            "temperature": 25.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "くもり",
+            "temperature": 25.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "くもり",
+            "temperature": 25.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "くもり",
+            "temperature": 23.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "23.0°C〜25.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲の多い空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "蒸し暑い",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲の多い空　蒸し暑い\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2447,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:08:39.930478\",\n    \"location_name\": \"八丈島\",\n    \"target_datetime\": \"2025-06-18T10:08:37.472220\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 25.0,\n    \"humidity\": 93.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"くもり\",\n          \"temperature\": 25.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"くもり\",\n          \"temperature\": 25.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"くもり\",\n          \"temperature\": 25.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"くもり\",\n          \"temperature\": 23.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"23.0°C〜25.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲の多い空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"蒸し暑い\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 42.65403747558594
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:08:42.871508",
+    "location": "父島",
+    "llm_provider": "gemini",
+    "final_comment": "雲が優勢の空　汗ばむ暑さ",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2777,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:08:42.783751",
+      "location_name": "父島",
+      "target_datetime": "2025-06-18T10:08:39.998174",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 28.0,
+      "humidity": 85.0,
+      "wind_speed": 6.0,
+      "weather_forecast_time": "2025-06-19T09:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "うすぐもり",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 26.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T09:00:00+09:00",
+        "summary": {
+          "temperature_range": "26.0°C〜29.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "雲が優勢の空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "汗ばむ暑さ",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"雲が優勢の空　汗ばむ暑さ\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2777,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:08:42.783751\",\n    \"location_name\": \"父島\",\n    \"target_datetime\": \"2025-06-18T10:08:39.998174\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 28.0,\n    \"humidity\": 85.0,\n    \"wind_speed\": 6.0,\n    \"weather_forecast_time\": \"2025-06-19T09:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 26.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T09:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"26.0°C〜29.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"雲が優勢の空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"汗ばむ暑さ\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 87.8138542175293
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:08:46.295036",
+    "location": "横浜",
+    "llm_provider": "gemini",
+    "final_comment": "穏やかな空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 3349,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:08:46.255841",
+      "location_name": "横浜",
+      "target_datetime": "2025-06-18T10:08:42.899142",
+      "llm_provider": "gemini",
+      "weather_condition": "晴れ",
+      "temperature": 32.0,
+      "humidity": 56.0,
+      "wind_speed": 2.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "28.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 3349,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:08:46.255841\",\n    \"location_name\": \"横浜\",\n    \"target_datetime\": \"2025-06-18T10:08:42.899142\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 32.0,\n    \"humidity\": 56.0,\n    \"wind_speed\": 2.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"28.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 39.14189338684082
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:08:48.822518",
+    "location": "小田原",
+    "llm_provider": "gemini",
+    "final_comment": "強い日差し　暑さ対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2455,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:08:48.780625",
+      "location_name": "小田原",
+      "target_datetime": "2025-06-18T10:08:46.317327",
+      "llm_provider": "gemini",
+      "weather_condition": "晴れ",
+      "temperature": 30.0,
+      "humidity": 73.0,
+      "wind_speed": 3.0,
+      "weather_forecast_time": "2025-06-19T15:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 30.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 26.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T15:00:00+09:00",
+        "summary": {
+          "temperature_range": "26.0°C〜30.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "強い日差し",
+          "type": "weather_comment"
+        },
+        {
+          "text": "暑さ対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"強い日差し　暑さ対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2455,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:08:48.780625\",\n    \"location_name\": \"小田原\",\n    \"target_datetime\": \"2025-06-18T10:08:46.317327\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 30.0,\n    \"humidity\": 73.0,\n    \"wind_speed\": 3.0,\n    \"weather_forecast_time\": \"2025-06-19T15:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 30.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 26.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T15:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"26.0°C〜30.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"強い日差し\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"暑さ対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 42.730093002319336
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:08:52.215880",
+    "location": "さいたま",
+    "llm_provider": "gemini",
+    "final_comment": "変わりやすい空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 3342,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:08:52.198121",
+      "location_name": "さいたま",
+      "target_datetime": "2025-06-18T10:08:48.847877",
+      "llm_provider": "gemini",
+      "weather_condition": "猛暑",
+      "temperature": 34.0,
+      "humidity": 47.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 30.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "猛暑",
+            "temperature": 34.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "猛暑",
+            "temperature": 35.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "30.0°C〜35.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "変わりやすい空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"変わりやすい空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 3342,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:08:52.198121\",\n    \"location_name\": \"さいたま\",\n    \"target_datetime\": \"2025-06-18T10:08:48.847877\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"猛暑\",\n    \"temperature\": 34.0,\n    \"humidity\": 47.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 30.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"猛暑\",\n          \"temperature\": 34.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"猛暑\",\n          \"temperature\": 35.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"30.0°C〜35.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"変わりやすい空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 17.550945281982422
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:08:55.587655",
+    "location": "熊谷",
+    "llm_provider": "gemini",
+    "final_comment": "変わりやすい空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 3324,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:08:55.565863",
+      "location_name": "熊谷",
+      "target_datetime": "2025-06-18T10:08:52.235223",
+      "llm_provider": "gemini",
+      "weather_condition": "猛暑",
+      "temperature": 35.0,
+      "humidity": 41.0,
+      "wind_speed": 5.0,
+      "weather_forecast_time": "2025-06-19T15:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 33.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "猛暑",
+            "temperature": 35.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T15:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜35.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "変わりやすい空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"変わりやすい空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 3324,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:08:55.565863\",\n    \"location_name\": \"熊谷\",\n    \"target_datetime\": \"2025-06-18T10:08:52.235223\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"猛暑\",\n    \"temperature\": 35.0,\n    \"humidity\": 41.0,\n    \"wind_speed\": 5.0,\n    \"weather_forecast_time\": \"2025-06-19T15:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 33.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"猛暑\",\n          \"temperature\": 35.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T15:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜35.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"変わりやすい空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 21.485090255737305
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:08:58.207217",
+    "location": "秩父",
+    "llm_provider": "gemini",
+    "final_comment": "変わりやすい空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2571,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:08:58.184325",
+      "location_name": "秩父",
+      "target_datetime": "2025-06-18T10:08:55.607091",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 32.0,
+      "humidity": 55.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "うすぐもり",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 33.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 30.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "28.0°C〜33.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "変わりやすい空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"変わりやすい空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2571,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:08:58.184325\",\n    \"location_name\": \"秩父\",\n    \"target_datetime\": \"2025-06-18T10:08:55.607091\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 32.0,\n    \"humidity\": 55.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 33.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 30.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"28.0°C〜33.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"変わりやすい空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 22.6900577545166
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:09:01.772859",
+    "location": "千葉",
+    "llm_provider": "gemini",
+    "final_comment": "穏やかな空　過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 3481,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:09:01.713939",
+      "location_name": "千葉",
+      "target_datetime": "2025-06-18T10:08:58.226156",
+      "llm_provider": "gemini",
+      "weather_condition": "晴れ",
+      "temperature": 31.0,
+      "humidity": 59.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "27.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 3481,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:09:01.713939\",\n    \"location_name\": \"千葉\",\n    \"target_datetime\": \"2025-06-18T10:08:58.226156\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 31.0,\n    \"humidity\": 59.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"27.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 58.68887901306152
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:09:03.698189",
+    "location": "銚子",
+    "llm_provider": "gemini",
+    "final_comment": "スッキリしない空　紫外線対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 1853,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:09:03.652339",
+      "location_name": "銚子",
+      "target_datetime": "2025-06-18T10:09:01.793403",
+      "llm_provider": "gemini",
+      "weather_condition": "くもり",
+      "temperature": 25.0,
+      "humidity": 91.0,
+      "wind_speed": 2.0,
+      "weather_forecast_time": "2025-06-19T18:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "くもり",
+            "temperature": 25.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T18:00:00+09:00",
+        "summary": {
+          "temperature_range": "25.0°C〜28.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "スッキリしない空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "紫外線対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 1.0,
+      "selection_reason": "LLMによる最適選択",
+      "output_json": "{\n  \"final_comment\": \"スッキリしない空　紫外線対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 1853,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:09:03.652339\",\n    \"location_name\": \"銚子\",\n    \"target_datetime\": \"2025-06-18T10:09:01.793403\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"くもり\",\n    \"temperature\": 25.0,\n    \"humidity\": 91.0,\n    \"wind_speed\": 2.0,\n    \"weather_forecast_time\": \"2025-06-19T18:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"くもり\",\n          \"temperature\": 25.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T18:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"25.0°C〜28.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"スッキリしない空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"紫外線対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 1.0,\n    \"selection_reason\": \"LLMによる最適選択\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 45.55988311767578
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:09:06.539772",
+    "location": "館山",
+    "llm_provider": "gemini",
+    "final_comment": "変わりやすい空　過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2708,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:09:06.516596",
+      "location_name": "館山",
+      "target_datetime": "2025-06-18T10:09:03.794090",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 25.0,
+      "humidity": 89.0,
+      "wind_speed": 3.0,
+      "weather_forecast_time": "2025-06-19T18:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "うすぐもり",
+            "temperature": 25.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T18:00:00+09:00",
+        "summary": {
+          "temperature_range": "25.0°C〜28.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "変わりやすい空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"変わりやすい空　過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2708,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:09:06.516596\",\n    \"location_name\": \"館山\",\n    \"target_datetime\": \"2025-06-18T10:09:03.794090\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 25.0,\n    \"humidity\": 89.0,\n    \"wind_speed\": 3.0,\n    \"weather_forecast_time\": \"2025-06-19T18:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 25.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T18:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"25.0°C〜28.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"変わりやすい空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 22.957801818847656
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:09:09.047498",
+    "location": "水戸",
+    "llm_provider": "gemini",
+    "final_comment": "変わりやすい空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2463,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:09:09.030120",
+      "location_name": "水戸",
+      "target_datetime": "2025-06-18T10:09:06.560641",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 24.0,
+      "humidity": 88.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T18:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 26.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "うすぐもり",
+            "temperature": 24.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T18:00:00+09:00",
+        "summary": {
+          "temperature_range": "24.0°C〜28.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "変わりやすい空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"変わりやすい空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2463,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:09:09.030120\",\n    \"location_name\": \"水戸\",\n    \"target_datetime\": \"2025-06-18T10:09:06.560641\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 24.0,\n    \"humidity\": 88.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T18:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 26.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 24.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T18:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"24.0°C〜28.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"変わりやすい空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 17.139911651611328
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:09:11.391450",
+    "location": "土浦",
+    "llm_provider": "gemini",
+    "final_comment": "穏やかな空　過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2298,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:09:11.375074",
+      "location_name": "土浦",
+      "target_datetime": "2025-06-18T10:09:09.070174",
+      "llm_provider": "gemini",
+      "weather_condition": "晴れ",
+      "temperature": 31.0,
+      "humidity": 57.0,
+      "wind_speed": 3.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "27.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2298,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:09:11.375074\",\n    \"location_name\": \"土浦\",\n    \"target_datetime\": \"2025-06-18T10:09:09.070174\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 31.0,\n    \"humidity\": 57.0,\n    \"wind_speed\": 3.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"27.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 16.180992126464844
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:09:14.092808",
+    "location": "前橋",
+    "llm_provider": "gemini",
+    "final_comment": "変わりやすい空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2652,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:09:14.071259",
+      "location_name": "前橋",
+      "target_datetime": "2025-06-18T10:09:11.412767",
+      "llm_provider": "gemini",
+      "weather_condition": "猛暑",
+      "temperature": 34.0,
+      "humidity": 48.0,
+      "wind_speed": 3.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 29.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "猛暑",
+            "temperature": 34.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "猛暑",
+            "temperature": 35.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "29.0°C〜35.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "変わりやすい空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"変わりやすい空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2652,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:09:14.071259\",\n    \"location_name\": \"前橋\",\n    \"target_datetime\": \"2025-06-18T10:09:11.412767\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"猛暑\",\n    \"temperature\": 34.0,\n    \"humidity\": 48.0,\n    \"wind_speed\": 3.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 29.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"猛暑\",\n          \"temperature\": 34.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"猛暑\",\n          \"temperature\": 35.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"29.0°C〜35.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"変わりやすい空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 21.330833435058594
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:09:16.643645",
+    "location": "みなかみ",
+    "llm_provider": "gemini",
+    "final_comment": "変わりやすい空　過ごしやすい体感",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2500,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:09:16.626786",
+      "location_name": "みなかみ",
+      "target_datetime": "2025-06-18T10:09:14.119523",
+      "llm_provider": "gemini",
+      "weather_condition": "うすぐもり",
+      "temperature": 31.0,
+      "humidity": 64.0,
+      "wind_speed": 2.0,
+      "weather_forecast_time": "2025-06-19T15:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "うすぐもり",
+            "temperature": 31.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "うすぐもり",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T15:00:00+09:00",
+        "summary": {
+          "temperature_range": "27.0°C〜31.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "変わりやすい空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "過ごしやすい体感",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"変わりやすい空　過ごしやすい体感\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2500,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:09:16.626786\",\n    \"location_name\": \"みなかみ\",\n    \"target_datetime\": \"2025-06-18T10:09:14.119523\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"うすぐもり\",\n    \"temperature\": 31.0,\n    \"humidity\": 64.0,\n    \"wind_speed\": 2.0,\n    \"weather_forecast_time\": \"2025-06-19T15:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 31.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"うすぐもり\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T15:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"27.0°C〜31.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"変わりやすい空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"過ごしやすい体感\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 16.6628360748291
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:09:19.155873",
+    "location": "宇都宮",
+    "llm_provider": "gemini",
+    "final_comment": "穏やかな空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2467,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:09:19.137621",
+      "location_name": "宇都宮",
+      "target_datetime": "2025-06-18T10:09:16.664159",
+      "llm_provider": "gemini",
+      "weather_condition": "晴れ",
+      "temperature": 32.0,
+      "humidity": 46.0,
+      "wind_speed": 4.0,
+      "weather_forecast_time": "2025-06-19T12:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "晴れ",
+            "temperature": 32.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "晴れ",
+            "temperature": 28.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T12:00:00+09:00",
+        "summary": {
+          "temperature_range": "28.0°C〜32.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "穏やかな空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"穏やかな空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2467,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:09:19.137621\",\n    \"location_name\": \"宇都宮\",\n    \"target_datetime\": \"2025-06-18T10:09:16.664159\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"晴れ\",\n    \"temperature\": 32.0,\n    \"humidity\": 46.0,\n    \"wind_speed\": 4.0,\n    \"weather_forecast_time\": \"2025-06-19T12:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 32.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"晴れ\",\n          \"temperature\": 28.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T12:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"28.0°C〜32.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"穏やかな空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 18.004894256591797
+      }
+    },
+    "error": null
+  },
+  {
+    "timestamp": "2025-06-18T10:09:21.798733",
+    "location": "大田原",
+    "llm_provider": "gemini",
+    "final_comment": "変わりやすい空　熱中症対策を",
+    "success": true,
+    "generation_metadata": {
+      "execution_time_ms": 2598,
+      "retry_count": 0,
+      "request_id": "unknown",
+      "generation_timestamp": "2025-06-18T10:09:21.781613",
+      "location_name": "大田原",
+      "target_datetime": "2025-06-18T10:09:19.176828",
+      "llm_provider": "gemini",
+      "weather_condition": "猛暑",
+      "temperature": 35.0,
+      "humidity": 46.0,
+      "wind_speed": 3.0,
+      "weather_forecast_time": "2025-06-19T15:00:00+09:00",
+      "weather_timeline": {
+        "future_forecasts": [
+          {
+            "time": "06/19 09:00",
+            "label": "09:00",
+            "weather": "快晴",
+            "temperature": 27.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 12:00",
+            "label": "12:00",
+            "weather": "快晴",
+            "temperature": 33.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 15:00",
+            "label": "15:00",
+            "weather": "猛暑",
+            "temperature": 35.0,
+            "precipitation": 0.0
+          },
+          {
+            "time": "06/19 18:00",
+            "label": "18:00",
+            "weather": "快晴",
+            "temperature": 30.0,
+            "precipitation": 0.0
+          }
+        ],
+        "past_forecasts": [],
+        "base_time": "2025-06-19T15:00:00+09:00",
+        "summary": {
+          "temperature_range": "27.0°C〜35.0°C",
+          "max_precipitation": "0.0mm",
+          "weather_pattern": "安定した天気"
+        }
+      },
+      "selected_past_comments": [
+        {
+          "text": "変わりやすい空",
+          "type": "weather_comment"
+        },
+        {
+          "text": "熱中症対策を",
+          "type": "advice"
+        }
+      ],
+      "similarity_score": 0.8,
+      "selection_reason": "重複回避代替選択（試行2回目）",
+      "output_json": "{\n  \"final_comment\": \"変わりやすい空　熱中症対策を\",\n  \"generation_metadata\": {\n    \"execution_time_ms\": 2598,\n    \"retry_count\": 0,\n    \"request_id\": \"unknown\",\n    \"generation_timestamp\": \"2025-06-18T10:09:21.781613\",\n    \"location_name\": \"大田原\",\n    \"target_datetime\": \"2025-06-18T10:09:19.176828\",\n    \"llm_provider\": \"gemini\",\n    \"weather_condition\": \"猛暑\",\n    \"temperature\": 35.0,\n    \"humidity\": 46.0,\n    \"wind_speed\": 3.0,\n    \"weather_forecast_time\": \"2025-06-19T15:00:00+09:00\",\n    \"weather_timeline\": {\n      \"future_forecasts\": [\n        {\n          \"time\": \"06/19 09:00\",\n          \"label\": \"09:00\",\n          \"weather\": \"快晴\",\n          \"temperature\": 27.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 12:00\",\n          \"label\": \"12:00\",\n          \"weather\": \"快晴\",\n          \"temperature\": 33.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 15:00\",\n          \"label\": \"15:00\",\n          \"weather\": \"猛暑\",\n          \"temperature\": 35.0,\n          \"precipitation\": 0.0\n        },\n        {\n          \"time\": \"06/19 18:00\",\n          \"label\": \"18:00\",\n          \"weather\": \"快晴\",\n          \"temperature\": 30.0,\n          \"precipitation\": 0.0\n        }\n      ],\n      \"past_forecasts\": [],\n      \"base_time\": \"2025-06-19T15:00:00+09:00\",\n      \"summary\": {\n        \"temperature_range\": \"27.0°C〜35.0°C\",\n        \"max_precipitation\": \"0.0mm\",\n        \"weather_pattern\": \"安定した天気\"\n      }\n    },\n    \"selected_past_comments\": [\n      {\n        \"text\": \"変わりやすい空\",\n        \"type\": \"weather_comment\"\n      },\n      {\n        \"text\": \"熱中症対策を\",\n        \"type\": \"advice\"\n      }\n    ],\n    \"similarity_score\": 0.8,\n    \"selection_reason\": \"重複回避代替選択（試行2回目）\"\n  }\n}",
+      "output_processed": true,
+      "node_execution_times": {
+        "output_node": 16.89600944519043
+      }
+    },
+    "error": null
   }
 ]
