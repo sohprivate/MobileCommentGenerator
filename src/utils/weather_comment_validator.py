@@ -2,6 +2,8 @@
 
 import logging
 from typing import List, Dict, Any, Tuple, Optional
+
+SUNNY_WEATHER_KEYWORDS = ["晴", "快晴", "晴天", "薄曇", "うすぐもり", "薄ぐもり"]
 from src.data.weather_data import WeatherForecast, WeatherCondition
 from src.data.past_comment import PastComment, CommentType
 
@@ -461,17 +463,19 @@ class WeatherCommentValidator:
         temp = weather_data.temperature
         
         # 晴れまたは薄曇りなのに雲が優勢と言っている矛盾
-        if any(
-            sunny_word in weather_desc
-            for sunny_word in ["晴", "快晴", "晴天", "薄曇", "うすぐもり", "薄ぐもり"]
-        ):
+        if any(sunny_word in weather_desc for sunny_word in SUNNY_WEATHER_KEYWORDS):
             cloud_dominant_phrases = [
-                "雲が優勢", "雲が多い", "雲に覆われ", "厚い雲", "雲がち", 
+                "雲が優勢", "雲が多い", "雲に覆われ", "厚い雲", "雲がち",
                 "どんより", "スッキリしない", "曇りがち"
             ]
             for phrase in cloud_dominant_phrases:
                 if phrase in weather_comment:
                     return False, f"晴天時に雲優勢表現「{phrase}」は矛盾（天気: {weather_data.weather_description}）"
+
+            rain_phrases = ["雨", "降雨", "雨が", "雨降り", "雨模様"]
+            for phrase in rain_phrases:
+                if phrase in weather_comment:
+                    return False, f"晴天時に雨表現「{phrase}」は矛盾（天気: {weather_data.weather_description}）"
         
         # 34度以下なのに熱中症に注意と言っている矛盾
         if temp <= 34:

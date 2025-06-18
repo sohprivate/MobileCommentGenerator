@@ -4,7 +4,7 @@ from src.utils.weather_comment_validator import WeatherCommentValidator
 from src.data.weather_data import WeatherForecast, WeatherCondition, WindDirection
 
 
-def make_weather(description: str, temp: float = 20.0):
+def create_weather_forecast(description: str, temp: float = 20.0):
     return WeatherForecast(
         location="東京",
         datetime=datetime(2024, 6, 5, 9, 0, 0),
@@ -27,7 +27,22 @@ def make_weather(description: str, temp: float = 20.0):
 
 def test_thin_cloud_no_cloudy_comment():
     validator = WeatherCommentValidator()
-    weather = make_weather("薄曇り")
+    weather = create_weather_forecast("薄曇り")
     is_valid, reason = validator._check_weather_reality_contradiction("雲が優勢です", weather)
     assert not is_valid
     assert "雲優勢" in reason
+
+
+def test_thin_cloud_allows_sunny_comment():
+    validator = WeatherCommentValidator()
+    weather = create_weather_forecast("薄曇り")
+    is_valid, reason = validator._check_weather_reality_contradiction("今日は晴れです", weather)
+    assert is_valid
+
+
+def test_thin_cloud_blocks_rain_comment():
+    validator = WeatherCommentValidator()
+    weather = create_weather_forecast("薄曇り")
+    is_valid, reason = validator._check_weather_reality_contradiction("雨が降りそうです", weather)
+    assert not is_valid
+    assert "雨表現" in reason
