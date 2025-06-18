@@ -536,8 +536,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { REGIONS, getAllLocations, getLocationsByRegion } from '~/constants/regions'
+import { ref, onMounted, computed, nextTick } from 'vue'
+import { REGIONS, getAllLocations, getLocationsByRegion, getLocationOrder } from '~/constants/regions'
+
+// Development-only logging
+const devLog = (...args: any[]) => {
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.log(...args)
+  }
+}
+
+const BATCH_SIZE = 3
+const locationOrderMap = new Map(
+  getLocationOrder().map((loc, idx) => [loc, idx])
+)
 
 // Page meta
 useHead({
@@ -601,7 +614,7 @@ const fetchLocations = async () => {
     console.error('Failed to fetch locations:', error)
     // Fallback to region-based data
     locations.value = getAllLocations()
-    console.log('Using region-based location data:', locations.value.length, 'locations')
+    devLog('Using region-based location data:', locations.value.length, 'locations')
   } finally {
     locationsLoading.value = false
   }
@@ -637,9 +650,15 @@ const fetchHistory = async () => {
 
 const generateComment = async () => {
   // Determine locations to process
-  const locationsToProcess = isBatchMode.value 
-    ? selectedLocations.value 
+  const locationsToProcessRaw = isBatchMode.value
+    ? selectedLocations.value
     : selectedLocation.value ? [selectedLocation.value] : []
+
+  const locationsToProcess = [...locationsToProcessRaw].sort(
+    (a, b) =>
+      (locationOrderMap.get(a) ?? Infinity) -
+      (locationOrderMap.get(b) ?? Infinity)
+  )
 
   const providerValue = selectedProvider.value?.value || selectedProvider.value
   if (locationsToProcess.length === 0 || !providerValue) {
@@ -650,8 +669,8 @@ const generateComment = async () => {
     return
   }
 
-  console.log('Starting comment generation:', { 
-    locations: locationsToProcess, 
+  devLog('Starting comment generation:', {
+    locations: locationsToProcess,
     provider: providerValue
   })
   
@@ -661,40 +680,43 @@ const generateComment = async () => {
 
   try {
     if (isBatchMode.value) {
-      // Batch generation
-      const allResults = []
-      
-      for (const location of locationsToProcess) {
-        const requestBody = {
-          location: location,
-          llm_provider: selectedProvider.value.value || selectedProvider.value,
-          target_datetime: new Date().toISOString()
-        }
-        
-        console.log('Request body for', location, ':', requestBody)
-        
-        try {
-          const response = await $fetch(`${apiBaseUrl}/api/generate`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: requestBody
-          })
-
-          allResults.push(response)
-        } catch (error) {
-          allResults.push({
-            success: false,
+      // Batch generation with limited concurrency
+      for (let i = 0; i < locationsToProcess.length; i += BATCH_SIZE) {
+        const chunk = locationsToProcess.slice(i, i + BATCH_SIZE)
+        const chunkPromises = chunk.map(async location => {
+          const requestBody = {
             location: location,
-            error: error.message || 'コメント生成に失敗しました'
-          })
-        }
+            llm_provider: selectedProvider.value.value || selectedProvider.value,
+            target_datetime: new Date().toISOString()
+          }
+
+          devLog('Request body for', location, ':', requestBody)
+
+          try {
+            const response = await $fetch(`${apiBaseUrl}/api/generate`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: requestBody
+            })
+            return response
+          } catch (error) {
+            return {
+              success: false,
+              location: location,
+              error: error.message || 'コメント生成に失敗しました'
+            }
+          }
+        })
+
+        const chunkResults = await Promise.all(chunkPromises)
+        results.value.push(...chunkResults)
+        await nextTick()
       }
-      
-      results.value = allResults
-      console.log('Batch generation results:', allResults)
-      
+
+      devLog('Batch generation results:', results.value)
+
       // Refresh history
       await fetchHistory()
       
@@ -706,7 +728,7 @@ const generateComment = async () => {
         target_datetime: new Date().toISOString()
       }
       
-      console.log('Request body:', requestBody)
+      devLog('Request body:', requestBody)
       
       const response = await $fetch(`${apiBaseUrl}/api/generate`, {
         method: 'POST',
@@ -716,7 +738,7 @@ const generateComment = async () => {
         body: requestBody
       })
 
-      console.log('Response received:', response)
+      devLog('Response received:', response)
       result.value = response
       
       // Refresh history if generation was successful
@@ -814,7 +836,7 @@ const isRegionSelected = (regionName: string) => {
 
 // Initialize on mount
 onMounted(async () => {
-  console.log('Component mounted, fetching initial data...')
+  devLog('Component mounted, fetching initial data...')
   
   await Promise.all([
     fetchLocations(),
@@ -822,7 +844,7 @@ onMounted(async () => {
     fetchHistory()
   ])
   
-  console.log('Initial data loaded:', { 
+  devLog('Initial data loaded:', {
     locations: locations.value.length, 
     providers: providers.value.length, 
     history: history.value.length 
@@ -831,7 +853,7 @@ onMounted(async () => {
   // Set default selections
   if (locations.value.length > 0) {
     selectedLocation.value = locations.value[0]
-    console.log('Default location set:', selectedLocation.value)
+    devLog('Default location set:', selectedLocation.value)
   }
 })
 </script>

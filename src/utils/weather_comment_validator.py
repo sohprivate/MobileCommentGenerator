@@ -2,6 +2,14 @@
 
 import logging
 from typing import List, Dict, Any, Tuple, Optional
+
+from src.config.weather_constants import (
+    HEATSTROKE_WARNING_TEMP,
+    HEATSTROKE_SEVERE_TEMP,
+    COLD_WARNING_TEMP,
+)
+
+SUNNY_WEATHER_KEYWORDS = ["晴", "快晴", "晴天", "薄曇", "うすぐもり", "薄ぐもり"]
 from src.data.weather_data import WeatherForecast, WeatherCondition
 from src.data.past_comment import PastComment, CommentType
 
@@ -194,10 +202,11 @@ class WeatherCommentValidator:
         elif "雷" in weather_desc:
             # 設定ファイルから雷の降水量閾値を取得
             try:
-                from src.utils.config_loader import load_config
+                from src.config.config_loader import load_config
                 config = load_config()
                 thunder_threshold = config.get('precipitation', {}).get('thunder_severe_threshold', 5.0)
-            except:
+            except (FileNotFoundError, KeyError, ValueError) as e:
+                logger.warning(f"Failed to load thunder threshold: {e}")
                 thunder_threshold = 5.0  # デフォルト値：気象庁の「やや強い雨」基準
             
             if precipitation >= thunder_threshold:
@@ -277,16 +286,18 @@ class WeatherCommentValidator:
         if temp >= 37:
             forbidden = self.temperature_forbidden_words["extreme_hot"]["forbidden"]
             temp_category = "危険な暑さ"
-        elif temp >= 34:
+        elif temp >= HEATSTROKE_SEVERE_TEMP:
             forbidden = self.temperature_forbidden_words["very_hot"]["forbidden"]
             temp_category = "猛暑日"
         elif temp >= 25:
             forbidden = self.temperature_forbidden_words["moderate_warm"]["forbidden"]
             temp_category = "中程度の暖かさ"
             # 31°C以下で熱中症は控えめに
-            if temp < 32 and "熱中症" in comment_text:
-                logger.info(f"温度不適切表現除外: '{comment_text}' - 理由: {temp}°C（32°C未満）で「熱中症」表現は過大")
-                return False, f"温度{temp}°C（32°C未満）で「熱中症」表現は過大"
+            if temp < HEATSTROKE_WARNING_TEMP and "熱中症" in comment_text:
+                logger.info(
+                    f"温度不適切表現除外: '{comment_text}' - 理由: {temp}°C（{HEATSTROKE_WARNING_TEMP}°C未満）で「熱中症」表現は過大"
+                )
+                return False, f"温度{temp}°C（{HEATSTROKE_WARNING_TEMP}°C未満）で「熱中症」表現は過大"
         elif temp < 12:
             forbidden = self.temperature_forbidden_words["cold"]["forbidden"]
             temp_category = "寒い"
@@ -460,25 +471,30 @@ class WeatherCommentValidator:
         weather_desc = weather_data.weather_description.lower()
         temp = weather_data.temperature
         
-        # 晴れなのに雲が優勢と言っている矛盾
-        if any(sunny_word in weather_desc for sunny_word in ["晴", "快晴", "晴天"]):
+        # 晴れまたは薄曇りなのに雲が優勢と言っている矛盾
+        if any(sunny_word in weather_desc for sunny_word in SUNNY_WEATHER_KEYWORDS):
             cloud_dominant_phrases = [
-                "雲が優勢", "雲が多い", "雲に覆われ", "厚い雲", "雲がち", 
+                "雲が優勢", "雲が多い", "雲に覆われ", "厚い雲", "雲がち",
                 "どんより", "スッキリしない", "曇りがち"
             ]
             for phrase in cloud_dominant_phrases:
                 if phrase in weather_comment:
                     return False, f"晴天時に雲優勢表現「{phrase}」は矛盾（天気: {weather_data.weather_description}）"
+
+            rain_phrases = ["雨", "降雨", "雨が", "雨降り", "雨模様"]
+            for phrase in rain_phrases:
+                if phrase in weather_comment:
+                    return False, f"晴天時に雨表現「{phrase}」は矛盾（天気: {weather_data.weather_description}）"
         
         # 34度以下なのに熱中症に注意と言っている矛盾
-        if temp <= 34:
+        if temp <= HEATSTROKE_SEVERE_TEMP:
             heatstroke_phrases = [
                 "熱中症に注意", "熱中症対策", "熱中症の危険", "熱中症リスク",
                 "熱中症を避け", "熱中症防止", "熱中症に気をつけ"
             ]
             for phrase in heatstroke_phrases:
                 if phrase in weather_comment:
-                    return False, f"34°C以下（{temp}°C）で熱中症警告「{phrase}」は過剰"
+                    return False, f"{HEATSTROKE_SEVERE_TEMP}°C以下（{temp}°C）で熱中症警告「{phrase}」は過剰"
         
         # 9, 12, 15, 18時の矛盾パターンチェック
         hour = weather_data.datetime.hour
@@ -504,24 +520,24 @@ class WeatherCommentValidator:
         temp = weather_data.temperature
         
         # 32°C未満で熱中症対策を強く推奨する矛盾
-        if temp < 32:
+        if temp < HEATSTROKE_WARNING_TEMP:
             excessive_heat_measures = [
                 "熱中症対策必須", "熱中症に厳重注意", "熱中症の危険", "熱中症リスク高",
                 "水分補給を頻繁に", "クーラー必須", "冷房を強めに", "氷で冷やして"
             ]
             for measure in excessive_heat_measures:
                 if measure in advice_comment:
-                    return False, f"32°C未満（{temp}°C）で過度な熱中症対策「{measure}」は不適切"
+                    return False, f"{HEATSTROKE_WARNING_TEMP}°C未満（{temp}°C）で過度な熱中症対策「{measure}」は不適切"
         
         # 15°C以上で防寒対策を強く推奨する矛盾
-        if temp >= 15:
+        if temp >= COLD_WARNING_TEMP:
             excessive_cold_measures = [
                 "厚着必須", "防寒対策必須", "暖房を強めに", "厚手のコートを",
                 "マフラー必須", "手袋が必要", "暖かい飲み物を頻繁に"
             ]
             for measure in excessive_cold_measures:
                 if measure in advice_comment:
-                    return False, f"15°C以上（{temp}°C）で過度な防寒対策「{measure}」は不適切"
+                    return False, f"{COLD_WARNING_TEMP}°C以上（{temp}°C）で過度な防寒対策「{measure}」は不適切"
         
         return True, "温度症状チェックOK"
     
