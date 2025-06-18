@@ -252,9 +252,112 @@
                       icon="i-heroicons-check-circle"
                       class="mb-3"
                     />
-                    <div class="p-3 bg-green-50 rounded border border-green-200">
+                    <div class="p-3 bg-green-50 rounded border border-green-200 mb-3">
                       <div class="font-medium text-green-900 mb-1">{{ batchResult.location }}:</div>
                       <div class="text-green-800">{{ batchResult.comment }}</div>
+                    </div>
+
+                    <!-- Detailed Information for Batch Results -->
+                    <div v-if="batchResult.metadata" class="mt-3">
+                      <UAccordion 
+                        :items="[{
+                          label: `${batchResult.location} の詳細情報`,
+                          icon: 'i-heroicons-information-circle',
+                          slot: `weather-details-${index}`
+                        }]"
+                      >
+                        <template #[`weather-details-${index}`]>
+                          <div class="p-4">
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                              <div v-if="batchResult.metadata.temperature !== undefined">
+                                <div class="text-sm font-medium text-gray-700">気温</div>
+                                <div class="text-lg">{{ batchResult.metadata.temperature }}°C</div>
+                              </div>
+                              <div v-if="batchResult.metadata.weather_condition">
+                                <div class="text-sm font-medium text-gray-700">天気</div>
+                                <div class="text-lg">{{ batchResult.metadata.weather_condition }}</div>
+                              </div>
+                              <div v-if="batchResult.metadata.wind_speed !== undefined">
+                                <div class="text-sm font-medium text-gray-700">風速</div>
+                                <div class="text-lg">{{ batchResult.metadata.wind_speed }}m/s</div>
+                              </div>
+                              <div v-if="batchResult.metadata.humidity !== undefined">
+                                <div class="text-sm font-medium text-gray-700">湿度</div>
+                                <div class="text-lg">{{ batchResult.metadata.humidity }}%</div>
+                              </div>
+                            </div>
+                            
+                            <div v-if="batchResult.metadata.weather_forecast_time" class="p-3 bg-blue-50 rounded mb-4">
+                              <div class="text-sm font-medium text-blue-700">予報基準時刻</div>
+                              <div class="text-blue-600">{{ formatDateTime(batchResult.metadata.weather_forecast_time) }}</div>
+                              <div class="text-xs text-blue-500 mt-1">
+                                この時刻を中心とした前後24時間の天気変化を分析してコメントを生成
+                              </div>
+                            </div>
+
+                            <!-- Weather Timeline for Batch Results -->
+                            <div v-if="batchResult.metadata.weather_timeline" class="mb-4">
+                              <div class="text-sm font-medium text-gray-700 mb-3">時系列予報データ</div>
+                              
+                              <!-- Summary -->
+                              <div v-if="batchResult.metadata.weather_timeline.summary" class="p-3 bg-gray-50 rounded mb-3">
+                                <div class="text-xs font-medium text-gray-600 mb-1">概要</div>
+                                <div class="text-sm text-gray-700">
+                                  {{ batchResult.metadata.weather_timeline.summary.weather_pattern }} | 
+                                  気温範囲: {{ batchResult.metadata.weather_timeline.summary.temperature_range }} | 
+                                  最大降水量: {{ batchResult.metadata.weather_timeline.summary.max_precipitation }}
+                                </div>
+                              </div>
+
+                              <!-- Past Forecasts -->
+                              <div v-if="batchResult.metadata.weather_timeline.past_forecasts && batchResult.metadata.weather_timeline.past_forecasts.length > 0" class="mb-3">
+                                <div class="text-xs font-medium text-gray-600 mb-2">過去の推移（12時間前〜基準時刻）</div>
+                                <div class="grid grid-cols-1 gap-1">
+                                  <div v-for="forecast in batchResult.metadata.weather_timeline.past_forecasts" :key="forecast.time" 
+                                       class="flex justify-between items-center py-1 px-2 bg-orange-50 rounded text-xs">
+                                    <span class="font-mono">{{ forecast.label }}</span>
+                                    <span>{{ forecast.time }}</span>
+                                    <span class="font-medium">{{ forecast.weather }}</span>
+                                    <span>{{ forecast.temperature }}°C</span>
+                                    <span v-if="forecast.precipitation > 0" class="text-blue-600">{{ forecast.precipitation }}mm</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Future Forecasts -->
+                              <div v-if="batchResult.metadata.weather_timeline.future_forecasts && batchResult.metadata.weather_timeline.future_forecasts.length > 0">
+                                <div class="text-xs font-medium text-gray-600 mb-2">今後の予報（3〜12時間後）</div>
+                                <div class="grid grid-cols-1 gap-1">
+                                  <div v-for="forecast in batchResult.metadata.weather_timeline.future_forecasts" :key="forecast.time" 
+                                       class="flex justify-between items-center py-1 px-2 bg-green-50 rounded text-xs">
+                                    <span class="font-mono">{{ forecast.label }}</span>
+                                    <span>{{ forecast.time }}</span>
+                                    <span class="font-medium">{{ forecast.weather }}</span>
+                                    <span>{{ forecast.temperature }}°C</span>
+                                    <span v-if="forecast.precipitation > 0" class="text-blue-600">{{ forecast.precipitation }}mm</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Error Display -->
+                              <div v-if="batchResult.metadata.weather_timeline.error" class="p-2 bg-red-50 rounded text-xs text-red-600">
+                                時系列データ取得エラー: {{ batchResult.metadata.weather_timeline.error }}
+                              </div>
+                            </div>
+
+                            <!-- Selected Comments for Batch Results -->
+                            <div v-if="batchResult.metadata.selected_weather_comment || batchResult.metadata.selected_advice_comment" class="border-t pt-4">
+                              <div class="text-sm font-medium text-gray-700 mb-2">選択されたコメント:</div>
+                              <div v-if="batchResult.metadata.selected_weather_comment" class="text-sm text-gray-600 mb-1">
+                                <strong>天気:</strong> {{ batchResult.metadata.selected_weather_comment }}
+                              </div>
+                              <div v-if="batchResult.metadata.selected_advice_comment" class="text-sm text-gray-600">
+                                <strong>アドバイス:</strong> {{ batchResult.metadata.selected_advice_comment }}
+                              </div>
+                            </div>
+                          </div>
+                        </template>
+                      </UAccordion>
                     </div>
                   </div>
                   <div v-else>

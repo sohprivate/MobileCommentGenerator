@@ -242,21 +242,33 @@ class CommentSelector:
         advice_comment: PastComment, 
         weather_data: WeatherForecast
     ) -> bool:
-        """コメントペアの最終バリデーション（重複チェック含む）"""
+        """コメントペアの最終バリデーション（包括的一貫性チェック含む）"""
         weather_valid, weather_reason = self.validator.validate_comment(weather_comment, weather_data)
         advice_valid, advice_reason = self.validator.validate_comment(advice_comment, weather_data)
         
         if not weather_valid or not advice_valid:
-            logger.critical("最終バリデーション失敗:")
+            logger.critical("個別バリデーション失敗:")
             logger.critical(f"  天気コメント: '{weather_comment.comment_text}' - {weather_reason}")
             logger.critical(f"  アドバイス: '{advice_comment.comment_text}' - {advice_reason}")
             return False
         
-        # 重複チェック: 同じ内容の繰り返しを防ぐ
+        # 包括的一貫性チェック（新機能）
+        consistency_valid, consistency_reason = self.validator.validate_comment_pair_consistency(
+            weather_comment.comment_text, advice_comment.comment_text, weather_data
+        )
+        
+        if not consistency_valid:
+            logger.warning(f"一貫性チェック失敗: {consistency_reason}")
+            logger.warning(f"  天気コメント: '{weather_comment.comment_text}'")
+            logger.warning(f"  アドバイス: '{advice_comment.comment_text}'")
+            return False
+        
+        # 従来の重複チェック（後方互換）
         if self._is_duplicate_content(weather_comment.comment_text, advice_comment.comment_text):
             logger.warning(f"重複コンテンツ検出: 天気='{weather_comment.comment_text}', アドバイス='{advice_comment.comment_text}'")
             return False
             
+        logger.info(f"コメントペア一貫性チェック成功: {consistency_reason}")
         return True
     
     def _fallback_comment_selection(
@@ -897,20 +909,15 @@ class CommentSelector:
                 advice_idx = attempt % len(advice_candidates)
                 advice_candidate = advice_candidates[advice_idx]['comment_object']
                 
-                # 重複チェック
-                if not self._is_duplicate_content(weather_candidate.comment_text, advice_candidate.comment_text):
-                    # 個別バリデーション
-                    weather_valid, _ = self.validator.validate_comment(weather_candidate, weather_data)
-                    advice_valid, _ = self.validator.validate_comment(advice_candidate, weather_data)
-                    
-                    if weather_valid and advice_valid:
-                        logger.info(f"代替ペア選択成功 (試行{attempt+1}): 天気='{weather_candidate.comment_text}', アドバイス='{advice_candidate.comment_text}'")
-                        return CommentPair(
-                            weather_comment=weather_candidate,
-                            advice_comment=advice_candidate,
-                            similarity_score=0.8,  # 代替選択なので若干低めのスコア
-                            selection_reason=f"重複回避代替選択（試行{attempt+1}回目）"
-                        )
+                # 包括的バリデーションチェック（新しい一貫性チェック含む）
+                if self._validate_comment_pair(weather_candidate, advice_candidate, weather_data):
+                    logger.info(f"代替ペア選択成功 (試行{attempt+1}): 天気='{weather_candidate.comment_text}', アドバイス='{advice_candidate.comment_text}'")
+                    return CommentPair(
+                        weather_comment=weather_candidate,
+                        advice_comment=advice_candidate,
+                        similarity_score=0.8,  # 代替選択なので若干低めのスコア
+                        selection_reason=f"重複回避代替選択（試行{attempt+1}回目）"
+                    )
                 
                 logger.debug(f"試行{attempt+1}: 重複または無効 - 天気='{weather_candidate.comment_text}', アドバイス='{advice_candidate.comment_text}'")
                 

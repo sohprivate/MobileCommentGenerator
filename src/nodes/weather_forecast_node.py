@@ -6,6 +6,7 @@ LangGraphノードとして天気予報データの取得・処理を行う
 
 import asyncio
 import logging
+import pytz
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -119,16 +120,19 @@ class WeatherForecastNode:
                         else:
                             raise ValueError(f"地点「{location}」が見つかりません")
 
-                    return await client.get_forecast_async(
+                    # 翌日9, 12, 15, 18時JSTのみ取得
+                    # 非同期版の実装がないため、同期版を使用
+                    return client.get_forecast_for_next_day_hours(
                         location_obj.latitude,
-                        location_obj.longitude,
-                        forecast_hours=72,
+                        location_obj.longitude
                     )
 
                 if isinstance(location, tuple) and len(location) == 2:
                     # 緯度経度から直接取得
                     lat, lon = location
-                    return await client.get_forecast_async(lat, lon, forecast_hours=72)
+                    # 翌日9, 12, 15, 18時JSTのみ取得
+                    # 非同期版の実装がないため、同期版を使用
+                    return client.get_forecast_for_next_day_hours(lat, lon)
 
                 raise ValueError("無効な地点情報です")
 
@@ -483,9 +487,9 @@ def fetch_weather_forecast_node(state):
         # WxTech APIクライアントの初期化
         client = WxTechAPIClient(api_key)
 
-        # 天気予報の取得（72時間分）
+        # 天気予報の取得（翌日9, 12, 15, 18時JSTのみ）
         try:
-            forecast_collection = client.get_forecast(lat, lon, forecast_hours=72)
+            forecast_collection = client.get_forecast_for_next_day_hours(lat, lon)
         except WxTechAPIError as e:
             # エラータイプに基づいて適切なエラーメッセージを設定
             if e.error_type == 'api_key_invalid':
@@ -515,7 +519,8 @@ def fetch_weather_forecast_node(state):
         trend_hours = comment_config.trend_hours_ahead
         
         # 翌日9:00-18:00(JST)の予報を取得（3時間ごと: 9:00, 12:00, 15:00, 18:00）
-        import pytz
+        
+        # JST タイムゾーンの設定
         jst = pytz.timezone("Asia/Tokyo")
         now_jst = datetime.now(jst)
         
