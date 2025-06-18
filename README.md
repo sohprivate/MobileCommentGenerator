@@ -1,10 +1,49 @@
-v.lock                                 # uvロックファイル
-├── requirements.txt                        # 従来の依存関係ファイル
+# 🌦️ MobileCommentGenerator
+
+天気予報に基づいて適応的なコメントを生成するAIシステム。LangGraphフレームワークを使用して構築され、過去のコメントデータを活用してコンテキストに応じたコメントを生成します。
+
+## 📁 プロジェクト構成
+
+```
+MobileCommentGenerator/
+├── src/                                    # バックエンドソースコード
+│   ├── workflows/                          # LangGraphワークフロー実装
+│   ├── nodes/                             # 各処理ノードの実装
+│   ├── llm/                               # LLMプロバイダー統合
+│   ├── data/                              # データモデル・管理
+│   ├── apis/                              # 外部API統合
+│   └── utils/                             # ユーティリティ関数
+├── frontend/                               # Nuxt.js 3 フロントエンド（Vue版）
+│   ├── pages/                             # ページコンポーネント
+│   ├── components/                        # UIコンポーネント
+│   ├── composables/                       # Composition API
+│   └── nuxt.config.ts                     # Nuxt設定
+├── react-version/                          # React版フロントエンド（新規）
+│   ├── src/                               # Reactソースコード
+│   ├── public/                            # 静的ファイル
+│   └── vite.config.ts                     # Vite設定
+├── shared/                                 # 共通ロジック・型定義
+│   ├── types/                             # 共通型定義
+│   ├── api/                               # APIクライアント
+│   ├── composables/                       # 共通ロジック
+│   └── utils/                             # 共通ユーティリティ
+├── tests/                                  # テストスイート
+├── docs/                                   # ドキュメント
+├── examples/                               # 使用例
+├── config/                                 # 設定ファイル
+├── app.py                                  # Streamlit UI
+├── api_server.py                          # FastAPI サーバー
+├── enhanced_comment_generator.py          # スタンドアロン版生成器
+├── .github/                               # GitHub Actions CI/CD
+│   └── workflows/                         # ワークフロー定義
+├── pnpm-workspace.yaml                    # pnpmモノレポ設定
+├── uv.lock                                # uvロックファイル
+├── requirements.txt                       # 従来の依存関係ファイル
 ├── pytest.ini                             # pytest設定
-├── mypy.ini                                # mypy設定
-├── Makefile                                # ビルド・実行スクリプト
+├── mypy.ini                               # mypy設定
+├── Makefile                               # ビルド・実行スクリプト
 ├── setup.sh                               # セットアップスクリプト
-└── README.md                               # このファイル
+└── README.md                              # このファイル
 ```
 
 ## 🛠️ 主要特徴
@@ -14,9 +53,10 @@ v.lock                                 # uvロックファイル
 - **適応性ベース選択**: 過去コメントから最適なペアを適応性に基づいてLLM選択
 - **表現ルール遵守**: NG表現禁止・値域制限・文字数規制の自動チェック
 - **12時間周期天気予報**: デフォルトで12時間周期のデータを使用
-- **デュアルUI実装**: Streamlit（開発用）+ Vue.js/Nuxt.js（本格用）+ React（新規）
+- **デュアルUI実装**: Streamlit（開発用）+ Nuxt.js 3（Vue版）+ React（新規）
 - **FastAPI統合**: RESTful APIでフロントエンドとバックエンドを分離
 - **天気予報キャッシュ**: 効率的な天気データ管理とキャッシュ機能
+- **モノレポ構成**: pnpmワークスペースによる効率的な依存管理
 
 ## 📈 現在の進捗状況
 
@@ -42,7 +82,7 @@ v.lock                                 # uvロックファイル
 - [x] **エラーハンドリング**: ユーザーフレンドリーなエラー表示
 
 ### ✅ Phase 4: フロントエンド分離（100%完了）
-- [x] **フロントエンド分離**: Vue.js/Nuxt.jsを独立プロジェクトに移行
+- [x] **フロントエンド分離**: Nuxt.js 3を独立プロジェクトに移行
 - [x] **プロジェクト進捗の明確化**: frontend/とsrc/の責任分担明確化
 - [x] **API実装**: FastAPI RESTful APIエンドポイント完成
 - [x] **統合ドキュメント**: フロントエンド・バックエンド連携ガイド
@@ -53,36 +93,136 @@ v.lock                                 # uvロックファイル
 
 ## 🔥 React版追加実装ガイド
 
-既存のVue版に影響を与えずにReact版を追加する詳細な手順を以下に示します。
+既存のNuxt.js 3版に影響を与えずにReact版を追加する詳細な手順を以下に示します。
 
 ### 📋 設計思想
 
-React版の追加により、より広範囲の開発者コミュニティがこのプロジェクトを活用できるようになります。Vue版とReact版は並列で存在し、共通のAPIとロジックを共有しながら異なるUIライブラリで実装されます。
+React版の追加により、より広範囲の開発者コミュニティがこのプロジェクトを活用できるようになります。Nuxt.js版とReact版は並列で存在し、共通のAPIとロジックを共有しながら異なるUIライブラリで実装されます。
 
 ### 🏗️ ディレクトリ構成（追加後の全体像）
 
-React版追加後の推奨構成では、既存のVue版は完全にそのまま保持し、新しく`react-version/`と`shared/`ディレクトリを追加します。
+React版追加後の推奨構成では、既存のNuxt.js版は完全にそのまま保持し、新しく`react-version/`と`shared/`ディレクトリを追加します。
 
 ### 📝 実装手順
 
-#### Step 1: 共通ロジックディレクトリの作成
+#### Step 1: モノレポ環境の構築
 
-既存プロジェクトに影響を与えないよう、まず共通ロジック用のディレクトリを作成します。
+既存プロジェクトをモノレポ構成に変更し、効率的な開発環境を構築します。
 
 ```bash
-# ルートディレクトリで実行
-mkdir shared
-cd shared
-npm init -y
-npm install typescript @types/node
+# pnpmのインストール（推奨）
+npm install -g pnpm
 
-# 共通型定義の作成
-mkdir -p types api utils constants
+# ルートディレクトリでpnpmワークスペースを初期化
+pnpm init
 ```
 
-**shared/types/index.ts**:
+**pnpm-workspace.yaml**:
+```yaml
+packages:
+  - 'frontend'
+  - 'react-version'
+  - 'shared'
+```
+
+**ルートpackage.json**:
+```json
+{
+  "name": "mobile-comment-generator",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "react-version",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter frontend dev",
+    "build": "pnpm --filter frontend build",
+    "dev:react": "pnpm --filter react-version dev",
+    "build:react": "pnpm --filter react-version build",
+    "dev:all": "pnpm --parallel --filter frontend --filter react-version dev",
+    "install:all": "pnpm install",
+    "test": "pnpm --recursive test",
+    "test:vue": "pnpm --filter frontend test",
+    "test:react": "pnpm --filter react-version test",
+    "lint": "pnpm --recursive lint",
+    "lint:vue": "pnpm --filter frontend lint",
+    "lint:react": "pnpm --filter react-version lint",
+    "typecheck": "pnpm --recursive typecheck",
+    "ci:test": "pnpm --recursive test:ci",
+    "ci:build": "pnpm --recursive build"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "turbo": "^1.13.0"
+  }
+}
+```
+
+#### Step 2: 共通ロジックディレクトリの作成
+
+**shared/package.json**:
+```json
+{
+  "name": "@mobile-comment-generator/shared",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./api": {
+      "import": "./dist/api/index.mjs",
+      "require": "./dist/api/index.js",
+      "types": "./dist/api/index.d.ts"
+    },
+    "./composables": {
+      "import": "./dist/composables/index.mjs",
+      "require": "./dist/composables/index.js",
+      "types": "./dist/composables/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0"
+  }
+}
+```
+
+**shared/tsup.config.ts**:
 ```typescript
-// 既存のVue版と共通の型定義
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: {
+    index: 'src/index.ts',
+    'api/index': 'src/api/index.ts',
+    'composables/index': 'src/composables/index.ts',
+  },
+  format: ['cjs', 'esm'],
+  dts: true,
+  clean: true,
+  external: ['axios'],
+});
+```
+
+**shared/src/types/index.ts**:
+```typescript
+// 既存のNuxt.js版と共通の型定義
 export interface Location {
   id: string;
   name: string;
@@ -145,24 +285,26 @@ export interface WeatherTrend {
 }
 ```
 
-**shared/api/client.ts**:
+**shared/src/api/client.ts**:
 ```typescript
 import axios, { AxiosInstance } from 'axios';
-import { Location, GenerateSettings, GeneratedComment } from '../types';
+import type { Location, GenerateSettings, GeneratedComment, WeatherData } from '../types';
 
 export class ApiClient {
   private client: AxiosInstance;
 
-  constructor(baseURL: string = 'http://localhost:3000') {
+  constructor(baseURL?: string) {
+    // Nuxt.jsが3000番ポートを使用するため、APIは3001番を使用
+    const apiUrl = baseURL || process.env.NUXT_PUBLIC_API_URL || process.env.VITE_API_URL || 'http://localhost:3001';
+    
     this.client = axios.create({
-      baseURL,
+      baseURL: apiUrl,
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    // リクエスト・レスポンスインターセプター
     this.setupInterceptors();
   }
 
@@ -207,63 +349,187 @@ export class ApiClient {
   }
 }
 
-// シングルトンインスタンス
-export const apiClient = new ApiClient();
+export const createApiClient = (baseURL?: string) => new ApiClient(baseURL);
 ```
 
-#### Step 2: React版プロジェクトの作成
+**shared/src/composables/useWeatherComment.ts**:
+```typescript
+import type { GenerateSettings, GeneratedComment, Location } from '../types';
+import { createApiClient } from '../api/client';
+
+export interface UseWeatherCommentOptions {
+  apiUrl?: string;
+}
+
+export const createWeatherCommentComposable = (options: UseWeatherCommentOptions = {}) => {
+  const client = createApiClient(options.apiUrl);
+  
+  const generateComment = async (
+    location: Location,
+    settings: Omit<GenerateSettings, 'location'>
+  ): Promise<GeneratedComment> => {
+    const fullSettings: GenerateSettings = {
+      location,
+      ...settings,
+    };
+    
+    return client.generateComment(fullSettings);
+  };
+
+  const getHistory = async (limit?: number): Promise<GeneratedComment[]> => {
+    return client.getHistory(limit);
+  };
+
+  const getLocations = async (): Promise<Location[]> => {
+    return client.getLocations();
+  };
+
+  const getWeatherData = async (locationId: string) => {
+    return client.getWeatherData(locationId);
+  };
+
+  return {
+    generateComment,
+    getHistory,
+    getLocations,
+    getWeatherData,
+  };
+};
+```
+
+#### Step 3: React版プロジェクトの作成
 
 ```bash
-# ルートディレクトリで実行
+# React版ディレクトリの作成
 mkdir react-version
 cd react-version
 
 # Vite + React + TypeScriptプロジェクトを作成
-npm create vite@latest . -- --template react-ts
-
-# 基本依存関係をインストール
-npm install
+pnpm create vite@latest . --template react-ts
 
 # 追加ライブラリのインストール
-npm install axios lucide-react clsx
-npm install -D tailwindcss postcss autoprefixer @types/react @types/react-dom
+pnpm add @mobile-comment-generator/shared@workspace:*
+pnpm add lucide-react clsx
+pnpm add -D tailwindcss postcss autoprefixer @types/react @types/react-dom
 
 # Tailwind CSSを初期化
-npx tailwindcss init -p
+pnpm dlx tailwindcss init -p
 ```
 
-**react-version/tailwind.config.js**:
-```javascript
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: '#eff6ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-        },
-      },
-    },
+**react-version/package.json**:
+```json
+{
+  "name": "@mobile-comment-generator/react-version",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "vitest",
+    "test:ci": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
-  plugins: [],
+  "dependencies": {
+    "@mobile-comment-generator/shared": "workspace:*",
+    "clsx": "^2.1.0",
+    "lucide-react": "^0.321.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.0",
+    "vitest": "^1.2.0"
+  }
 }
 ```
 
-#### Step 3: React版コンポーネントの実装
+**react-version/vite.config.ts**:
+```typescript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
+  },
+});
+```
+
+#### Step 4: 環境変数の統一管理
+
+**.env.shared**（ルートディレクトリ）:
+```bash
+# API設定
+VITE_API_URL=http://localhost:3001
+NUXT_PUBLIC_API_URL=http://localhost:3001
+
+# LLMプロバイダー
+OPENAI_API_KEY=your_openai_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+# 天気予報API
+WXTECH_API_KEY=your_wxtech_api_key_here
+
+# AWS（オプション）
+AWS_ACCESS_KEY_ID=your_aws_access_key_id
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+```
+
+**frontend/.env**:
+```bash
+# 共通環境変数をインポート
+source ../.env.shared
+
+# Nuxt.js固有の設定
+NUXT_PUBLIC_SITE_NAME="天気コメント生成システム"
+```
+
+**react-version/.env**:
+```bash
+# 共通環境変数をインポート
+source ../.env.shared
+
+# React固有の設定
+VITE_APP_TITLE="天気コメント生成システム - React版"
+```
+
+#### Step 5: React版コンポーネントの実装
 
 **react-version/src/components/LocationSelection.tsx**:
 ```tsx
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Loader2 } from 'lucide-react';
-import { Location } from '../../../shared/types';
-import { apiClient } from '../../../shared/api/client';
+import type { Location } from '@mobile-comment-generator/shared';
+import { createWeatherCommentComposable } from '@mobile-comment-generator/shared/composables';
 
 interface LocationSelectionProps {
   selectedLocation: Location | null;
@@ -280,13 +546,15 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const { getLocations } = createWeatherCommentComposable();
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await apiClient.getLocations();
+        const data = await getLocations();
         setLocations(data);
       } catch (err) {
         setError('地点データの取得に失敗しました');
@@ -388,12 +656,14 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
 **react-version/src/hooks/useApi.ts**:
 ```tsx
 import { useState, useCallback } from 'react';
-import { apiClient } from '../../../shared/api/client';
-import { GenerateSettings, GeneratedComment, Location } from '../../../shared/types';
+import type { GenerateSettings, GeneratedComment, Location } from '@mobile-comment-generator/shared';
+import { createWeatherCommentComposable } from '@mobile-comment-generator/shared/composables';
 
 export const useApi = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const composable = createWeatherCommentComposable();
 
   const generateComment = useCallback(async (
     location: Location,
@@ -403,12 +673,7 @@ export const useApi = () => {
     setError(null);
     
     try {
-      const fullSettings: GenerateSettings = {
-        location,
-        ...settings,
-      };
-      
-      const result = await apiClient.generateComment(fullSettings);
+      const result = await composable.generateComment(location, settings);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'コメント生成に失敗しました';
@@ -417,14 +682,14 @@ export const useApi = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [composable]);
 
   const getHistory = useCallback(async (limit?: number): Promise<GeneratedComment[]> => {
     setLoading(true);
     setError(null);
     
     try {
-      const result = await apiClient.getHistory(limit);
+      const result = await composable.getHistory(limit);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '履歴の取得に失敗しました';
@@ -433,7 +698,7 @@ export const useApi = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [composable]);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -449,64 +714,147 @@ export const useApi = () => {
 };
 ```
 
-#### Step 4: ルートpackage.jsonの更新
+#### Step 6: CI/CD設定
 
-**package.json（ルート）にスクリプト追加**:
-```json
-{
-  "scripts": {
-    "dev": "cd frontend && npm run dev",
-    "build": "cd frontend && npm run build",
-    "dev:react": "cd react-version && npm run dev",
-    "build:react": "cd react-version && npm run build",
-    "install:vue": "cd frontend && npm install",
-    "install:react": "cd react-version && npm install",
-    "install:shared": "cd shared && npm install",
-    "install:all": "npm run install:vue && npm run install:react && npm run install:shared",
-    "test:vue": "cd frontend && npm run test",
-    "test:react": "cd react-version && npm run test",
-    "lint:vue": "cd frontend && npm run lint",
-    "lint:react": "cd react-version && npm run lint"
-  }
-}
+**.github/workflows/ci.yml**:
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-vue:
+    name: Test Nuxt.js (Vue)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build shared package
+        run: pnpm --filter @mobile-comment-generator/shared build
+        
+      - name: Lint Vue
+        run: pnpm --filter frontend lint
+        
+      - name: Type check Vue
+        run: pnpm --filter frontend typecheck
+        
+      - name: Test Vue
+        run: pnpm --filter frontend test:ci
+        
+      - name: Build Vue
+        run: pnpm --filter frontend build
+
+  test-react:
+    name: Test React
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build shared package
+        run: pnpm --filter @mobile-comment-generator/shared build
+        
+      - name: Lint React
+        run: pnpm --filter @mobile-comment-generator/react-version lint
+        
+      - name: Type check React
+        run: pnpm --filter @mobile-comment-generator/react-version typecheck
+        
+      - name: Test React
+        run: pnpm --filter @mobile-comment-generator/react-version test:ci
+        
+      - name: Build React
+        run: pnpm --filter @mobile-comment-generator/react-version build
+
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+        
+      - name: Install dependencies
+        run: uv sync
+        
+      - name: Run tests
+        run: uv run pytest tests/
+        
+      - name: Run type check
+        run: uv run mypy src/
 ```
 
 ### 🚀 実行方法
 
-#### Vue版（既存）
+#### Nuxt.js版（既存）
 ```bash
-# Vue版の依存関係インストール
-npm run install:vue
+# Nuxt.js版開発サーバー起動（ポート3000）
+pnpm dev
 
-# Vue版開発サーバー起動
-npm run dev
-
-# Vue版ビルド
-npm run build
+# Nuxt.js版ビルド
+pnpm build
 ```
 
 #### React版（新規）
 ```bash
-# React版の依存関係インストール
-npm run install:react
-
-# React版開発サーバー起動
-npm run dev:react
+# React版開発サーバー起動（ポート5173）
+pnpm dev:react
 
 # React版ビルド
-npm run build:react
+pnpm build:react
 ```
 
-#### 共通操作
+#### 両方同時起動
 ```bash
-# 全ての依存関係をインストール
-npm run install:all
+# Nuxt.js版とReact版を同時起動
+pnpm dev:all
+```
 
-# 共通ロジックの依存関係インストール
-npm run install:shared
+#### APIサーバー
+```bash
+# FastAPIサーバー起動（ポート3001）
+uv run ./start_api.sh
 ```
 
 ### 🔧 開発ガイドライン
+
+#### ポート配置
+- **3000番**: Nuxt.js 3フロントエンド
+- **5173番**: React版フロントエンド
+- **3001番**: FastAPI バックエンド
+- **8501番**: Streamlit開発UI
 
 #### React版コンポーネント設計原則
 
@@ -549,7 +897,39 @@ const Component = ({ title, count, onUpdate }: any) => {
 };
 ```
 
-この詳細な実装ガイドにより、既存のVue版に全く影響を与えることなく、本格的なReact版を追加できます。共通ロジックの活用により、コード重複を最小限に抑えながら、両フレームワークの特性を活かした実装が可能になります。
+**3. 共通ロジックの活用**
+```tsx
+// ✅ 推奨: 共通コンポジタブルの使用
+import { createWeatherCommentComposable } from '@mobile-comment-generator/shared/composables';
+
+const MyComponent = () => {
+  const { generateComment, getHistory } = createWeatherCommentComposable();
+  // 共通ロジックを活用
+};
+
+// ❌ 非推奨: 重複実装
+const MyComponent = () => {
+  // APIクライアントを直接実装
+  const generateComment = async () => {
+    // 重複コード
+  };
+};
+```
+
+#### 依存関係管理
+
+```bash
+# 新しい依存関係を追加
+pnpm --filter @mobile-comment-generator/react-version add package-name
+
+# 開発依存関係を追加
+pnpm --filter @mobile-comment-generator/react-version add -D package-name
+
+# 共通パッケージを更新
+pnpm --filter @mobile-comment-generator/shared build
+```
+
+この詳細な実装ガイドにより、既存のNuxt.js版に全く影響を与えることなく、本格的なReact版を追加できます。モノレポ構成と共通ロジックの活用により、コード重複を最小限に抑えながら、両フレームワークの特性を活かした実装が可能になります。
 
 ## 📊 現在のアップデート内容 (v1.1.5)
 
@@ -684,9 +1064,10 @@ export const useApi = () => {
 
 ## 📖 使用方法
 
-### Vue.jsフロントエンド（推奨）
+### Nuxt.jsフロントエンド（推奨）
 
 ```bash
+# APIサーバー起動（ポート3001）
 uv run ./start_api.sh
 ```
 
@@ -698,8 +1079,8 @@ uv run ./start_api.sh
 ### React版フロントエンド（新規）
 
 ```bash
-# React版開発サーバー起動
-npm run dev:react
+# React版開発サーバー起動（ポート5173）
+pnpm dev:react
 ```
 
 1. ブラウザで http://localhost:5173 を開く
@@ -746,6 +1127,9 @@ make test-cov
 
 # 統合テスト
 make test-integration
+
+# フロントエンドテスト
+pnpm test
 ```
 
 ## 📗 開発ツール
