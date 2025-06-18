@@ -59,6 +59,7 @@ coverage.xml
 
 # Data
 data/generation_history.json
+data/forecast_cache/*.csv
 
 # AWS
 .aws/
