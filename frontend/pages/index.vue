@@ -548,6 +548,9 @@ const devLog = (...args: any[]) => {
 }
 
 const BATCH_SIZE = 3
+const locationOrderMap = new Map(
+  getLocationOrder().map((loc, idx) => [loc, idx])
+)
 
 // Page meta
 useHead({
@@ -651,10 +654,10 @@ const generateComment = async () => {
     ? selectedLocations.value
     : selectedLocation.value ? [selectedLocation.value] : []
 
-  const order = getLocationOrder()
-  const orderMap = new Map(order.map((loc, idx) => [loc, idx]))
   const locationsToProcess = [...locationsToProcessRaw].sort(
-    (a, b) => (orderMap.get(a) ?? Infinity) - (orderMap.get(b) ?? Infinity)
+    (a, b) =>
+      (locationOrderMap.get(a) ?? Infinity) -
+      (locationOrderMap.get(b) ?? Infinity)
   )
 
   const providerValue = selectedProvider.value?.value || selectedProvider.value

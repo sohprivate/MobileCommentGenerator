@@ -46,3 +46,42 @@ def test_thin_cloud_blocks_rain_comment():
     is_valid, reason = validator._check_weather_reality_contradiction("雨が降りそうです", weather)
     assert not is_valid
     assert "雨表現" in reason
+
+
+def test_temperature_symptom_contradiction_hot():
+    validator = WeatherCommentValidator()
+    weather = create_weather_forecast("晴れ", temp=30.0)
+    is_valid, reason = validator._check_temperature_symptom_contradiction(
+        "暑いです", "熱中症対策必須", weather
+    )
+    assert not is_valid
+    assert "過度な熱中症対策" in reason
+
+
+def test_temperature_symptom_contradiction_cold():
+    validator = WeatherCommentValidator()
+    weather = create_weather_forecast("晴れ", temp=20.0)
+    is_valid, reason = validator._check_temperature_symptom_contradiction(
+        "涼しいです", "厚着必須", weather
+    )
+    assert not is_valid
+    assert "過度な防寒対策" in reason
+
+
+def test_tone_contradiction_unstable_outing():
+    validator = WeatherCommentValidator()
+    weather = create_weather_forecast("曇り")
+    is_valid, reason = validator._check_tone_contradiction(
+        "空が不安定です", "お出かけ日和", weather
+    )
+    assert not is_valid
+    assert "外出推奨" in reason
+
+
+def test_umbrella_redundancy_both_necessity():
+    validator = WeatherCommentValidator()
+    is_valid, reason = validator._check_umbrella_redundancy(
+        "傘を忘れずに", "傘の携帯を",
+    )
+    assert not is_valid
+    assert "傘の必要性" in reason
