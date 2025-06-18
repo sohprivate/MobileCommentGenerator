@@ -251,13 +251,23 @@ class WeatherCommentValidator:
                     if word in comment_text:
                         return False, f"軽い雨（{precipitation}mm）で過度な警戒表現「{word}」を含む"
         
-        # 晴天チェック（厳密な判定）
-        elif any(sunny in weather_desc for sunny in ["晴", "快晴"]):
+        # 晴天チェック（厳密な判定 - 強化版）
+        elif any(sunny in weather_desc for sunny in ["晴", "快晴", "猛暑", "晴天"]):
             forbidden_words = self.weather_forbidden_words["sunny"][comment_type]
             for word in forbidden_words:
                 if word in comment_text:
                     logger.info(f"晴天時禁止ワード除外: '{comment_text}' - 理由: 晴天時の禁止ワード「{word}」を含む")
                     return False, f"晴天時の禁止ワード「{word}」を含む"
+            
+            # 晴れ・快晴時の特別な「変わりやすい」表現チェック（強化）
+            changeable_patterns = [
+                "変わりやすい空", "変わりやすい天気", "変わりやすい", "変化しやすい空",
+                "移ろいやすい空", "気まぐれな空", "一定しない空", "不安定な空模様"
+            ]
+            for pattern in changeable_patterns:
+                if pattern in comment_text:
+                    logger.warning(f"晴天時に不適切な表現を強制除外: '{comment_text}' - 「{pattern}」は晴れ・快晴に不適切")
+                    return False, f"晴天時に不適切な表現「{pattern}」を含む（晴れ・快晴時は安定した天気）"
         
         # 曇天チェック（晴天でない場合のみ）
         elif "曇" in weather_desc or "くもり" in weather_desc:
