@@ -536,8 +536,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { REGIONS, getAllLocations, getLocationsByRegion } from '~/constants/regions'
+import { ref, onMounted, computed, nextTick } from 'vue'
+import { REGIONS, getAllLocations, getLocationsByRegion, getLocationOrder } from '~/constants/regions'
 
 // Page meta
 useHead({
@@ -637,9 +637,14 @@ const fetchHistory = async () => {
 
 const generateComment = async () => {
   // Determine locations to process
-  const locationsToProcess = isBatchMode.value 
-    ? selectedLocations.value 
+  const locationsToProcessRaw = isBatchMode.value
+    ? selectedLocations.value
     : selectedLocation.value ? [selectedLocation.value] : []
+
+  const order = getLocationOrder()
+  const locationsToProcess = [...locationsToProcessRaw].sort(
+    (a, b) => order.indexOf(a) - order.indexOf(b)
+  )
 
   const providerValue = selectedProvider.value?.value || selectedProvider.value
   if (locationsToProcess.length === 0 || !providerValue) {
@@ -661,9 +666,7 @@ const generateComment = async () => {
 
   try {
     if (isBatchMode.value) {
-      // Batch generation
-      const allResults = []
-      
+      // Batch generation (streaming)
       for (const location of locationsToProcess) {
         const requestBody = {
           location: location,
@@ -681,20 +684,19 @@ const generateComment = async () => {
             },
             body: requestBody
           })
-
-          allResults.push(response)
+          results.value.push(response)
         } catch (error) {
-          allResults.push({
+          results.value.push({
             success: false,
             location: location,
             error: error.message || 'コメント生成に失敗しました'
           })
         }
+        await nextTick()
       }
-      
-      results.value = allResults
-      console.log('Batch generation results:', allResults)
-      
+
+      console.log('Batch generation results:', results.value)
+
       // Refresh history
       await fetchHistory()
       

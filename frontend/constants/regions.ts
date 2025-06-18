@@ -123,6 +123,17 @@ export function getLocationsByRegion(regionName: string): string[] {
 export function getLocationsByPrefecture(regionName: string, prefectureName: string): string[] {
   const region = REGIONS[regionName as keyof typeof REGIONS]
   if (!region) return []
-  
+
   return region[prefectureName as keyof typeof region] || []
+}
+
+// 全地点を表示順で取得
+export function getLocationOrder(): string[] {
+  const order: string[] = []
+  Object.values(REGIONS).forEach(region => {
+    Object.values(region).forEach(locations => {
+      order.push(...locations)
+    })
+  })
+  return order
 }
