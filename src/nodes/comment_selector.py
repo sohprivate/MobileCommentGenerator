@@ -142,10 +142,15 @@ class CommentSelector:
         others = []
         
         for i, comment in enumerate(comments):
-            # バリデーターによる除外チェック
+            # バリデーターによる除外チェック（強化版）
             is_valid, reason = self.validator.validate_comment(comment, weather_data)
             if not is_valid:
                 logger.info(f"バリデーター除外: '{comment.comment_text}' - 理由: {reason}")
+                continue
+            
+            # 晴天時の「変わりやすい」表現の追加チェック（強化）
+            if self._is_sunny_weather_with_changeable_comment(comment.comment_text, weather_data):
+                logger.warning(f"晴天時不適切表現を強制除外: '{comment.comment_text}'")
                 continue
                 
             # 旧式の除外チェック（後方互換）
@@ -320,6 +325,32 @@ class CommentSelector:
         return None
     
     # ヘルパーメソッド（既存のprivate関数から移行）
+    def _is_sunny_weather_with_changeable_comment(self, comment_text: str, weather_data: WeatherForecast) -> bool:
+        """晴天時に「変わりやすい」系のコメントが含まれているかチェック（強化）"""
+        weather_desc = weather_data.weather_description.lower()
+        
+        # 晴れ・快晴・猛暑の判定
+        if not any(sunny in weather_desc for sunny in ["晴", "快晴", "晴れ", "晴天", "猛暑"]):
+            return False
+        
+        # 不適切な「変わりやすい」表現パターン
+        inappropriate_patterns = [
+            "変わりやすい空", "変わりやすい天気", "変わりやすい",
+            "変化しやすい空", "変化しやすい天気", "変化しやすい",
+            "移ろいやすい空", "移ろいやすい天気", "移ろいやすい",
+            "気まぐれな空", "気まぐれな天気", "気まぐれ",
+            "一定しない空", "一定しない天気", "一定しない",
+            "不安定な空模様", "不安定な天気", "不安定",
+            "変動しやすい", "不規則な空", "コロコロ変わる"
+        ]
+        
+        for pattern in inappropriate_patterns:
+            if pattern in comment_text:
+                logger.info(f"晴天時に不適切な表現検出: '{comment_text}' - パターン「{pattern}」")
+                return True
+        
+        return False
+
     def _should_exclude_weather_comment(self, comment_text: str, weather_data: WeatherForecast) -> bool:
         """天気コメントを除外すべきかチェック（YAML設定ベース）"""
         try:
@@ -644,8 +675,18 @@ class CommentSelector:
         return context
     
     def _create_selection_prompt(self, candidates_text: str, weather_context: str, comment_type: CommentType) -> str:
-        """選択用プロンプトを作成"""
+        """選択用プロンプトを作成（晴天時の不適切表現除外を強化）"""
         comment_type_desc = "天気コメント" if comment_type == CommentType.WEATHER_COMMENT else "アドバイスコメント"
+        
+        # 晴天時の特別な注意事項を追加
+        sunny_warning = ""
+        if "晴" in weather_context or "快晴" in weather_context:
+            sunny_warning = """
+【晴天時の特別注意】:
+- 「変わりやすい空」「変わりやすい天気」「不安定」などの表現は晴れ・快晴時には不適切です
+- 晴天は安定した天気なので、安定性を表現するコメントを選んでください
+- 「爽やか」「穏やか」「安定」「良好」などの表現が適切です
+"""
         
         return f"""
 以下の天気情報と時系列変化を総合的に分析し、最も適した{comment_type_desc}を選択してください。
@@ -657,12 +698,16 @@ class CommentSelector:
 
 選択基準（重要度順）:
 1. 現在の天気・気温に最も適している
-2. 時系列変化（12時間前後）を考慮した適切性
-3. 地域特性（北海道の寒さ、沖縄の暑さなど）
-4. 季節感が適切
-5. 自然で読みやすい表現
+2. 天気の安定性や変化パターンに合致している
+3. 時系列変化（12時間前後）を考慮した適切性
+4. 地域特性（北海道の寒さ、沖縄の暑さなど）
+5. 季節感が適切
+6. 自然で読みやすい表現
+
+{sunny_warning}
 
 特に以下を重視してください:
+- 天気の安定性（晴れ・快晴は安定、雨・曇りは変化しやすい）
 - 気温変化の傾向（上昇中、下降中、安定）
 - 天気の変化予想（悪化、改善、安定）
 - その地域の気候特性
