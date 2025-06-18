@@ -376,6 +376,9 @@ class LocationManager:
         self.locations: List[Location] = []
         self.location_index: Dict[str, List[Location]] = {}
         self.loaded_at: Optional[datetime] = None
+        
+        # 地点の標準順序
+        self.location_order = self._get_location_order()
 
         # 自動読み込み
         if os.path.exists(self.csv_path):
@@ -383,6 +386,82 @@ class LocationManager:
         else:
             logger.warning(f"CSVファイルが見つかりません: {self.csv_path}")
             self._load_default_locations()
+    
+    def _get_location_order(self) -> List[str]:
+        """地点の表示順序を定義した配列を返す"""
+        return [
+            # 北海道
+            "稚内", "旭川", "留萌",
+            "札幌", "岩見沢", "倶知安",
+            "網走", "北見", "紋別", "根室", "釧路", "帯広",
+            "室蘭", "浦河", "函館", "江差",
+            
+            # 東北
+            "青森", "むつ", "八戸",
+            "盛岡", "宮古", "大船渡",
+            "秋田", "横手",
+            "仙台", "白石",
+            "山形", "米沢", "酒田", "新庄",
+            "福島", "小名浜", "若松",
+            
+            # 北陸
+            "新潟", "長岡", "高田", "相川",
+            "金沢", "輪島",
+            "富山", "伏木",
+            "福井", "敦賀",
+            
+            # 関東
+            "東京", "大島", "八丈島", "父島",
+            "横浜", "小田原",
+            "さいたま", "熊谷", "秩父",
+            "千葉", "銚子", "館山",
+            "水戸", "土浦",
+            "前橋", "みなかみ",
+            "宇都宮", "大田原",
+            
+            # 甲信
+            "長野", "松本", "飯田",
+            "甲府", "河口湖",
+            
+            # 東海
+            "名古屋", "豊橋",
+            "静岡", "網代", "三島", "浜松",
+            "岐阜", "高山",
+            "津", "尾鷲",
+            
+            # 近畿
+            "大阪",
+            "神戸", "豊岡",
+            "京都", "舞鶴",
+            "奈良", "風屋",
+            "大津", "彦根",
+            "和歌山", "潮岬",
+            
+            # 中国
+            "広島", "庄原",
+            "岡山", "津山",
+            "下関", "山口", "柳井", "萩",
+            "松江", "浜田", "西郷",
+            "鳥取", "米子",
+            
+            # 四国
+            "松山", "新居浜", "宇和島",
+            "高松",
+            "徳島", "日和佐",
+            "高知", "室戸岬", "清水",
+            
+            # 九州
+            "福岡", "八幡", "飯塚", "久留米",
+            "佐賀", "伊万里",
+            "長崎", "佐世保", "厳原", "福江",
+            "大分", "中津", "日田", "佐伯",
+            "熊本", "阿蘇乙姫", "牛深", "人吉",
+            "宮崎", "都城", "延岡", "高千穂",
+            "鹿児島", "鹿屋", "種子島", "名瀬",
+            
+            # 沖縄
+            "那覇", "名護", "久米島", "大東島", "宮古島", "石垣島", "与那国島"
+        ]
 
     def _get_default_csv_path(self) -> str:
         """デフォルトCSVパスを取得
@@ -629,7 +708,8 @@ class LocationManager:
         Returns:
             該当地点のリスト
         """
-        return [loc for loc in self.locations if loc.region == region]
+        locations = [loc for loc in self.locations if loc.region == region]
+        return self._sort_locations_by_order(locations)
 
     def get_locations_by_prefecture(self, prefecture: str) -> List[Location]:
         """都道府県で地点を取得
@@ -640,7 +720,8 @@ class LocationManager:
         Returns:
             該当地点のリスト
         """
-        return [loc for loc in self.locations if loc.prefecture == prefecture]
+        locations = [loc for loc in self.locations if loc.prefecture == prefecture]
+        return self._sort_locations_by_order(locations)
 
     def get_nearby_locations(
         self,
@@ -685,13 +766,37 @@ class LocationManager:
         nearby.sort(key=lambda x: x[1])
         return nearby[:max_results]
 
+    def _sort_locations_by_order(self, locations: List[Location]) -> List[Location]:
+        """地点リストを指定された順序でソートする
+        
+        Args:
+            locations: ソートする地点リスト
+            
+        Returns:
+            ソート済みの地点リスト
+        """
+        # 順序リストにある地点を順序通りに並べる
+        sorted_locations = []
+        for location_name in self.location_order:
+            for location in locations:
+                if location.name == location_name:
+                    sorted_locations.append(location)
+                    break
+        
+        # 順序リストにない地点を最後に追加（アルファベット順）
+        remaining_locations = [loc for loc in locations if loc not in sorted_locations]
+        remaining_locations.sort(key=lambda x: x.name)
+        sorted_locations.extend(remaining_locations)
+        
+        return sorted_locations
+
     def get_all_locations(self) -> List[Location]:
         """全地点データを取得
 
         Returns:
             全地点のリスト
         """
-        return self.locations.copy()
+        return self._sort_locations_by_order(self.locations.copy())
 
     def get_statistics(self) -> Dict[str, Any]:
         """統計情報を取得
