@@ -848,7 +848,7 @@ pnpm dev:all
 
 #### APIサーバー
 ```bash
-# FastAPIサーバー起動（ポート3001）
+# FastAPIサーバー起動（ポート8000）
 uv run ./start_api.sh
 ```
 
