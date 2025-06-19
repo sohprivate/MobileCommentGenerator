@@ -51,7 +51,7 @@ prompts:
 # フォールバック設定
 fallback:
   enabled: true
-  primary_provider: "openai"
+  primary_provider: "gemini"
   secondary_provider: "anthropic"
   max_retry_attempts: 3
   

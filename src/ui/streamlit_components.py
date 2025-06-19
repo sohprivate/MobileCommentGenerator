@@ -196,8 +196,8 @@ def llm_provider_selector() -> str:
         選択されたプロバイダー名
     """
     providers = {
-        "openai": "🤖 OpenAI (GPT-4)",
         "gemini": "✨ Google Gemini",
+        "openai": "🤖 OpenAI (GPT-4)",
         "anthropic": "🧠 Anthropic Claude",
     }
 

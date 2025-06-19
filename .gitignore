@@ -1,3 +1,6 @@
+# Node modules (root level)
+node_modules/
+
 # Frontend specific ignores
 frontend/node_modules/
 frontend/.nuxt/
@@ -5,6 +8,15 @@ frontend/.output/
 frontend/dist/
 frontend/.env
 frontend/package-lock.json
+
+# React frontend specific ignores
+react-version/node_modules/
+react-version/dist/
+react-version/.env
+react-version/package-lock.json
+
+# Shared module ignores
+shared/node_modules/
 
 # Python
 __pycache__/

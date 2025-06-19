@@ -44,7 +44,7 @@ app.add_middleware(
 # Pydantic models
 class CommentGenerationRequest(BaseModel):
     location: str
-    llm_provider: str = "openai"
+    llm_provider: str = "gemini"
     target_datetime: Optional[str] = None
 
 class CommentGenerationResponse(BaseModel):
