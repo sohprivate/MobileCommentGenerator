@@ -5,8 +5,8 @@ export class ApiClient {
   private client: AxiosInstance;
 
   constructor(baseURL?: string) {
-    // Nuxt.jsが3000番ポートを使用するため、APIは3001番を使用
-    const apiUrl = baseURL || process.env.NUXT_PUBLIC_API_URL || process.env.VITE_API_URL || 'http://localhost:3001';
+    // APIサーバーは8000番ポートで起動
+    const apiUrl = baseURL || process.env.NUXT_PUBLIC_API_URL || process.env.VITE_API_URL || 'http://localhost:8000';
     
     this.client = axios.create({
       baseURL: apiUrl,
