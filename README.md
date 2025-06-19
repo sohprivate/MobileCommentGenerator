@@ -91,6 +91,23 @@ MobileCommentGenerator/
 ### 🚧 Phase 5: デプロイメント（0%完了）
 - [ ] **AWSデプロイメント**: Lambda/ECS・CloudWatch統合
 
+## 🚀 AWSデプロイメントロードマップ
+
+1. **AWS基盤準備**
+   - VPC・サブネット・セキュリティグループを作成
+   - 必要に応じてRDSやS3などの外部サービスを準備
+2. **Docker & ECR**
+   - DockerイメージをビルドしECRへpush
+3. **GitHub ActionsによるCI/CD**
+   - PR時にテストとLintを実行
+   - mainマージ時にECRへpushしECS/EC2へデプロイ
+4. **ECS(Fargate)運用**
+   - タスク定義・サービスを作成しAuto Scalingを設定
+   - Application Load BalancerとCloudWatch Logsを利用
+5. **EC2運用の代替案**
+   - EC2にDockerをインストールしコンテナを常駐化
+   - ALBとAuto Scaling Groupで冗長化しCloudWatchで監視
+
 ## 🔥 React版追加実装ガイド
 
 既存のNuxt.js 3版に影響を与えずにReact版を追加する詳細な手順を以下に示します。
