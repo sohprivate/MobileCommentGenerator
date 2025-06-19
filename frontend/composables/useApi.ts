@@ -70,7 +70,7 @@ export const useApi = () => {
         body: {
           locations,
           target_datetime: new Date().toISOString(),
-          llm_provider: 'openai',
+          llm_provider: 'gemini',
           generation_settings: {
             include_emoji: settings.includeEmoji,
             include_advice: settings.includeAdvice,

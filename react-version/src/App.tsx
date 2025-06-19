@@ -9,7 +9,7 @@ import { useApi } from './hooks/useApi';
 
 function App() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [llmProvider, setLlmProvider] = useState<'openai' | 'gemini' | 'anthropic'>('openai');
+  const [llmProvider, setLlmProvider] = useState<'openai' | 'gemini' | 'anthropic'>('gemini');
   const [temperature, setTemperature] = useState(0.7);
   const [generatedComment, setGeneratedComment] = useState<GeneratedComment | null>(null);
   

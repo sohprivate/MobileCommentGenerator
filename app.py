@@ -39,7 +39,7 @@ def initialize_session_state():
     defaults = {
         'generation_history': load_history(),
         'selected_location': load_locations(),  # 全地点がデフォルト
-        'llm_provider': "openai",
+        'llm_provider': "gemini",
         'current_result': None,
         'is_generating': False
     }

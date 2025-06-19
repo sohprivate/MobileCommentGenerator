@@ -1,0 +1,31 @@
+{
+  "name": "mobile-comment-generator",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "react-version",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter frontend dev",
+    "build": "pnpm --filter frontend build",
+    "dev:react": "pnpm --filter react-version dev",
+    "build:react": "pnpm --filter react-version build",
+    "dev:all": "pnpm --parallel --filter frontend --filter react-version dev",
+    "install:all": "pnpm install",
+    "test": "pnpm --recursive test",
+    "test:vue": "pnpm --filter frontend test",
+    "test:react": "pnpm --filter react-version test",
+    "lint": "pnpm --recursive lint",
+    "lint:vue": "pnpm --filter frontend lint",
+    "lint:react": "pnpm --filter react-version lint",
+    "typecheck": "pnpm --recursive typecheck",
+    "ci:test": "pnpm --recursive test:ci",
+    "ci:build": "pnpm --recursive build"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "turbo": "^1.13.0"
+  }
+}
