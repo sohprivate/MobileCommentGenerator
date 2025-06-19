@@ -17,8 +17,8 @@ export const GenerateSettings: React.FC<GenerateSettingsProps> = ({
   className = '',
 }) => {
   const llmProviders = [
-    { value: 'openai', label: 'OpenAI GPT' },
     { value: 'gemini', label: 'Google Gemini' },
+    { value: 'openai', label: 'OpenAI GPT' },
     { value: 'anthropic', label: 'Anthropic Claude' },
   ] as const;
 

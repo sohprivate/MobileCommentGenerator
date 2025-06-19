@@ -563,7 +563,7 @@ useHead({
 // Reactive state
 const selectedLocation = ref('')
 const selectedLocations = ref([])
-const selectedProvider = ref({ label: 'OpenAI GPT', value: 'openai' })
+const selectedProvider = ref({ label: 'Google Gemini', value: 'gemini' })
 const generating = ref(false)
 const result = ref(null)
 const results = ref([])
@@ -629,8 +629,8 @@ const fetchProviders = async () => {
     console.error('Failed to fetch providers:', error)
     // Fallback to mock data
     providers.value = [
-      { id: 'openai', name: 'OpenAI GPT', description: 'OpenAI\'s GPT models' },
       { id: 'gemini', name: 'Gemini', description: 'Google\'s Gemini AI' },
+      { id: 'openai', name: 'OpenAI GPT', description: 'OpenAI\'s GPT models' },
       { id: 'anthropic', name: 'Claude', description: 'Anthropic\'s Claude AI' }
     ]
   } finally {

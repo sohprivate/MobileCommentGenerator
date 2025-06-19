@@ -6,6 +6,12 @@ frontend/dist/
 frontend/.env
 frontend/package-lock.json
 
+# React frontend specific ignores
+react-version/node_modules/
+react-version/dist/
+react-version/.env
+react-version/package-lock.json
+
 # Python
 __pycache__/
 *.py[cod]
