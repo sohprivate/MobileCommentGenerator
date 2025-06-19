@@ -1,3 +1,6 @@
+# Node modules (root level)
+node_modules/
+
 # Frontend specific ignores
 frontend/node_modules/
 frontend/.nuxt/
