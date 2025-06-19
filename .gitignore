@@ -15,6 +15,9 @@ react-version/dist/
 react-version/.env
 react-version/package-lock.json
 
+# Shared module ignores
+shared/node_modules/
+
 # Python
 __pycache__/
 *.py[cod]
