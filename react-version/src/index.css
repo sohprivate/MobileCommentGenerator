@@ -6,7 +6,7 @@
   font-family: system-ui, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
   line-height: 1.6;
   font-weight: 400;
-  
+
   color-scheme: light;
   color: #374151;
   background-color: #f9fafb;
@@ -17,11 +17,21 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html.dark :root {
+  color-scheme: dark;
+  color: #f3f4f6;
+  background-color: #111827;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
   background-color: #f9fafb;
+}
+
+html.dark body {
+  background-color: #111827;
 }
 
 * {
@@ -37,11 +47,23 @@ body {
   background: #f1f5f9;
 }
 
+html.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
 }
 
+html.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }

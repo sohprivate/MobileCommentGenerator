@@ -36,15 +36,15 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {/* ヘッダー */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-3">
             <Cloud className="w-8 h-8 text-blue-600" />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">天気コメント生成システム</h1>
-              <p className="text-sm text-gray-600">React版</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">天気コメント生成システム</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-300">React版</p>
             </div>
           </div>
         </div>
@@ -55,14 +55,14 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 左パネル: 設定 */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <LocationSelection
                 selectedLocation={selectedLocation}
                 onLocationChange={setSelectedLocation}
               />
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <GenerateSettings
                 llmProvider={llmProvider}
                 onLlmProviderChange={setLlmProvider}
@@ -92,7 +92,7 @@ function App() {
 
             {/* エラー表示 */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-4">
                 <p className="text-red-800 text-sm">{error}</p>
               </div>
             )}
@@ -101,7 +101,7 @@ function App() {
           {/* 右パネル: 結果表示 */}
           <div className="lg:col-span-2 space-y-6">
             {/* 生成されたコメント */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <GeneratedCommentDisplay
                 comment={generatedComment}
                 onCopy={handleCopyComment}
@@ -110,7 +110,7 @@ function App() {
 
             {/* 天気データ */}
             {generatedComment?.weather && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <WeatherDataDisplay weather={generatedComment.weather} />
               </div>
             )}
