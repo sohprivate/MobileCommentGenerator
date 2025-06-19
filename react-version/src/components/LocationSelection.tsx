@@ -37,7 +37,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
     };
 
     fetchLocations();
-  }, []);
+  }, [getLocations]);
 
   const filteredLocations = locations.filter(location =>
     location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -50,7 +50,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
       <div className={`space-y-4 ${className}`}>
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-          <span className="ml-2 text-gray-600">読み込み中...</span>
+          <span className="ml-2 text-gray-600 dark:text-gray-300">読み込み中...</span>
         </div>
       </div>
     );
@@ -59,7 +59,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
   if (error) {
     return (
       <div className={`space-y-4 ${className}`}>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-4">
           <p className="text-red-800">{error}</p>
         </div>
       </div>
@@ -69,7 +69,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
   return (
     <div className={`space-y-4 ${className}`}>
       <div>
-        <label htmlFor="location-search" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="location-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           地点選択
         </label>
         <div className="relative">
@@ -78,7 +78,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
             id="location-search"
             type="text"
             placeholder="地点名または地域名で検索..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -86,35 +86,35 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
       </div>
 
       {selectedLocation && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
           <div className="flex items-center space-x-2">
             <MapPin className="w-4 h-4 text-blue-600" />
             <div>
-              <div className="font-medium text-blue-900">{selectedLocation.name}</div>
-              <div className="text-sm text-blue-700">{selectedLocation.prefecture} - {selectedLocation.region}</div>
+              <div className="font-medium text-blue-900 dark:text-blue-300">{selectedLocation.name}</div>
+              <div className="text-sm text-blue-700 dark:text-blue-400">{selectedLocation.prefecture} - {selectedLocation.region}</div>
             </div>
           </div>
         </div>
       )}
       
-      <div className="border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
+      <div className="border border-app-border rounded-lg max-h-64 overflow-y-auto">
         {filteredLocations.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
+          <div className="p-4 text-center text-gray-500 dark:text-gray-400">
             検索条件に一致する地点が見つかりません
           </div>
         ) : (
           filteredLocations.map((location) => (
             <button
               key={location.id}
-              className={`w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 flex items-center space-x-2 transition-colors ${
-                selectedLocation?.id === location.id ? 'bg-blue-50' : ''
+              className={`w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 flex items-center space-x-2 transition-colors ${
+                selectedLocation?.id === location.id ? 'bg-blue-50 dark:bg-blue-900/30' : ''
               }`}
               onClick={() => onLocationChange(location)}
             >
               <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 truncate">{location.name}</div>
-                <div className="text-sm text-gray-500 truncate">{location.prefecture} - {location.region}</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{location.name}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{location.prefecture} - {location.region}</div>
               </div>
             </button>
           ))
