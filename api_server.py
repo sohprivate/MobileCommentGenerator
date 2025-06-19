@@ -32,7 +32,7 @@ except ImportError as e:
 app = FastAPI(title="Mobile Comment Generator API", version="1.0.0")
 
 # CORS設定
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -97,6 +97,7 @@ def get_history():
 @app.post("/api/generate", response_model=CommentGenerationResponse)
 def generate_comment(request: CommentGenerationRequest):
     """Generate weather comment for a location"""
+    logger.info(f"Received request: {request}")
     logger.info(f"Generating comment for location: {request.location}, provider: {request.llm_provider}")
     
     try:
