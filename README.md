@@ -836,6 +836,10 @@ pnpm dev:react
 pnpm build:react
 ```
 
+#### 🌙 ダークモード切り替え
+React版は起動時にシステムのテーマを検出し、右上のボタンでライト/ダークを切り替えられます。
+色の調整は `react-version/src/index.css` 内の `--app-color-*` 変数を変更してください。
+
 #### 両方同時起動
 ```bash
 # Nuxt.js版とReact版を同時起動

@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
-import { Cloud, Sparkles } from 'lucide-react';
+import { Cloud, Sparkles, Sun, Moon } from 'lucide-react';
 import type { Location, GeneratedComment } from '@mobile-comment-generator/shared';
 import { LocationSelection } from './components/LocationSelection';
 import { GenerateSettings } from './components/GenerateSettings';
 import { GeneratedCommentDisplay } from './components/GeneratedComment';
 import { WeatherDataDisplay } from './components/WeatherData';
 import { useApi } from './hooks/useApi';
+import { useTheme } from './hooks/useTheme';
 
 function App() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [llmProvider, setLlmProvider] = useState<'openai' | 'gemini' | 'anthropic'>('gemini');
   const [temperature, setTemperature] = useState(0.7);
   const [generatedComment, setGeneratedComment] = useState<GeneratedComment | null>(null);
-  
+
   const { generateComment, loading, error, clearError } = useApi();
+  const { theme, toggleTheme } = useTheme();
 
   const handleGenerateComment = async () => {
     if (!selectedLocation) return;
@@ -36,17 +38,24 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen bg-app-bg text-app-text transition-colors">
       {/* ヘッダー */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-app-surface shadow-sm border-b border-app-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Cloud className="w-8 h-8 text-blue-600" />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">天気コメント生成システム</h1>
+              <h1 className="text-2xl font-bold text-app-text">天気コメント生成システム</h1>
               <p className="text-sm text-gray-600 dark:text-gray-300">React版</p>
             </div>
           </div>
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-md border border-transparent hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
         </div>
       </header>
 
@@ -55,14 +64,14 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* 左パネル: 設定 */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-app-surface rounded-lg shadow-sm border border-app-border p-6">
               <LocationSelection
                 selectedLocation={selectedLocation}
                 onLocationChange={setSelectedLocation}
               />
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-app-surface rounded-lg shadow-sm border border-app-border p-6">
               <GenerateSettings
                 llmProvider={llmProvider}
                 onLlmProviderChange={setLlmProvider}
@@ -101,7 +110,7 @@ function App() {
           {/* 右パネル: 結果表示 */}
           <div className="lg:col-span-2 space-y-6">
             {/* 生成されたコメント */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-app-surface rounded-lg shadow-sm border border-app-border p-6">
               <GeneratedCommentDisplay
                 comment={generatedComment}
                 onCopy={handleCopyComment}
@@ -110,7 +119,7 @@ function App() {
 
             {/* 天気データ */}
             {generatedComment?.weather && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <div className="bg-app-surface rounded-lg shadow-sm border border-app-border p-6">
                 <WeatherDataDisplay weather={generatedComment.weather} />
               </div>
             )}

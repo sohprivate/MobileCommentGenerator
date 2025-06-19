@@ -37,7 +37,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
     };
 
     fetchLocations();
-  }, []);
+  }, [getLocations]);
 
   const filteredLocations = locations.filter(location =>
     location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -78,7 +78,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
             id="location-search"
             type="text"
             placeholder="地点名または地域名で検索..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 transition-colors"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -97,7 +97,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
         </div>
       )}
       
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-64 overflow-y-auto">
+      <div className="border border-app-border rounded-lg max-h-64 overflow-y-auto">
         {filteredLocations.length === 0 ? (
           <div className="p-4 text-center text-gray-500 dark:text-gray-400">
             検索条件に一致する地点が見つかりません

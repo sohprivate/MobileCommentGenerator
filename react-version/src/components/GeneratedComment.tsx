@@ -41,7 +41,7 @@ export const GeneratedCommentDisplay: React.FC<GeneratedCommentProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* メインコメント */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+      <div className="bg-app-surface border border-app-border rounded-lg p-6 shadow-sm">
         <div className="flex items-start justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
             <MessageSquare className="w-5 h-5 mr-2 text-blue-600" />
@@ -107,7 +107,7 @@ export const GeneratedCommentDisplay: React.FC<GeneratedCommentProps> = ({
       )}
 
       {/* メタ情報 */}
-      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+      <div className="bg-gray-50 dark:bg-gray-800 border border-app-border rounded-lg p-4">
         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">生成情報</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           <div className="flex items-center space-x-2">

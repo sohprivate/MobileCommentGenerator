@@ -25,7 +25,7 @@ export const WeatherDataDisplay: React.FC<WeatherDataProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* 現在の天気 */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+      <div className="bg-app-surface border border-app-border rounded-lg p-6 shadow-sm">
         <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
           <Cloud className="w-5 h-5 mr-2 text-blue-600" />
           現在の天気
@@ -78,7 +78,7 @@ export const WeatherDataDisplay: React.FC<WeatherDataProps> = ({
 
       {/* 予報データ */}
       {forecast && forecast.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+        <div className="bg-app-surface border border-app-border rounded-lg p-6 shadow-sm">
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">天気予報</h3>
           
           <div className="space-y-3">
@@ -115,7 +115,7 @@ export const WeatherDataDisplay: React.FC<WeatherDataProps> = ({
 
       {/* トレンド情報 */}
       {trend && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+        <div className="bg-app-surface border border-app-border rounded-lg p-6 shadow-sm">
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
             <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
             天気の傾向

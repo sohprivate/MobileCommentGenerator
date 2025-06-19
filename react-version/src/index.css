@@ -8,8 +8,12 @@
   font-weight: 400;
 
   color-scheme: light;
-  color: #374151;
-  background-color: #f9fafb;
+  --app-color-text: #374151;
+  --app-color-bg: #f9fafb;
+  --app-color-surface: #ffffff;
+  --app-color-border: #e5e7eb;
+  color: var(--app-color-text);
+  background-color: var(--app-color-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,19 +23,19 @@
 
 html.dark :root {
   color-scheme: dark;
-  color: #f3f4f6;
-  background-color: #111827;
+  --app-color-text: #f3f4f6;
+  --app-color-bg: #111827;
+  --app-color-surface: #1f2937;
+  --app-color-border: #374151;
+  color: var(--app-color-text);
+  background-color: var(--app-color-bg);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f9fafb;
-}
-
-html.dark body {
-  background-color: #111827;
+  background-color: var(--app-color-bg);
 }
 
 * {
