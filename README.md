@@ -91,6 +91,53 @@ MobileCommentGenerator/
 ### 🚧 Phase 5: デプロイメント（0%完了）
 - [ ] **AWSデプロイメント**: Lambda/ECS・CloudWatch統合
 
+## 🚀 AWSデプロイメントロードマップ
+
+以下は AWS 上に本システムを展開するための代表的な手順です。ECS(Fargate) を軸に
+しつつ、EC2 での代替運用も視野に入れたロードマップをまとめました。
+
+1. **初期準備**
+   - AWS アカウントを作成し、必要な IAM ユーザー／ロールを整備
+   - AWS CLI をインストールして `aws configure` で認証情報を設定
+   - ネットワークは VPC 内にパブリック／プライベートサブネットを作成し、
+     セキュリティグループで HTTP/HTTPS ポートを開放
+2. **Docker イメージ管理(ECR)**
+   - `aws ecr create-repository` でリポジトリを作成
+   - Docker イメージをビルドし、以下のコマンド例で ECR へ push
+
+```bash
+aws ecr get-login-password --region <REGION> | \
+  docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com
+docker build -t mobile-comment-generator .
+docker tag mobile-comment-generator:latest \
+  <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/mobile-comment-generator:latest
+docker push <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/mobile-comment-generator:latest
+```
+
+3. **ECS(Fargate) クラスタ構築**
+   - クラスタを作成し、タスク定義で上記イメージを指定
+   - サービスを作成して Application Load Balancer と接続
+   - CloudWatch Logs へログを送信し、Auto Scaling を有効化
+
+4. **GitHub Actions での CI/CD**
+   - PR では `lint` と `test` を実行
+   - `main` マージ時に Docker ビルド → ECR push → ECS サービス更新を自動化
+   - 例: `aws ecs update-service --cluster <cluster> --service <service> --force-new-deployment`
+
+5. **EC2 デプロイ (代替案)**
+   - Auto Scaling Group + Launch Template を用意し、起動時スクリプトで ECR からイメージ
+     を pull して `docker run` で起動
+   - ALB で複数インスタンスにトラフィックを分散し、CloudWatch Agent でメトリクス／
+     ログを収集
+
+6. **運用と周辺サービス**
+   - CloudWatch Alarms で CPU や応答コードを監視し、必要に応じて通知
+   - データ永続化が必要な場合は RDS や DynamoDB をプライベートサブネットに配置
+   - S3 へのファイル保存や Secrets Manager での機密情報管理も検討する
+
+上記を基に環境を整備すれば、可用性とスケーラビリティを両立した AWS 運用が可能に
+なります。
+
 ## 🔥 React版追加実装ガイド
 
 既存のNuxt.js 3版に影響を与えずにReact版を追加する詳細な手順を以下に示します。
