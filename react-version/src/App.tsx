@@ -5,7 +5,6 @@ import { LocationSelection } from './components/LocationSelection';
 import { GenerateSettings } from './components/GenerateSettings';
 import { GeneratedCommentDisplay } from './components/GeneratedComment';
 import { WeatherDataDisplay } from './components/WeatherData';
-import { PricingCard } from './components/PricingCard';
 import { useApi } from './hooks/useApi';
 import { useTheme } from './hooks/useTheme';
 import { REGIONS } from './constants/regions';
@@ -350,32 +349,6 @@ function App() {
         </div>
       </main>
 
-      {/* 料金プランセクション */}
-      <section className="py-12 bg-gray-100 dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">料金プラン</h2>
-          <div className="flex flex-col md:flex-row gap-6 justify-center max-w-6xl mx-auto">
-            <PricingCard
-              planKey="basic"
-              title="Basic"
-              price="¥1,000/月"
-              features={['基本的な天気予報', '1日10回まで生成', 'メールサポート']}
-            />
-            <PricingCard
-              planKey="pro"
-              title="Pro"
-              price="¥5,000/月"
-              features={['詳細な天気予報', '無制限生成', '優先サポート', 'API アクセス']}
-            />
-            <PricingCard
-              planKey="enterprise"
-              title="Enterprise"
-              price="お問い合わせ"
-              features={['カスタム予報モデル', '専用インフラ', '24/7 サポート', 'SLA 保証']}
-            />
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
