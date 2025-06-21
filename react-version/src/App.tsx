@@ -99,6 +99,7 @@ function App() {
               {/* 生成ボタン */}
               <div className="mt-6">
                 <button
+                  type="button"
                   onClick={handleGenerateComment}
                   disabled={!selectedLocation || loading}
                   className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
@@ -150,7 +151,7 @@ function App() {
       <section className="py-12 bg-gray-100 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">料金プラン</h2>
-          <div className="flex flex-col md:flex-row gap-6 justify-center">
+          <div className="flex flex-col md:flex-row gap-6 justify-center max-w-6xl mx-auto">
             <PricingCard
               planKey="basic"
               title="Basic"

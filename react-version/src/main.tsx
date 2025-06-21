@@ -5,7 +5,8 @@ import './styles/global.css'
 import { themeClass } from './styles/theme.css'
 import App from './App.tsx'
 
-const rootElement = document.getElementById('root')!
+const rootElement = document.getElementById('root')
+if (!rootElement) throw new Error('Root element not found')
 rootElement.classList.add(themeClass)
 
 createRoot(rootElement).render(

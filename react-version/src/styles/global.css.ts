@@ -18,18 +18,6 @@ globalStyle('html.dark', {
   colorScheme: 'dark',
 });
 
-globalStyle(`html.dark .${themeClass}`, {
-  vars: {
-    colors: {
-      ...vars.colors,
-      text: '#f3f4f6',
-      bg: '#111827',
-      surface: '#1f2937',
-      border: '#374151',
-    },
-  },
-});
-
 globalStyle('*', {
   boxSizing: 'border-box',
 });
@@ -68,4 +56,21 @@ globalStyle('::-webkit-scrollbar-thumb:hover', {
 
 globalStyle('html.dark ::-webkit-scrollbar-thumb:hover', {
   background: '#6b7280',
+});
+
+globalStyle(`html.dark .${themeClass}`, {
+  vars: {
+    ...vars,
+    colors: {
+      ...vars.colors,
+      text: '#f3f4f6',
+      bg: '#111827',
+      surface: '#1f2937',
+      border: '#374151',
+      neutral: {
+        ...vars.colors.neutral,
+        600: '#d1d5db',
+      },
+    },
+  },
 });
