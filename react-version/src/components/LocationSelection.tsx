@@ -37,13 +37,13 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
     };
 
     fetchLocations();
-  }, [getLocations]);
+  }, []); // 依存配列を空にして初回のみ実行
 
-  const filteredLocations = locations.filter(location =>
+  const filteredLocations = Array.isArray(locations) ? locations.filter(location =>
     location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     location.prefecture.toLowerCase().includes(searchTerm.toLowerCase()) ||
     location.region.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   if (loading) {
     return (

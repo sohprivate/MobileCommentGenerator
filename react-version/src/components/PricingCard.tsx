@@ -1,10 +1,10 @@
 import { Check } from 'lucide-react';
 import { clsx } from 'clsx';
-import { usePricingStore } from '../store';
+import { usePricingStore, type PlanKey } from '../store';
 import * as styles from './PricingCard.css';
 
 interface PricingCardProps {
-  planKey: 'basic' | 'pro' | 'enterprise';
+  planKey: PlanKey;
   title: string;
   price: string;
   features: string[];
