@@ -1,10 +1,13 @@
-/** @type {import('tailwindcss').Config} */
+import type { Config } from 'tailwindcss'
+
 export default {
-  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: ['class'],
+  // Vanilla Extract のテーマクラスをパージ対象外にする場合:
+  // safelist: ['<%= themeClass %>'],
   theme: {
     extend: {
       fontFamily: {
@@ -30,5 +33,4 @@ export default {
       },
     },
   },
-  plugins: [],
-}
+} satisfies Config
