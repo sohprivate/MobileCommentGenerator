@@ -59,7 +59,9 @@ export const GenerateSettings: React.FC<GenerateSettingsProps> = ({
               className={`relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out ${
                 isBatchMode ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
               }`}
-              aria-label="Toggle batch mode"
+              aria-label={`${isBatchMode ? '単一地点モード' : '一括生成モード'}に切り替え`}
+              role="switch"
+              aria-checked={isBatchMode}
             >
               <span
                 className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${

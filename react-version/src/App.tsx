@@ -8,6 +8,7 @@ import { WeatherDataDisplay } from './components/WeatherData';
 import { PricingCard } from './components/PricingCard';
 import { useApi } from './hooks/useApi';
 import { useTheme } from './hooks/useTheme';
+import { REGIONS } from './constants/regions';
 
 interface BatchResult {
   success: boolean;
@@ -15,6 +16,23 @@ interface BatchResult {
   comment?: string;
   error?: string;
   metadata?: any;
+}
+
+// Constants for batch mode
+const MAX_BATCH_LOCATIONS = 30;
+const WARN_BATCH_LOCATIONS = 20;
+
+// Helper function to find location info from regions data
+function getLocationInfo(locationName: string): { prefecture: string; region: string } {
+  for (const [regionName, prefectures] of Object.entries(REGIONS)) {
+    for (const [prefName, locations] of Object.entries(prefectures)) {
+      if (locations.includes(locationName)) {
+        return { prefecture: prefName, region: regionName };
+      }
+    }
+  }
+  // Fallback values if not found
+  return { prefecture: '不明', region: '不明' };
 }
 
 function App() {
@@ -49,12 +67,13 @@ function App() {
           const chunk = selectedLocations.slice(i, i + BATCH_SIZE);
           const chunkPromises = chunk.map(async (locationName: string) => {
             try {
-              // Create a location object for the API
+              // Create a location object for the API with correct prefecture and region
+              const locationInfo = getLocationInfo(locationName);
               const locationObj: Location = {
                 id: locationName,
                 name: locationName,
-                prefecture: '',
-                region: ''
+                prefecture: locationInfo.prefecture,
+                region: locationInfo.region
               };
               
               const result = await generateComment(locationObj, {
@@ -163,9 +182,29 @@ function App() {
                     onLocationChange={setSelectedLocation}
                     onLocationsChange={setSelectedLocations}
                     isBatchMode={isBatchMode}
+                    maxSelections={MAX_BATCH_LOCATIONS}
                   />
                 </div>
               </div>
+
+              {/* Batch mode warnings */}
+              {isBatchMode && selectedLocations.length >= WARN_BATCH_LOCATIONS && (
+                <div className="mt-6 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 mr-2 mt-0.5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L12.732 4c-.77-1.667-2.308-1.667-3.08 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                      <div className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                        大量の地点が選択されています ({selectedLocations.length}地点)
+                      </div>
+                      <div className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                        処理に時間がかかる可能性があります。最大{MAX_BATCH_LOCATIONS}地点まで選択可能です。
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* 生成時刻表示 */}
               <div className="mt-6 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-4">

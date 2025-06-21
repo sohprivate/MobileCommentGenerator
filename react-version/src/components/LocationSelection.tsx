@@ -10,6 +10,7 @@ interface LocationSelectionProps {
   onLocationChange: (location: Location) => void;
   onLocationsChange: (locations: string[]) => void;
   isBatchMode: boolean;
+  maxSelections?: number;
   className?: string;
 }
 
@@ -19,6 +20,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
   onLocationChange,
   onLocationsChange,
   isBatchMode,
+  maxSelections,
   className = '',
 }) => {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -29,30 +31,43 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
   const { getLocations } = createWeatherCommentComposable();
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchLocations = async () => {
       try {
         setLoading(true);
         setError(null);
         const data = await getLocations();
-        setLocations(data);
-      } catch (err) {
-        setError('地点データの取得に失敗しました');
-        console.error('Failed to fetch locations:', err);
         
-        // Fallback to region-based data
-        const fallbackLocations = getAllLocations().map(name => ({
-          id: name,
-          name: name,
-          prefecture: '',
-          region: ''
-        }));
-        setLocations(fallbackLocations);
+        if (isMounted) {
+          setLocations(data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError('地点データの取得に失敗しました');
+          console.error('Failed to fetch locations:', err);
+          
+          // Fallback to region-based data
+          const fallbackLocations = getAllLocations().map(name => ({
+            id: name,
+            name: name,
+            prefecture: '',
+            region: ''
+          }));
+          setLocations(fallbackLocations);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchLocations();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const filteredLocations = Array.isArray(locations) ? locations.filter(location =>
@@ -65,7 +80,12 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
 
   const selectAllLocations = () => {
     const allLocationNames = locations.map(loc => loc.name);
-    onLocationsChange(allLocationNames);
+    if (maxSelections && allLocationNames.length > maxSelections) {
+      // Limit to max selections
+      onLocationsChange(allLocationNames.slice(0, maxSelections));
+    } else {
+      onLocationsChange(allLocationNames);
+    }
   };
 
   const clearAllLocations = () => {
@@ -83,7 +103,14 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
     } else {
       // Add missing locations from this region
       const newLocations = regionLocationNames.filter(name => !selectedLocations.includes(name));
-      onLocationsChange([...selectedLocations, ...newLocations]);
+      const updatedLocations = [...selectedLocations, ...newLocations];
+      
+      if (maxSelections && updatedLocations.length > maxSelections) {
+        // Limit to max selections
+        onLocationsChange(updatedLocations.slice(0, maxSelections));
+      } else {
+        onLocationsChange(updatedLocations);
+      }
     }
   };
 
@@ -96,6 +123,10 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
     if (selectedLocations.includes(locationName)) {
       onLocationsChange(selectedLocations.filter(name => name !== locationName));
     } else {
+      if (maxSelections && selectedLocations.length >= maxSelections) {
+        // Already at max, don't add more
+        return;
+      }
       onLocationsChange([...selectedLocations, locationName]);
     }
   };
@@ -137,6 +168,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
                 <button
                   onClick={selectAllLocations}
                   className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
+                  aria-label="すべての地点を選択"
                 >
                   <CheckCircle className="w-3 h-3 mr-1" />
                   🌍 全地点選択
@@ -144,6 +176,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
                 <button
                   onClick={clearAllLocations}
                   className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
+                  aria-label="選択をクリア"
                 >
                   <XCircle className="w-3 h-3 mr-1" />
                   クリア
@@ -161,6 +194,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
                         ? 'bg-blue-500 text-white border border-blue-500'
                         : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
                     }`}
+                    aria-label={`${region}の地点を${isRegionSelected(region) ? '選択解除' : '選択'}`}
                   >
                     {region}
                   </button>
@@ -170,7 +204,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
             
             {/* Selected count */}
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              選択中: {selectedLocations.length}地点
+              選択中: {selectedLocations.length}地点{maxSelections && ` / 最大${maxSelections}地点`}
             </div>
           </div>
         )}
@@ -226,6 +260,7 @@ export const LocationSelection: React.FC<LocationSelectionProps> = ({
                   onLocationChange(location);
                 }
               }}
+              aria-label={`${location.name}を${isBatchMode && selectedLocations.includes(location.name) ? '選択解除' : '選択'}`}
             >
               <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
