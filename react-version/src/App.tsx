@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Cloud, Sparkles, Sun, Moon, AlertTriangle, CheckCircle2, Info, Copy as CopyIcon } from 'lucide-react'; // アイコン追加
 import type { Location, GeneratedComment as SharedGeneratedComment, GenerateSettings } from '@mobile-comment-generator/shared';
 import { LocationSelection } from './components/LocationSelection';
-import { GenerateSettings } from './components/GenerateSettings';
+import { GenerateSettings as GenerateSettingsComponent } from './components/GenerateSettings';
 import { GeneratedCommentDisplay } from './components/GeneratedComment';
 // import { WeatherDataDisplay } from './components/WeatherData'; // Not directly used in this iteration for batch
 import { useApi } from './hooks/useApi';
@@ -57,6 +57,26 @@ function App() {
     }
     return [];
   }, [isBatchMode, processedComments]);
+  
+  // バッチ処理の進捗状況を計算
+  const batchProgress = React.useMemo(() => {
+    if (!isBatchMode || processedComments.length === 0) return null;
+    
+    const total = processedComments.length;
+    const completed = processedComments.filter(r => r.status === 'success' || r.status === 'error').length;
+    const success = processedComments.filter(r => r.status === 'success').length;
+    const error = processedComments.filter(r => r.status === 'error').length;
+    const generating = processedComments.filter(r => r.status === 'generating').length;
+    
+    return {
+      total,
+      completed,
+      success,
+      error,
+      generating,
+      percentage: Math.round((completed / total) * 100)
+    };
+  }, [isBatchMode, processedComments]);
 
   const updateProcessedCommentById = useCallback((locationId: string, updates: Partial<Omit<CommentProcessResult, 'id' | 'locationName'>>) => {
     setProcessedComments(prev =>
@@ -82,33 +102,56 @@ function App() {
       }
 
       setAppLoading(true);
-      const initialResults = selectedLocations.map(locName => ({
+      
+      // Vue版と同様に地点の順序を保証
+      const sortedSelectedLocations = [...selectedLocations].sort();
+      
+      const initialResults = sortedSelectedLocations.map(locName => ({
         id: locName,
         locationName: locName,
         status: 'pending' as const,
       }));
       setProcessedComments(initialResults);
 
-      const promises = selectedLocations.map(async (locationName) => {
-        updateProcessedCommentById(locationName, { status: 'generating' });
-        const locationForApi = getLocationInfo(locationName);
+      // 逐次バッチ処理の実装（Vue版と同様に3件ずつ処理）
+      const BATCH_SIZE = 3;
+      
+      for (let i = 0; i < sortedSelectedLocations.length; i += BATCH_SIZE) {
+        const batch = sortedSelectedLocations.slice(i, i + BATCH_SIZE);
+        
+        // バッチ内の処理を並列実行
+        const batchPromises = batch.map(async (locationName) => {
+          updateProcessedCommentById(locationName, { status: 'generating' });
+          const locationForApi = getLocationInfo(locationName);
 
-        try {
-          const result = await apiGenerateComment(locationForApi, { llmProvider });
-          updateProcessedCommentById(locationName, {
-            status: 'success',
-            comment: result.comment,
-            metadata: result.metadata,
-          });
-        } catch (error: any) {
-          updateProcessedCommentById(locationName, {
-            status: 'error',
-            error: error.message || 'コメント生成に失敗しました',
-          });
-        }
-      });
-
-      await Promise.allSettled(promises);
+          try {
+            const result = await apiGenerateComment(locationForApi, { llmProvider });
+            // 成功時の処理
+            if (result && result.comment) {
+              updateProcessedCommentById(locationName, {
+                status: 'success',
+                comment: result.comment,
+                metadata: result.metadata,
+              });
+            } else {
+              // APIレスポンスが不正な場合
+              updateProcessedCommentById(locationName, {
+                status: 'error',
+                error: 'APIレスポンスが不正です',
+              });
+            }
+          } catch (error: any) {
+            console.error(`Failed to generate comment for ${locationName}:`, error);
+            updateProcessedCommentById(locationName, {
+              status: 'error',
+              error: error.message || 'コメント生成に失敗しました',
+            });
+          }
+        });
+        
+        // バッチの完了を待つ
+        await Promise.allSettled(batchPromises);
+      }
       setAppLoading(false);
 
     } else {
@@ -128,7 +171,16 @@ function App() {
 
       try {
         const result = await apiGenerateComment(locationForApi, { llmProvider });
-        setSingleGeneratedComment(result as ApiGeneratedComment); // Cast if API returns SharedGeneratedComment
+        // Ensure the result matches the expected type structure
+        const generatedComment: ApiGeneratedComment = {
+          id: result.id || selectedLocation.id,
+          comment: result.comment,
+          location: result.location || selectedLocation,
+          timestamp: result.timestamp || new Date().toISOString(),
+          settings: result.settings || { llmProvider, location: selectedLocation } as GenerateSettings,
+          confidence: result.confidence ?? 1,
+        };
+        setSingleGeneratedComment(generatedComment);
       } catch (err: any) {
         console.error('Failed to generate single comment:', err);
         setSingleGeneratedComment({
@@ -196,7 +248,7 @@ function App() {
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">設定</h2>
                 </div>
                 <div className="p-6">
-                  <GenerateSettings
+                  <GenerateSettingsComponent
                     llmProvider={llmProvider}
                     onLlmProviderChange={setLlmProvider}
                     isBatchMode={isBatchMode}
