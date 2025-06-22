@@ -26,7 +26,7 @@ class CommentSelector:
         self.validator = validator
         self.severe_config = get_severe_weather_config()
     
-    def select_optimal_comment_pair(
+    async def select_optimal_comment_pair(
         self, 
         weather_comments: List[PastComment], 
         advice_comments: List[PastComment], 
@@ -533,7 +533,7 @@ class CommentSelector:
             'comment_object': comment  # 元のcommentオブジェクトを保持
         }
     
-    def _llm_select_comment(
+    async def _llm_select_comment(
         self,
         candidates: List[Dict[str, Any]],
         weather_data: WeatherForecast,
@@ -555,7 +555,7 @@ class CommentSelector:
             logger.info(f"LLM選択開始: {len(candidates)}件の候補から選択中...")
             
             # LLMによる選択を実行
-            selected_candidate = self._perform_llm_selection(
+            selected_candidate = await self._perform_llm_selection(
                 candidates, weather_data, location_name, target_datetime, comment_type
             )
             
@@ -573,7 +573,7 @@ class CommentSelector:
             # エラー時は最初の候補を返す
             return candidates[0]['comment_object']
     
-    def _perform_llm_selection(
+    async def _perform_llm_selection(
         self,
         candidates: List[Dict[str, Any]],
         weather_data: WeatherForecast,
@@ -596,7 +596,7 @@ class CommentSelector:
             logger.debug(f"プロンプト内容: {prompt[:200]}...")
             
             # LLMに選択を依頼
-            response = self.llm_manager.generate(prompt)
+            response = await self.llm_manager.generate(prompt)
             
             logger.info(f"LLMレスポンス: {response}")
             

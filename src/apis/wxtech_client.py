@@ -4,14 +4,16 @@ WxTech API クライアント
 Weathernews WxTech API との通信を行うクライアントクラス
 """
 
-from typing import Dict, Any, List, Optional, Tuple
-import requests
-import json
 import time
-import warnings
-from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor
+import logging
 import asyncio
+import json
+from typing import Dict, Any, List, Optional, Union
+from datetime import datetime, timedelta
+import pytz
+import requests
+from concurrent.futures import ThreadPoolExecutor
+import warnings
 
 from src.data.weather_data import (
     WeatherForecast,
@@ -71,18 +73,18 @@ class WxTechAPIClient:
         self._last_request_time = 0
         self._min_request_interval = 0.1  # 100ms
 
-    def _rate_limit(self):
-        """レート制限を適用"""
+    async def _rate_limit(self):
+        """レート制限を適用（非同期版）"""
         current_time = time.time()
         elapsed = current_time - self._last_request_time
 
         if elapsed < self._min_request_interval:
             sleep_time = self._min_request_interval - elapsed
-            time.sleep(sleep_time)
+            await asyncio.sleep(sleep_time)
 
         self._last_request_time = time.time()
 
-    def _make_request(self, endpoint: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _make_request(self, endpoint: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """API リクエストを実行
 
         Args:
@@ -96,7 +98,7 @@ class WxTechAPIClient:
             WxTechAPIError: API エラー
         """
         # レート制限
-        self._rate_limit()
+        await self._rate_limit()
 
         # URL 構築
         url = f"{self.BASE_URL}/{endpoint}"
@@ -143,7 +145,7 @@ class WxTechAPIClient:
         except requests.exceptions.RequestException as e:
             raise WxTechAPIError(f"リクエスト実行エラー: {str(e)}", error_type='network_error')
 
-    def get_forecast(self, lat: float, lon: float, forecast_hours: int = 72) -> WeatherForecastCollection:
+    async def get_forecast(self, lat: float, lon: float, forecast_hours: int = 72) -> WeatherForecastCollection:
         """指定座標の天気予報を取得
 
         Args:
@@ -177,7 +179,7 @@ class WxTechAPIClient:
         logger = logging.getLogger(__name__)
         logger.info(f"🔄 WxTech API リクエスト: endpoint=ss1wx, params={params}")
         
-        raw_data = self._make_request("ss1wx", params)
+        raw_data = await self._make_request("ss1wx", params)
         
         # レスポンスの基本情報をログ出力
         if "wxdata" in raw_data and raw_data["wxdata"]:
@@ -189,7 +191,7 @@ class WxTechAPIClient:
         # レスポンスデータの変換
         return self._parse_forecast_response(raw_data, f"lat:{lat},lon:{lon}")
 
-    def get_forecast_by_location(self, location: Location) -> WeatherForecastCollection:
+    async def get_forecast_by_location(self, location: Location) -> WeatherForecastCollection:
         """Location オブジェクトから天気予報を取得
 
         Args:
@@ -205,7 +207,7 @@ class WxTechAPIClient:
         if location.latitude is None or location.longitude is None:
             raise ValueError(f"地点 '{location.name}' に緯度経度情報がありません")
 
-        forecast_collection = self.get_forecast_for_next_day_hours(location.latitude, location.longitude)
+        forecast_collection = await self.get_forecast_for_next_day_hours(location.latitude, location.longitude)
 
         # 地点名を正しく設定
         forecast_collection.location = location.name
@@ -214,7 +216,7 @@ class WxTechAPIClient:
 
         return forecast_collection
 
-    def get_forecast_for_next_day_hours(self, lat: float, lon: float) -> WeatherForecastCollection:
+    async def get_forecast_for_next_day_hours(self, lat: float, lon: float) -> WeatherForecastCollection:
         """翌日の9, 12, 15, 18時JSTの最も近い時刻のデータのみを取得
 
         Args:
@@ -265,9 +267,9 @@ class WxTechAPIClient:
         logger.info(f"翌日の4時刻: {', '.join(time_info)}, API取得時間: {forecast_hours}時間")
         
         # 4つの時刻すべてをカバーする時間でデータを取得
-        return self.get_forecast(lat, lon, forecast_hours=forecast_hours)
+        return await self.get_forecast(lat, lon, forecast_hours=forecast_hours)
 
-    def test_specific_time_parameters(self, lat: float, lon: float) -> Dict[str, Any]:
+    async def test_specific_time_parameters(self, lat: float, lon: float) -> Dict[str, Any]:
         """特定時刻指定パラメータのテスト
         
         様々なパラメータでWxTech APIをテストし、特定時刻指定が可能か検証する
@@ -348,7 +350,7 @@ class WxTechAPIClient:
         for test in test_params:
             try:
                 logger.info(f"🧪 テスト: {test['name']} - {test['params']}")
-                raw_data = self._make_request("ss1wx", test['params'])
+                raw_data = await self._make_request("ss1wx", test['params'])
                 
                 # 成功した場合のレスポンス解析
                 if "wxdata" in raw_data and raw_data["wxdata"]:
@@ -404,7 +406,7 @@ class WxTechAPIClient:
             "successful_count": len(successful_tests)
         }
 
-    def test_specific_times_only(self, lat: float, lon: float) -> Dict[str, Any]:
+    async def test_specific_times_only(self, lat: float, lon: float) -> Dict[str, Any]:
         """特定時刻のみのデータ取得テスト
         
         翌日の9,12,15,18時のみのデータが取得できるかテスト
@@ -478,7 +480,7 @@ class WxTechAPIClient:
         for test in promising_params:
             try:
                 logger.info(f"🧪 テスト: {test['name']}")
-                raw_data = self._make_request("ss1wx", test['params'])
+                raw_data = await self._make_request("ss1wx", test['params'])
                 
                 if "wxdata" in raw_data and raw_data["wxdata"]:
                     wxdata = raw_data["wxdata"][0]
@@ -534,7 +536,7 @@ class WxTechAPIClient:
         """
         loop = asyncio.get_running_loop()
         with ThreadPoolExecutor() as pool:
-            return await loop.run_in_executor(pool, self.get_forecast, lat, lon, forecast_hours)
+            return await self.get_forecast(lat, lon, forecast_hours)
 
     def _parse_forecast_response(
         self, raw_data: Dict[str, Any], location_name: str

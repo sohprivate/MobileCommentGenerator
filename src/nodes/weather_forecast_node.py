@@ -122,7 +122,7 @@ class WeatherForecastNode:
 
                     # 翌日9, 12, 15, 18時JSTのみ取得
                     # 非同期版の実装がないため、同期版を使用
-                    return client.get_forecast_for_next_day_hours(
+                    return await client.get_forecast_for_next_day_hours(
                         location_obj.latitude,
                         location_obj.longitude
                     )
@@ -132,7 +132,7 @@ class WeatherForecastNode:
                     lat, lon = location
                     # 翌日9, 12, 15, 18時JSTのみ取得
                     # 非同期版の実装がないため、同期版を使用
-                    return client.get_forecast_for_next_day_hours(lat, lon)
+                    return await client.get_forecast_for_next_day_hours(lat, lon)
 
                 raise ValueError("無効な地点情報です")
 
