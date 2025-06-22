@@ -127,7 +127,7 @@ function App() {
           try {
             const result = await apiGenerateComment(locationForApi, { llmProvider });
             // 成功時の処理
-            if (result && result.comment) {
+            if (result?.comment) {
               updateProcessedCommentById(locationName, {
                 status: 'success',
                 comment: result.comment,
@@ -177,7 +177,7 @@ function App() {
           comment: result.comment,
           location: result.location || selectedLocation,
           timestamp: result.timestamp || new Date().toISOString(),
-          settings: result.settings || { llmProvider, location: selectedLocation } as GenerateSettings,
+          settings: result.settings || { llmProvider, location: selectedLocation },
           confidence: result.confidence ?? 1,
         };
         setSingleGeneratedComment(generatedComment);
@@ -188,7 +188,7 @@ function App() {
           comment: '',
           location: selectedLocation,
           timestamp: new Date().toISOString(),
-          settings: { llmProvider, location: selectedLocation } as GenerateSettings,
+          settings: { llmProvider, location: selectedLocation },
           confidence: 0,
           error: err.message || 'コメント生成に失敗しました。'
         });
