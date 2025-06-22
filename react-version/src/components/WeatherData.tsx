@@ -3,7 +3,8 @@ import { Cloud, Thermometer, Droplets, Wind, Gauge, TrendingUp } from 'lucide-re
 import type { WeatherData } from '@mobile-comment-generator/shared';
 
 interface WeatherDataProps {
-  weather: WeatherData | null;
+  weather: WeatherData | null | any;
+  metadata?: any;
   className?: string;
 }
 

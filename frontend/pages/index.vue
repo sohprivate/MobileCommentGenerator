@@ -67,24 +67,24 @@
                     :loading="locationsLoading"
                     searchable
                   />
-                  
+
                   <!-- Batch mode -->
                   <div v-else class="space-y-3">
                     <!-- Quick select buttons -->
                     <div class="space-y-2">
                       <div class="flex flex-wrap gap-2">
-                        <UButton 
+                        <UButton
                           @click="selectAllLocations"
-                          size="xs" 
+                          size="xs"
                           variant="outline"
                           icon="i-heroicons-check-circle"
                           color="green"
                         >
                           🌍 全地点選択
                         </UButton>
-                        <UButton 
+                        <UButton
                           @click="clearAllLocations"
-                          size="xs" 
+                          size="xs"
                           variant="outline"
                           icon="i-heroicons-x-circle"
                           color="red"
@@ -92,14 +92,14 @@
                           クリア
                         </UButton>
                       </div>
-                      
+
                       <div class="text-xs font-medium text-gray-700 mb-1">地域選択:</div>
                       <div class="flex flex-wrap gap-1">
                         <UButton 
                           v-for="region in ['北海道', '東北', '北陸', '関東', '甲信', '東海', '近畿', '中国', '四国', '九州', '沖縄']"
                           :key="region"
-                          @click="selectRegionLocations(region)" 
-                          size="xs" 
+                          @click="selectRegionLocations(region)"
+                          size="xs"
                           :variant="isRegionSelected(region) ? 'solid' : 'outline'"
                           :color="isRegionSelected(region) ? 'primary' : 'gray'"
                         >
@@ -107,7 +107,7 @@
                         </UButton>
                       </div>
                     </div>
-                    
+
                     <!-- Multiple select -->
                     <USelectMenu
                       v-model="selectedLocations"
@@ -117,7 +117,7 @@
                       multiple
                       searchable
                     />
-                    
+
                     <!-- Selected count -->
                     <div class="text-sm text-gray-600">
                       選択中: {{ selectedLocations.length }}地点
@@ -187,11 +187,11 @@
                   <h2 class="text-lg font-semibold">生成履歴</h2>
                 </div>
               </template>
-              
+
               <div v-if="history.length === 0" class="text-center text-gray-500 py-4">
                 履歴がありません
               </div>
-              
+
               <div v-else class="space-y-3 max-h-64 overflow-y-auto">
                 <div
                   v-for="(item, index) in history.slice(0, 5)"
@@ -227,8 +227,8 @@
                 <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-blue-500 animate-spin mx-auto mb-4" />
                 <div class="text-lg font-medium text-gray-900">生成中...</div>
                 <div class="text-sm text-gray-500 mt-2">
-                  {{ isBatchMode 
-                    ? `${selectedLocations.length}地点のコメントを生成しています` 
+                  {{ isBatchMode
+                    ? `${selectedLocations.length}地点のコメントを生成しています`
                     : `${selectedLocation} のコメントを生成しています` }}
                 </div>
               </div>
@@ -238,11 +238,11 @@
                 <div class="mb-4">
                   <h3 class="text-lg font-semibold">一括生成結果</h3>
                   <div class="text-sm text-gray-600">
-                    成功: {{ results.filter(r => r.success).length }}件 / 
+                    成功: {{ results.filter(r => r.success).length }}件 /
                     全体: {{ results.length }}件
                   </div>
                 </div>
-                
+
                 <div v-for="(batchResult, index) in results" :key="index" class="border rounded-lg p-4">
                   <div v-if="batchResult.success">
                     <UAlert
@@ -259,7 +259,7 @@
 
                     <!-- Detailed Information for Batch Results -->
                     <div v-if="batchResult.metadata" class="mt-3">
-                      <UAccordion 
+                      <UAccordion
                         :items="[{
                           label: `${batchResult.location} の詳細情報`,
                           icon: 'i-heroicons-information-circle',
@@ -286,7 +286,7 @@
                                 <div class="text-lg">{{ batchResult.metadata.humidity }}%</div>
                               </div>
                             </div>
-                            
+
                             <div v-if="batchResult.metadata.weather_forecast_time" class="p-3 bg-blue-50 rounded mb-4">
                               <div class="text-sm font-medium text-blue-700">予報基準時刻</div>
                               <div class="text-blue-600">{{ formatDateTime(batchResult.metadata.weather_forecast_time) }}</div>
@@ -298,13 +298,13 @@
                             <!-- Weather Timeline for Batch Results -->
                             <div v-if="batchResult.metadata.weather_timeline" class="mb-4">
                               <div class="text-sm font-medium text-gray-700 mb-3">時系列予報データ</div>
-                              
+
                               <!-- Summary -->
                               <div v-if="batchResult.metadata.weather_timeline.summary" class="p-3 bg-gray-50 rounded mb-3">
                                 <div class="text-xs font-medium text-gray-600 mb-1">概要</div>
                                 <div class="text-sm text-gray-700">
-                                  {{ batchResult.metadata.weather_timeline.summary.weather_pattern }} | 
-                                  気温範囲: {{ batchResult.metadata.weather_timeline.summary.temperature_range }} | 
+                                  {{ batchResult.metadata.weather_timeline.summary.weather_pattern }} |
+                                  気温範囲: {{ batchResult.metadata.weather_timeline.summary.temperature_range }} |
                                   最大降水量: {{ batchResult.metadata.weather_timeline.summary.max_precipitation }}
                                 </div>
                               </div>
@@ -313,7 +313,7 @@
                               <div v-if="batchResult.metadata.weather_timeline.past_forecasts && batchResult.metadata.weather_timeline.past_forecasts.length > 0" class="mb-3">
                                 <div class="text-xs font-medium text-gray-600 mb-2">過去の推移（12時間前〜基準時刻）</div>
                                 <div class="grid grid-cols-1 gap-1">
-                                  <div v-for="forecast in batchResult.metadata.weather_timeline.past_forecasts" :key="forecast.time" 
+                                  <div v-for="forecast in batchResult.metadata.weather_timeline.past_forecasts" :key="forecast.time"
                                        class="flex justify-between items-center py-1 px-2 bg-orange-50 rounded text-xs">
                                     <span class="font-mono">{{ forecast.label }}</span>
                                     <span>{{ forecast.time }}</span>
@@ -328,7 +328,7 @@
                               <div v-if="batchResult.metadata.weather_timeline.future_forecasts && batchResult.metadata.weather_timeline.future_forecasts.length > 0">
                                 <div class="text-xs font-medium text-gray-600 mb-2">今後の予報（3〜12時間後）</div>
                                 <div class="grid grid-cols-1 gap-1">
-                                  <div v-for="forecast in batchResult.metadata.weather_timeline.future_forecasts" :key="forecast.time" 
+                                  <div v-for="forecast in batchResult.metadata.weather_timeline.future_forecasts" :key="forecast.time"
                                        class="flex justify-between items-center py-1 px-2 bg-green-50 rounded text-xs">
                                     <span class="font-mono">{{ forecast.label }}</span>
                                     <span>{{ forecast.time }}</span>
@@ -382,7 +382,7 @@
                     :title="`${result.location} のコメント生成が完了しました`"
                     icon="i-heroicons-check-circle"
                   />
-                  
+
                   <div class="p-4 bg-green-50 rounded-lg border border-green-200">
                     <div class="text-lg font-medium text-green-900 mb-2">
                       生成されたコメント:
@@ -394,7 +394,7 @@
 
                   <!-- Weather Details -->
                   <div v-if="result.metadata" class="mt-4">
-                    <UAccordion 
+                    <UAccordion
                       :items="[{
                         label: '詳細情報',
                         icon: 'i-heroicons-information-circle',
@@ -421,7 +421,7 @@
                               <div class="text-lg">{{ result.metadata.humidity }}%</div>
                             </div>
                           </div>
-                          
+
                           <div v-if="result.metadata.weather_forecast_time" class="p-3 bg-blue-50 rounded mb-4">
                             <div class="text-sm font-medium text-blue-700">予報基準時刻</div>
                             <div class="text-blue-600">{{ formatDateTime(result.metadata.weather_forecast_time) }}</div>
@@ -433,13 +433,13 @@
                           <!-- Weather Timeline -->
                           <div v-if="result.metadata.weather_timeline" class="mb-4">
                             <div class="text-sm font-medium text-gray-700 mb-3">時系列予報データ</div>
-                            
+
                             <!-- Summary -->
                             <div v-if="result.metadata.weather_timeline.summary" class="p-3 bg-gray-50 rounded mb-3">
                               <div class="text-xs font-medium text-gray-600 mb-1">概要</div>
                               <div class="text-sm text-gray-700">
-                                {{ result.metadata.weather_timeline.summary.weather_pattern }} | 
-                                気温範囲: {{ result.metadata.weather_timeline.summary.temperature_range }} | 
+                                {{ result.metadata.weather_timeline.summary.weather_pattern }} |
+                                気温範囲: {{ result.metadata.weather_timeline.summary.temperature_range }} |
                                 最大降水量: {{ result.metadata.weather_timeline.summary.max_precipitation }}
                               </div>
                             </div>
@@ -448,7 +448,7 @@
                             <div v-if="result.metadata.weather_timeline.past_forecasts && result.metadata.weather_timeline.past_forecasts.length > 0" class="mb-3">
                               <div class="text-xs font-medium text-gray-600 mb-2">過去の推移（12時間前〜基準時刻）</div>
                               <div class="grid grid-cols-1 gap-1">
-                                <div v-for="forecast in result.metadata.weather_timeline.past_forecasts" :key="forecast.time" 
+                                <div v-for="forecast in result.metadata.weather_timeline.past_forecasts" :key="forecast.time"
                                      class="flex justify-between items-center py-1 px-2 bg-orange-50 rounded text-xs">
                                   <span class="font-mono">{{ forecast.label }}</span>
                                   <span>{{ forecast.time }}</span>
@@ -463,7 +463,7 @@
                             <div v-if="result.metadata.weather_timeline.future_forecasts && result.metadata.weather_timeline.future_forecasts.length > 0">
                               <div class="text-xs font-medium text-gray-600 mb-2">今後の予報（3〜12時間後）</div>
                               <div class="grid grid-cols-1 gap-1">
-                                <div v-for="forecast in result.metadata.weather_timeline.future_forecasts" :key="forecast.time" 
+                                <div v-for="forecast in result.metadata.weather_timeline.future_forecasts" :key="forecast.time"
                                      class="flex justify-between items-center py-1 px-2 bg-green-50 rounded text-xs">
                                   <span class="font-mono">{{ forecast.label }}</span>
                                   <span>{{ forecast.time }}</span>
@@ -515,7 +515,7 @@
                 <div class="text-sm text-gray-500 mt-2">
                   左側のパネルから地点とプロバイダーを選択して、「コメント生成」ボタンをクリックしてください
                 </div>
-                
+
                 <!-- Sample Comments -->
                 <div class="mt-8 p-4 bg-gray-50 rounded-lg text-left">
                   <div class="text-sm font-medium text-gray-700 mb-4">サンプルコメント:</div>
@@ -585,7 +585,7 @@ const currentTime = computed(() => {
   })
 })
 
-const locationOptions = computed(() => 
+const locationOptions = computed(() =>
   locations.value.map(location => ({
     label: location,
     value: location,
@@ -662,9 +662,9 @@ const generateComment = async () => {
 
   const providerValue = selectedProvider.value?.value || selectedProvider.value
   if (locationsToProcess.length === 0 || !providerValue) {
-    console.warn('Location or provider not selected:', { 
-      locations: locationsToProcess, 
-      provider: providerValue 
+    console.warn('Location or provider not selected:', {
+      locations: locationsToProcess,
+      provider: providerValue
     })
     return
   }
@@ -673,7 +673,7 @@ const generateComment = async () => {
     locations: locationsToProcess,
     provider: providerValue
   })
-  
+
   generating.value = true
   result.value = null
   results.value = []
@@ -719,7 +719,7 @@ const generateComment = async () => {
 
       // Refresh history
       await fetchHistory()
-      
+
     } else {
       // Single location generation
       const requestBody = {
@@ -727,9 +727,9 @@ const generateComment = async () => {
         llm_provider: selectedProvider.value.value || selectedProvider.value,
         target_datetime: new Date().toISOString()
       }
-      
+
       devLog('Request body:', requestBody)
-      
+
       const response = await $fetch(`${apiBaseUrl}/api/generate`, {
         method: 'POST',
         headers: {
@@ -740,7 +740,7 @@ const generateComment = async () => {
 
       devLog('Response received:', response)
       result.value = response
-      
+
       // Refresh history if generation was successful
       if (response.success) {
         await fetchHistory()
@@ -748,7 +748,7 @@ const generateComment = async () => {
     }
   } catch (error) {
     console.error('Failed to generate comment:', error)
-    
+
     // Check if it's a network error
     let errorMessage = 'コメント生成中にエラーが発生しました'
     if (error.message?.includes('fetch')) {
@@ -758,7 +758,7 @@ const generateComment = async () => {
     } else if (error.message) {
       errorMessage = error.message
     }
-    
+
     if (isBatchMode.value) {
       results.value = [{
         success: false,
@@ -818,7 +818,7 @@ const selectRegionLocations = (regionName: string) => {
   
   // Check if all locations from this region are already selected
   const allSelected = regionLocations.every(loc => selectedLocations.value.includes(loc))
-  
+
   if (allSelected) {
     // Remove all locations from this region
     selectedLocations.value = selectedLocations.value.filter(loc => !regionLocations.includes(loc))
@@ -845,11 +845,11 @@ onMounted(async () => {
   ])
   
   devLog('Initial data loaded:', {
-    locations: locations.value.length, 
-    providers: providers.value.length, 
-    history: history.value.length 
+    locations: locations.value.length,
+    providers: providers.value.length,
+    history: history.value.length
   })
-  
+
   // Set default selections
   if (locations.value.length > 0) {
     selectedLocation.value = locations.value[0]
