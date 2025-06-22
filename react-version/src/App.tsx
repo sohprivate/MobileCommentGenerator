@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Cloud, Sparkles, Sun, Moon, AlertTriangle, CheckCircle2, Info, Copy as CopyIcon } from 'lucide-react';
+import { Cloud, Sparkles, Sun, Moon, AlertTriangle, CheckCircle2, Info, Copy as CopyIcon, ChevronDown, ChevronUp, CheckCircle, Copy } from 'lucide-react';
 import type { Location, GeneratedComment as SharedGeneratedComment, GenerateSettings } from '@mobile-comment-generator/shared';
 import { LocationSelection } from './components/LocationSelection';
 import { GenerateSettings as GenerateSettingsComponent } from './components/GenerateSettings';
 import { GeneratedCommentDisplay } from './components/GeneratedComment';
+import { WeatherDataDisplay } from './components/WeatherData';
+import { BatchResultItem } from './components/BatchResultItem';
 import { useApi } from './hooks/useApi';
 import { useTheme } from './hooks/useTheme';
 import { REGIONS, getAllLocations as getFallbackLocations } from './constants/regions';
@@ -15,10 +17,26 @@ interface CommentProcessResult {
   comment?: string;
   error?: string;
   metadata?: any;
+  weather?: any;
+  adviceComment?: string;
 }
 
 interface ApiGeneratedComment extends SharedGeneratedComment {
   error?: string;
+}
+
+interface BatchResult {
+  success: boolean;
+  location: string;
+  comment?: string;
+  error?: string;
+  metadata?: any;
+  weather?: any;
+  adviceComment?: string;
+}
+
+interface RegeneratingState {
+  [location: string]: boolean;
 }
 
 const MAX_BATCH_LOCATIONS = 30;
@@ -42,7 +60,12 @@ function App() {
   const [isBatchMode, setIsBatchMode] = useState(false);
 
   const [singleGeneratedComment, setSingleGeneratedComment] = useState<ApiGeneratedComment | null>(null);
+  const [generatedComment, setGeneratedComment] = useState<SharedGeneratedComment | null>(null);
   const [processedComments, setProcessedComments] = useState<CommentProcessResult[]>([]);
+  const [batchResults, setBatchResults] = useState<BatchResult[]>([]);
+  const [expandedLocations, setExpandedLocations] = useState<Set<string>>(new Set());
+  const [regeneratingStates, setRegeneratingStates] = useState<RegeneratingState>({});
+  const [isRegeneratingSingle, setIsRegeneratingSingle] = useState(false);
 
   const [appLoading, setAppLoading] = useState(false);
   const [appError, setAppError] = useState<string | null>(null);
@@ -84,10 +107,79 @@ function App() {
     );
   }, []);
 
+  const toggleLocationExpanded = (location: string) => {
+    setExpandedLocations(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(location)) {
+        newSet.delete(location);
+      } else {
+        newSet.add(location);
+      }
+      return newSet;
+    });
+  };
+
+  const handleRegenerateSingle = async () => {
+    if (!selectedLocation || isRegeneratingSingle) return;
+    
+    setIsRegeneratingSingle(true);
+    try {
+      const result = await apiGenerateComment(selectedLocation, { llmProvider });
+      setGeneratedComment(result);
+      setSingleGeneratedComment(result as ApiGeneratedComment);
+    } catch (error: any) {
+      console.error('Failed to regenerate single comment:', error);
+    } finally {
+      setIsRegeneratingSingle(false);
+    }
+  };
+
+  const handleRegenerateBatch = async (locationName: string) => {
+    if (regeneratingStates[locationName]) return;
+    
+    setRegeneratingStates(prev => ({ ...prev, [locationName]: true }));
+    try {
+      const locationInfo = getLocationInfo(locationName);
+      const result = await apiGenerateComment(locationInfo, { llmProvider });
+      
+      // Update processedComments
+      updateProcessedCommentById(locationName, {
+        status: 'success',
+        comment: result.comment,
+        metadata: result.metadata,
+        weather: result.weather,
+        adviceComment: result.adviceComment
+      });
+      
+      // Update batchResults
+      setBatchResults(prev => prev.map(item => 
+        item.location === locationName
+          ? { ...item, success: true, comment: result.comment, error: undefined, weather: result.weather, adviceComment: result.adviceComment }
+          : item
+      ));
+    } catch (error: any) {
+      updateProcessedCommentById(locationName, {
+        status: 'error',
+        error: error.message || 'コメント生成に失敗しました'
+      });
+      
+      setBatchResults(prev => prev.map(item => 
+        item.location === locationName
+          ? { ...item, success: false, error: error.message || 'コメント生成に失敗しました' }
+          : item
+      ));
+    } finally {
+      setRegeneratingStates(prev => ({ ...prev, [locationName]: false }));
+    }
+  };
+
   const handleGenerateComment = async () => {
     setAppError(null);
     clearApiError();
     setSingleGeneratedComment(null);
+    setGeneratedComment(null);
+    setBatchResults([]);
+    setExpandedLocations(new Set());
     
     if (isBatchMode) {
       if (selectedLocations.length === 0) {
@@ -111,6 +203,7 @@ function App() {
       setProcessedComments(initialResults);
 
       const BATCH_SIZE = 3;
+      const results: BatchResult[] = [];
 
       for (let i = 0; i < sortedSelectedLocations.length; i += BATCH_SIZE) {
         const batch = sortedSelectedLocations.slice(i, i + BATCH_SIZE);
@@ -126,12 +219,27 @@ function App() {
                 status: 'success',
                 comment: result.comment,
                 metadata: result.metadata,
+                weather: result.weather,
+                adviceComment: result.adviceComment
               });
+              return {
+                success: true,
+                location: locationName,
+                comment: result.comment,
+                metadata: result.metadata,
+                weather: result.weather,
+                adviceComment: result.adviceComment
+              };
             } else {
               updateProcessedCommentById(locationName, {
                 status: 'error',
                 error: 'APIレスポンスが不正です',
               });
+              return {
+                success: false,
+                location: locationName,
+                error: 'APIレスポンスが不正です'
+              };
             }
           } catch (error: any) {
             console.error(`Failed to generate comment for ${locationName}:`, error);
@@ -139,11 +247,23 @@ function App() {
               status: 'error',
               error: error.message || 'コメント生成に失敗しました',
             });
+            return {
+              success: false,
+              location: locationName,
+              error: error.message || 'コメント生成に失敗しました'
+            };
           }
         });
 
-        await Promise.allSettled(batchPromises);
+        const batchResults = await Promise.allSettled(batchPromises);
+        batchResults.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            results.push(result.value);
+          }
+        });
       }
+      
+      setBatchResults(results);
       setAppLoading(false);
 
     } else {
@@ -163,7 +283,7 @@ function App() {
 
       try {
         const result = await apiGenerateComment(locationForApi, { llmProvider });
-        const generatedComment: ApiGeneratedComment = {
+        const generatedCommentData: ApiGeneratedComment = {
           id: result.id || selectedLocation.id,
           comment: result.comment,
           location: result.location || selectedLocation,
@@ -171,7 +291,8 @@ function App() {
           settings: result.settings || { llmProvider, location: selectedLocation },
           confidence: result.confidence ?? 1,
         };
-        setSingleGeneratedComment(generatedComment);
+        setSingleGeneratedComment(generatedCommentData);
+        setGeneratedComment(result);
       } catch (err: any) {
         console.error('Failed to generate single comment:', err);
         setSingleGeneratedComment({
@@ -199,7 +320,9 @@ function App() {
 
   useEffect(() => {
     setSingleGeneratedComment(null);
+    setGeneratedComment(null);
     setProcessedComments([]);
+    setBatchResults([]);
     setAppError(null);
     if (!isBatchMode && getFallbackLocations().length > 0) {
       const defaultLocName = getFallbackLocations()[0];
@@ -320,43 +443,44 @@ function App() {
                     </div>
                   )}
 
-                  <div className="space-y-3">
-                    {processedComments.map((item) => (
-                      <div key={item.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-3 shadow-sm">
-                        {item.status === 'pending' && (<div className="flex items-center text-gray-500 dark:text-gray-400 text-sm"><Info className="w-4 h-4 mr-2 animate-pulse" /><span>{item.locationName} - 生成待機中...</span></div>)}
-                        {item.status === 'generating' && (<div className="flex items-center text-blue-500 dark:text-blue-400 text-sm"><div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-2" /><span>{item.locationName} - 生成中...</span></div>)}
-                        {item.status === 'success' && item.comment && (
-                          <div>
-                            <div className="flex items-center text-green-700 dark:text-green-400 mb-1 text-sm font-medium"><CheckCircle2 className="w-4 h-4 mr-1.5" />{item.locationName} - 生成完了</div>
-                            <p className="text-gray-800 dark:text-gray-200 text-sm bg-green-50 dark:bg-green-900/30 p-2 rounded">{item.comment}</p>
-                            {item.metadata && (<details className="text-xs mt-1"><summary className="cursor-pointer text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">詳細情報</summary><pre className="mt-1 p-2 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300 text-xs overflow-x-auto">{JSON.stringify(item.metadata, null, 2)}</pre></details>)}
-                            <button onClick={() => item.comment && handleCopyComment(item.comment)} className="mt-2 text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center"><CopyIcon size={12} className="mr-1"/>コピー</button>
-                          </div>
-                        )}
-                        {item.status === 'error' && (
-                           <div className="text-red-600 dark:text-red-400 text-sm">
-                             <div className="flex items-center font-medium mb-0.5"><AlertTriangle className="w-4 h-4 mr-1.5" />{item.locationName} - 生成失敗</div>
-                             <p className="text-xs ml-1 pl-4 border-l border-red-300 dark:border-red-700">{item.error}</p>
-                           </div>
-                        )}
-                      </div>
+                  <div className="space-y-4">
+                    {batchResults.map((result, index) => (
+                      <BatchResultItem
+                        key={index}
+                        result={result}
+                        isExpanded={expandedLocations.has(result.location)}
+                        onToggleExpanded={() => toggleLocationExpanded(result.location)}
+                        onRegenerate={() => handleRegenerateBatch(result.location)}
+                        isRegenerating={regeneratingStates[result.location] || false}
+                      />
                     ))}
                   </div>
                 </div>
               )}
 
-              {!isBatchMode && singleGeneratedComment && (
+              {/* 単一生成結果 */}
+              {!isBatchMode && (
                 <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                  {singleGeneratedComment.error ? (
-                     <div className="text-red-600 dark:text-red-400">
-                       <h3 className="font-semibold mb-1">{singleGeneratedComment.location.name} - 生成失敗</h3>
-                       <p className="text-sm">{singleGeneratedComment.error}</p>
-                     </div>
-                  ) : ( <GeneratedCommentDisplay comment={singleGeneratedComment as SharedGeneratedComment} onCopy={handleCopyComment}/> )}
+                  <GeneratedCommentDisplay
+                    comment={generatedComment}
+                    onCopy={handleCopyComment}
+                    onRegenerate={generatedComment ? handleRegenerateSingle : undefined}
+                    isRegenerating={isRegeneratingSingle}
+                  />
                 </div>
               )}
 
-              {!appLoading && !singleGeneratedComment && processedComments.length === 0 && (
+              {/* 天気データ */}
+              {!isBatchMode && generatedComment?.weather && (
+                <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                  <WeatherDataDisplay 
+                    weather={generatedComment.weather} 
+                    metadata={generatedComment.metadata}
+                  />
+                </div>
+              )}
+
+              {!appLoading && !generatedComment && processedComments.length === 0 && (
                  <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div className="text-center py-12"><Sparkles className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" /><p className="text-gray-500 dark:text-gray-400">左のパネルから設定を選択し、コメントを生成してください。</p></div>
                  </div>

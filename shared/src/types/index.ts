@@ -19,11 +19,12 @@ export interface GeneratedComment {
   id: string;
   comment: string;
   adviceComment?: string;
-  weather: WeatherData;
+  weather?: WeatherData | any;
   timestamp: string;
   confidence: number;
   location: Location;
   settings: GenerateSettings;
+  metadata?: any;
 }
 
 export interface WeatherData {
