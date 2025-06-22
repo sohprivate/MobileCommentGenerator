@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Cloud, Sparkles, Sun, Moon, AlertTriangle, CheckCircle2, Info, Copy as CopyIcon } from 'lucide-react'; // アイコン追加
+import { Cloud, Sparkles, Sun, Moon, AlertTriangle, CheckCircle2, Info, Copy as CopyIcon } from 'lucide-react';
 import type { Location, GeneratedComment as SharedGeneratedComment, GenerateSettings } from '@mobile-comment-generator/shared';
 import { LocationSelection } from './components/LocationSelection';
 import { GenerateSettings as GenerateSettingsComponent } from './components/GenerateSettings';
 import { GeneratedCommentDisplay } from './components/GeneratedComment';
-// import { WeatherDataDisplay } from './components/WeatherData'; // Not directly used in this iteration for batch
 import { useApi } from './hooks/useApi';
 import { useTheme } from './hooks/useTheme';
 import { REGIONS, getAllLocations as getFallbackLocations } from './constants/regions';
@@ -48,17 +47,16 @@ function App() {
   const [appLoading, setAppLoading] = useState(false);
   const [appError, setAppError] = useState<string | null>(null);
 
-  const { generateComment: apiGenerateComment, clearError: clearApiError } = useApi(); // apiLoading, apiError are not directly used for UI status
+  const { generateComment: apiGenerateComment, clearError: clearApiError } = useApi();
   const { theme, toggleTheme } = useTheme();
 
-  const batchErrors = React.useMemo(() => { // Changed to useMemo for stability
+  const batchErrors = React.useMemo(() => {
     if (isBatchMode) {
       return processedComments.filter(r => r.status === 'error' && r.error);
     }
     return [];
   }, [isBatchMode, processedComments]);
-  
-  // バッチ処理の進捗状況を計算
+
   const batchProgress = React.useMemo(() => {
     if (!isBatchMode || processedComments.length === 0) return null;
     
@@ -102,10 +100,9 @@ function App() {
       }
 
       setAppLoading(true);
-      
-      // Vue版と同様に地点の順序を保証
+
       const sortedSelectedLocations = [...selectedLocations].sort();
-      
+
       const initialResults = sortedSelectedLocations.map(locName => ({
         id: locName,
         locationName: locName,
@@ -113,20 +110,17 @@ function App() {
       }));
       setProcessedComments(initialResults);
 
-      // 逐次バッチ処理の実装（Vue版と同様に3件ずつ処理）
       const BATCH_SIZE = 3;
-      
+
       for (let i = 0; i < sortedSelectedLocations.length; i += BATCH_SIZE) {
         const batch = sortedSelectedLocations.slice(i, i + BATCH_SIZE);
-        
-        // バッチ内の処理を並列実行
+
         const batchPromises = batch.map(async (locationName) => {
           updateProcessedCommentById(locationName, { status: 'generating' });
           const locationForApi = getLocationInfo(locationName);
 
           try {
             const result = await apiGenerateComment(locationForApi, { llmProvider });
-            // 成功時の処理
             if (result?.comment) {
               updateProcessedCommentById(locationName, {
                 status: 'success',
@@ -134,7 +128,6 @@ function App() {
                 metadata: result.metadata,
               });
             } else {
-              // APIレスポンスが不正な場合
               updateProcessedCommentById(locationName, {
                 status: 'error',
                 error: 'APIレスポンスが不正です',
@@ -148,8 +141,7 @@ function App() {
             });
           }
         });
-        
-        // バッチの完了を待つ
+
         await Promise.allSettled(batchPromises);
       }
       setAppLoading(false);
@@ -171,7 +163,6 @@ function App() {
 
       try {
         const result = await apiGenerateComment(locationForApi, { llmProvider });
-        // Ensure the result matches the expected type structure
         const generatedComment: ApiGeneratedComment = {
           id: result.id || selectedLocation.id,
           comment: result.comment,
@@ -200,7 +191,6 @@ function App() {
 
   const handleCopyComment = (text: string) => {
     navigator.clipboard?.writeText(text);
-    // Consider adding a toast notification for copy success
   };
 
   const currentTime = new Date().toLocaleString('ja-JP', {
@@ -211,7 +201,7 @@ function App() {
     setSingleGeneratedComment(null);
     setProcessedComments([]);
     setAppError(null);
-    if (!isBatchMode && getFallbackLocations().length > 0) { // Use getFallbackLocations for default
+    if (!isBatchMode && getFallbackLocations().length > 0) {
       const defaultLocName = getFallbackLocations()[0];
       setSelectedLocation(getLocationInfo(defaultLocName));
     } else if (isBatchMode) {
