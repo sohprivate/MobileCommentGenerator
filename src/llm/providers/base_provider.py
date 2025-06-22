@@ -11,7 +11,7 @@ class LLMProvider(ABC):
     """LLMプロバイダーの抽象基底クラス"""
 
     @abstractmethod
-    def generate_comment(
+    async def generate_comment(
         self, weather_data: WeatherForecast, past_comments: CommentPair, constraints: Dict[str, Any]
     ) -> str:
         """
@@ -28,7 +28,7 @@ class LLMProvider(ABC):
         pass
 
     @abstractmethod
-    def generate(self, prompt: str) -> str:
+    async def generate(self, prompt: str) -> str:
         """
         汎用的なテキスト生成を行う。
 

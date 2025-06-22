@@ -82,7 +82,7 @@ class LLMManager:
         model = os.getenv("ANTHROPIC_MODEL", "claude-3-opus-20240229")
         return AnthropicProvider(api_key=api_key, model=model)
 
-    def generate(self, prompt: str) -> str:
+    async def generate(self, prompt: str) -> str:
         """
         汎用的なテキスト生成を行う。
 
@@ -97,26 +97,27 @@ class LLMManager:
 
             # プロバイダーの汎用生成メソッドを呼び出す
             if hasattr(self.provider, "generate"):
-                return self.provider.generate(prompt)
+                return await self.provider.generate(prompt)
             else:
                 # generateメソッドがない場合は、generate_commentを使う
                 # ダミーのweather_dataとpast_commentsを作成
                 from src.data.weather_data import WeatherForecast, WeatherCondition
                 from datetime import datetime
 
+                from src.data.weather_data import WindDirection
                 dummy_weather = WeatherForecast(
+                    location="dummy",
                     datetime=datetime.now(),
                     weather_condition=WeatherCondition.CLEAR,
-                    weather_code=100,
+                    weather_code="100",
                     weather_description="晴れ",
                     temperature=20.0,
-                    feels_like=20.0,
                     humidity=50.0,
                     pressure=1013.0,
                     wind_speed=0.0,
-                    wind_direction=0,
+                    wind_direction=WindDirection.N,
+                    wind_direction_degrees=0,
                     precipitation=0.0,
-                    cloud_cover=0,
                     visibility=10.0,
                     confidence=1.0,
                 )
@@ -124,15 +125,35 @@ class LLMManager:
                 # プロンプトをそのまま使用
                 constraints = {"custom_prompt": prompt}
 
-                return self.provider.generate_comment(
-                    weather_data=dummy_weather, past_comments=None, constraints=constraints
+                from src.data.comment_pair import CommentPair
+                from src.data.past_comment import PastComment, CommentType
+                
+                dummy_past_comments = CommentPair(
+                    weather_comment=PastComment(
+                        comment_text="", 
+                        location="", 
+                        datetime=datetime.now(),
+                        weather_condition="晴れ",
+                        comment_type=CommentType.WEATHER_COMMENT
+                    ),
+                    advice_comment=PastComment(
+                        comment_text="", 
+                        location="", 
+                        datetime=datetime.now(),
+                        weather_condition="晴れ",
+                        comment_type=CommentType.ADVICE
+                    )
+                )
+
+                return await self.provider.generate_comment(
+                    weather_data=dummy_weather, past_comments=dummy_past_comments, constraints=constraints
                 )
 
         except Exception as e:
             logger.error(f"Error generating text: {str(e)}")
             raise
 
-    def generate_comment(
+    async def generate_comment(
         self, weather_data: WeatherForecast, past_comments: CommentPair, constraints: Dict[str, Any]
     ) -> str:
         """
@@ -150,7 +171,7 @@ class LLMManager:
             logger.info(f"Generating comment using {self.provider_name}")
 
             # プロバイダーを使用してコメント生成
-            comment = self.provider.generate_comment(
+            comment = await self.provider.generate_comment(
                 weather_data=weather_data, past_comments=past_comments, constraints=constraints
             )
 

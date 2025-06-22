@@ -2,6 +2,7 @@
 
 import logging
 import time
+import asyncio
 from typing import Dict, Any
 
 from openai import OpenAI
@@ -28,7 +29,7 @@ class OpenAIProvider(LLMProvider):
         self.model = model
         logger.info(f"Initialized OpenAI provider with model: {model}")
 
-    def generate_comment(
+    async def generate_comment(
         self, weather_data: WeatherForecast, past_comments: CommentPair, constraints: Dict[str, Any]
     ) -> str:
         """
@@ -82,13 +83,13 @@ class OpenAIProvider(LLMProvider):
                     if attempt < max_retries - 1:
                         wait_time = retry_delay * (2**attempt)  # 指数バックオフ
                         logger.warning(f"Rate limit exceeded. Retrying in {wait_time} seconds...")
-                        time.sleep(wait_time)
+                        await asyncio.sleep(wait_time)
                         continue
 
                 logger.error(f"Error in OpenAI API call: {error_message}")
                 raise
 
-    def generate(self, prompt: str) -> str:
+    async def generate(self, prompt: str) -> str:
         """
         汎用的なテキスト生成を行う。
 
@@ -130,7 +131,7 @@ class OpenAIProvider(LLMProvider):
                     if attempt < max_retries - 1:
                         wait_time = retry_delay * (2**attempt)  # 指数バックオフ
                         logger.warning(f"Rate limit exceeded. Retrying in {wait_time} seconds...")
-                        time.sleep(wait_time)
+                        await asyncio.sleep(wait_time)
                         continue
 
                 logger.error(f"OpenAI API error: {error_message}")

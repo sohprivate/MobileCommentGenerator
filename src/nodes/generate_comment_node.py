@@ -21,7 +21,7 @@ from src.utils.common_utils import get_season_from_month, get_time_period_from_h
 logger = logging.getLogger(__name__)
 
 
-def generate_comment_node(state: CommentGenerationState) -> CommentGenerationState:
+async def generate_comment_node(state: CommentGenerationState) -> CommentGenerationState:
     """
     LLMを使用してコメントを生成するノード。
 
@@ -39,7 +39,7 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
         # 必要なデータの確認
         weather_data = state.weather_data
         selected_pair = state.selected_pair
-        llm_provider = state.llm_provider if state.llm_provider else "openai"
+        llm_provider = state.llm_provider if hasattr(state, 'llm_provider') and state.llm_provider else "openai"
 
         if not weather_data:
             raise ValueError("Weather data is required for comment generation")
@@ -58,6 +58,13 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
             "season": _get_season(state.target_datetime),
         }
 
+        # LLMを使用してコメント生成
+        generated_comment = await llm_manager.generate_comment(
+            weather_data=weather_data,
+            past_comments=selected_pair,
+            constraints=constraints
+        )
+        
         # 選択されたコメントペアから最終コメントを構成
         # S3から選択された天気コメントとアドバイスをそのまま組み合わせる
         weather_comment = (
@@ -82,7 +89,7 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
                     logger.critical(f"🚨 緊急修正: 晴天時に「{pattern}」は不適切 - 代替コメント検索")
                     
                     # stateから過去コメントデータを取得して適切なものを選択
-                    if state.past_weather_comments:
+                    if hasattr(state, 'past_weather_comments') and getattr(state, 'past_weather_comments', None):
                         # 気温に応じた適切なコメントのパターン
                         if weather_data.temperature >= 35:
                             preferred_patterns = ["猛烈な暑さ", "危険な暑さ", "猛暑に警戒", "激しい暑さ"]
@@ -93,7 +100,7 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
                         
                         # 既存コメントから適切なものを検索
                         replacement_found = False
-                        for past_comment in state.past_weather_comments:
+                        for past_comment in (getattr(state, 'past_weather_comments', [])):
                             comment_text = past_comment.comment_text
                             # 優先パターンに一致するものを探す
                             for preferred in preferred_patterns:
@@ -108,7 +115,7 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
                         # 優先パターンが見つからない場合、晴天系の任意のコメントを選択
                         if not replacement_found:
                             sunny_keywords = ["晴", "日差し", "太陽", "快晴", "青空"]
-                            for past_comment in state.past_weather_comments:
+                            for past_comment in (getattr(state, 'past_weather_comments', [])):
                                 comment_text = past_comment.comment_text
                                 if any(keyword in comment_text for keyword in sunny_keywords) and \
                                    not any(ng in comment_text for ng in changeable_patterns):
@@ -118,8 +125,8 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
                                     break
                         
                         # それでも見つからない場合はデフォルト（最初の有効なコメント）
-                        if not replacement_found and state.past_weather_comments:
-                            weather_comment = state.past_weather_comments[0].comment_text
+                        if not replacement_found and hasattr(state, 'past_weather_comments') and getattr(state, 'past_weather_comments', None):
+                            weather_comment = getattr(state, 'past_weather_comments', [])[0].comment_text
                             logger.critical(f"🚨 デフォルト代替: '{weather_comment}'")
                     else:
                         logger.critical("🚨 代替コメントが見つからないため、デフォルト維持")
@@ -130,12 +137,12 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
         if "雨" in weather_data.weather_description and weather_data.temperature < 30.0 and advice_comment and "熱中症" in advice_comment:
             logger.critical(f"🚨 緊急修正: 雨天+低温で熱中症警告を除外 - 代替アドバイス検索")
             
-            if state.past_advice_comments:
+            if hasattr(state, 'past_advice_comments') and getattr(state, 'past_advice_comments', None):
                 # 雨天に適したアドバイスを検索
                 rain_patterns = ["雨にご注意", "傘", "濡れ", "雨具", "足元", "滑り"]
                 replacement_found = False
                 
-                for past_comment in state.past_advice_comments:
+                for past_comment in (getattr(state, 'past_advice_comments', [])):
                     comment_text = past_comment.comment_text
                     if any(pattern in comment_text for pattern in rain_patterns):
                         advice_comment = comment_text
@@ -143,20 +150,20 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
                         replacement_found = True
                         break
                 
-                if not replacement_found and state.past_advice_comments:
-                    advice_comment = state.past_advice_comments[0].comment_text
+                if not replacement_found and hasattr(state, 'past_advice_comments') and getattr(state, 'past_advice_comments', None):
+                    advice_comment = getattr(state, 'past_advice_comments', [])[0].comment_text
                     logger.critical(f"🚨 デフォルト代替アドバイス: '{advice_comment}'")
         
         # 大雨・嵐でムシムシ暑いは不適切 - 既存コメントから再選択
         if ("大雨" in weather_data.weather_description or "嵐" in weather_data.weather_description) and weather_comment and "ムシムシ" in weather_comment:
             logger.critical(f"🚨 緊急修正: 悪天候でムシムシコメントを除外 - 代替コメント検索")
             
-            if state.past_weather_comments:
+            if hasattr(state, 'past_weather_comments') and getattr(state, 'past_weather_comments', None):
                 # 悪天候に適したコメントを検索
                 storm_patterns = ["荒れた天気", "大雨", "激しい雨", "暴風", "警戒", "注意", "本格的な雨"]
                 replacement_found = False
                 
-                for past_comment in state.past_weather_comments:
+                for past_comment in (getattr(state, 'past_weather_comments', [])):
                     comment_text = past_comment.comment_text
                     if any(pattern in comment_text for pattern in storm_patterns):
                         weather_comment = comment_text
@@ -164,8 +171,8 @@ def generate_comment_node(state: CommentGenerationState) -> CommentGenerationSta
                         replacement_found = True
                         break
                 
-                if not replacement_found and state.past_weather_comments:
-                    weather_comment = state.past_weather_comments[0].comment_text
+                if not replacement_found and hasattr(state, 'past_weather_comments') and getattr(state, 'past_weather_comments', None):
+                    weather_comment = getattr(state, 'past_weather_comments', [])[0].comment_text
                     logger.critical(f"🚨 デフォルト代替: '{weather_comment}'")
 
         # 最終コメント構成

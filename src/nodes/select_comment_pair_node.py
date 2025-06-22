@@ -19,7 +19,7 @@ from src.nodes.comment_selector import CommentSelector
 logger = logging.getLogger(__name__)
 
 
-def select_comment_pair_node(state: CommentGenerationState) -> CommentGenerationState:
+async def select_comment_pair_node(state: CommentGenerationState) -> CommentGenerationState:
     """LLMを使用して適切なコメントペアを選択"""
     logger.info("SelectCommentPairNode: LLMによるコメントペア選択を開始")
 
@@ -52,7 +52,7 @@ def select_comment_pair_node(state: CommentGenerationState) -> CommentGeneration
         selector = CommentSelector(llm_manager, validator)
         
         # 最適なコメントペアを選択
-        pair = selector.select_optimal_comment_pair(
+        pair = await selector.select_optimal_comment_pair(
             weather_comments, advice_comments, weather_data, 
             location_name, target_datetime, state
         )
