@@ -4,7 +4,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   
   // UI Framework
-  modules: ['@nuxt/ui'],
+  modules: [
+    '@unocss/nuxt',
+    '@vueuse/nuxt', 
+    '@nuxt/icon'
+  ],
+  css: ['@unocss/reset/tailwind.css'],
   
   // TypeScript設定
   typescript: {
