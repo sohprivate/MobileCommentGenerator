@@ -10,6 +10,13 @@ export default defineNuxtConfig({
     '@nuxt/icon'
   ],
   css: ['@unocss/reset/tailwind.css'],
+
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: false,
+    }
+  ],
   
   // TypeScript設定
   typescript: {

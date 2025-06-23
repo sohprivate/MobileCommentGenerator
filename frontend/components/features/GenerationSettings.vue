@@ -33,11 +33,13 @@
 
     <!-- Location Selection -->
     <LocationSelector
-      v-model:selected-location="selectedLocation"
-      v-model:selected-locations="selectedLocations"
+      :selected-location="selectedLocation"
+      :selected-locations="selectedLocations"
       :is-batch-mode="isBatchMode"
       :locations="locations"
       :locations-loading="locationsLoading"
+      @update:selected-location="$emit('update:selectedLocation', $event)"
+      @update:selected-locations="$emit('update:selectedLocations', $event)"
       @select-all="$emit('selectAll')"
       @clear-all="$emit('clearAll')"
       @select-region="$emit('selectRegion', $event)"
