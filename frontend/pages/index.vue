@@ -32,6 +32,16 @@
               @select-region="selectRegionLocations"
             />
           </div>
+          
+          <!-- Test GenerationResults component -->
+          <div class="mt-8">
+            <GenerationResults
+              :generating="generating"
+              :is-batch-mode="isBatchMode"
+              :result="result"
+              :results="results"
+            />
+          </div>
         </div>
       </div>
     </main>
