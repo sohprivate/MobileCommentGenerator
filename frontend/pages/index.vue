@@ -12,6 +12,26 @@
           <div class="mt-8">
             <GenerationHistory :history="history" />
           </div>
+          
+          <!-- Test GenerationSettings component -->
+          <div class="mt-8">
+            <GenerationSettings
+              v-model:is-batch-mode="isBatchMode"
+              v-model:selected-location="selectedLocation"
+              v-model:selected-locations="selectedLocations"
+              v-model:selected-provider="selectedProvider"
+              :locations="locations"
+              :locations-loading="locationsLoading"
+              :provider-options="providerOptions"
+              :providers-loading="providersLoading"
+              :generating="generating"
+              :current-time="currentTime"
+              @generate="generateComment"
+              @select-all="selectAllLocations"
+              @clear-all="clearAllLocations"
+              @select-region="selectRegionLocations"
+            />
+          </div>
         </div>
       </div>
     </main>
