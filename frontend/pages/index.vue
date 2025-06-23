@@ -7,6 +7,11 @@
         <div class="text-center">
           <h1 class="text-2xl font-bold text-gray-900">Testing Component Resolution</h1>
           <p class="mt-2 text-gray-600">If you can see this, AppHeader is working</p>
+          
+          <!-- Test GenerationHistory component -->
+          <div class="mt-8">
+            <GenerationHistory :history="history" />
+          </div>
         </div>
       </div>
     </main>
