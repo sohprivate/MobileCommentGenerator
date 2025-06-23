@@ -168,12 +168,25 @@ const selectRegionLocations = (region: string) => {
 }
 
 const loadLocations = async () => {
+  console.log('Starting loadLocations...')
   locationsLoading.value = true
+  
   try {
-    const response = await $fetch('/api/locations')
+    console.log('Attempting to fetch from /api/locations...')
+    // Add timeout to prevent hanging indefinitely
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+    
+    const response = await $fetch('/api/locations', {
+      signal: controller.signal
+    })
+    clearTimeout(timeoutId)
+    
+    console.log('API response received:', response)
     locations.value = response.locations || []
   } catch (error) {
     console.error('Failed to load locations:', error)
+    console.log('Using fallback location list...')
     locations.value = [
       '札幌', '函館', '旭川', '青森', '秋田', '盛岡', '山形', '仙台', '福島',
       '新潟', '富山', '金沢', '福井', '水戸', '宇都宮', '前橋', 'さいたま',
@@ -183,6 +196,7 @@ const loadLocations = async () => {
       '佐賀', '長崎', '熊本', '大分', '宮崎', '鹿児島', '那覇'
     ]
   } finally {
+    console.log('Setting locationsLoading to false, locations count:', locations.value.length)
     locationsLoading.value = false
   }
 }
